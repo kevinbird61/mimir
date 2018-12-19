@@ -1,1 +1,9 @@
+# python
 *.pyc
+
+# c
+*.out
+*.o
+
+# .vscode
+.vscode/
