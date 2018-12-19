@@ -11,8 +11,9 @@
 const struct sniff_ethernet *ethernet; // ethernet header
 const struct sniff_ipv4 *ipv4; // IPv4 header
 const struct sniff_tcp *tcp;   // TCP header
+const struct sniff_udp *udp;   // UDP header
 const char *payload; // packet payload
-u_int size_ip, size_tcp, size_existed=0;
+u_int size_ip, size_tcp, size_udp, size_existed=0;
 
 
 int main(int argc, char **argv) 
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
         }
 
         // Parse TCP 
-        if(ipv4->protocol == (u_char)4){
+        if(ipv4->protocol == (u_char)6){
             tcp = (struct sniff_tcp*)(packet + SIZE_ETHER + size_ip);
             size_tcp = TH_OFF(tcp)*4;
             size_existed += size_tcp;
@@ -75,6 +76,13 @@ int main(int argc, char **argv)
                 printf("TCP src Port: %d\n", tcp->sport);
                 printf("TCP dst Port: %d\n", tcp->dport);
             }
+        } else if(ipv4->protocol == (u_char)17){
+            udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
+            size_udp = 8; // 8 bytes
+            size_existed += size_udp;
+
+            printf("UDP src Port: %d\n", tcp->sport);
+            printf("UDP dst Port: %d\n", tcp->dport);
         }
 
         printf("=======================================================================\n");

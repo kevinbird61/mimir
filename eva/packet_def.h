@@ -65,4 +65,12 @@ struct sniff_tcp {
     u_short urp;		/* urgent pointer */
 };
 
+/* UDP header */
+struct sniff_udp {
+    u_short sport;
+    u_short dport;
+    u_short length;
+    u_short checksum;
+};
+
 #endif 
