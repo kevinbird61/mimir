@@ -4,6 +4,7 @@
 #include <pcap/pcap.h>
 
 #include "packet_def.h"
+#include "packet_stat.h"
 
 // ethernet 
 #define SIZE_ETHER 14
@@ -15,6 +16,8 @@ const struct sniff_udp *udp;   // UDP header
 const char *payload; // packet payload
 u_int size_ip, size_tcp, size_udp, size_existed=0;
 
+// for evaluation
+struct packet_stat* eva;
 
 int main(int argc, char **argv) 
 { 
@@ -37,6 +40,9 @@ int main(int argc, char **argv)
         return(2); 
     } 
 
+    // init eva
+    eva = pktStat_init();
+
     // Get each packet from pcap file
     while (packet = pcap_next(handle,&header)) {
         // printf("%d\n", header.len);
@@ -49,6 +55,10 @@ int main(int argc, char **argv)
         printf("MAC dst Addr: %s\n", ether_ntoa((struct ether_addr*)ethernet->dstAddr));
         printf("ETHER type: %d\n", ethernet->etherType);
         size_existed += SIZE_ETHER;
+
+        // Increament
+        int *ori = map_get(&eva->eth_addr_stat, ethernet->srcAddr);
+        map_set(&eva->eth_addr_stat, ethernet->srcAddr, (*ori)+1 );
 
         // Parse IPv4
         if(ethernet->etherType == (u_short)8){
