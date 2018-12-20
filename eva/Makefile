@@ -8,3 +8,6 @@ pktstat.o: packet_stat.c
 
 cmap.o: third_party/cmap/map.c 
 	gcc -o cmap.o -c third_party/cmap/map.c 
+
+clean:
+	rm *.o *.out 

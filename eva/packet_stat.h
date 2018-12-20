@@ -23,23 +23,20 @@
     | Flow id | counter value |
 
 */
-
 struct packet_stat {
     // Ethernet
     map_int_t eth_addr_stat;
     map_int_t eth_type_stat;
-
     // IPv4
     map_int_t ipv4_addr_stat;
     map_int_t ipv4_proto_stat;
-
     // TCP
     map_int_t tcp_port_stat;
-
     // UDP
     map_int_t udp_port_stat;
 };
 
 struct packet_stat* pktStat_init();
+void pktStat_inc(map_int_t *m, void *key);
 
 #endif 
