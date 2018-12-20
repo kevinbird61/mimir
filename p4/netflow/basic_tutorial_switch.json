@@ -4,7 +4,7 @@
       "name" : "scalars_0",
       "id" : 0,
       "fields" : [
-        ["netflow_sampling_tmp", 8, false],
+        ["netflow_sampling_tmp_0", 8, false],
         ["metadata_t.l4_srcPort", 16, false],
         ["metadata_t.l4_dstPort", 16, false],
         ["metadata_t.flow_id", 32, false],
@@ -842,7 +842,7 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "netflow_sampling_tmp"]
+              "value" : ["scalars", "netflow_sampling_tmp_0"]
             },
             {
               "type" : "expression",
@@ -856,7 +856,7 @@
                   },
                   "right" : {
                     "type" : "field",
-                    "value" : ["scalars", "netflow_sampling_tmp"]
+                    "value" : ["scalars", "netflow_sampling_tmp_0"]
                   },
                   "cond" : {
                     "type" : "expression",
@@ -888,7 +888,7 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "netflow_sampling_tmp"]
+              "value" : ["scalars", "netflow_sampling_tmp_0"]
             },
             {
               "type" : "expression",
@@ -902,7 +902,7 @@
                   },
                   "right" : {
                     "type" : "field",
-                    "value" : ["scalars", "netflow_sampling_tmp"]
+                    "value" : ["scalars", "netflow_sampling_tmp_0"]
                   },
                   "cond" : {
                     "type" : "expression",
@@ -945,7 +945,7 @@
             },
             {
               "type" : "field",
-              "value" : ["scalars", "netflow_sampling_tmp"]
+              "value" : ["scalars", "netflow_sampling_tmp_0"]
             }
           ],
           "source_info" : {
@@ -1199,12 +1199,6 @@
     {
       "name" : "cksum",
       "id" : 0,
-      "source_info" : {
-        "filename" : "includes/checksums.p4",
-        "line" : 20,
-        "column" : 8,
-        "source_fragment" : "update_checksum( ..."
-      },
       "target" : ["ipv4", "hdrChecksum"],
       "type" : "generic",
       "calculation" : "calc_0",

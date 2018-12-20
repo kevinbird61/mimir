@@ -7,3 +7,7 @@
 
 # .vscode
 .vscode/
+
+# p4
+logs/
+pcaps/
