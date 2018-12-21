@@ -3,6 +3,8 @@
 
 #include "headers.p4"
 
+#define CACHE_SLOT 128
+
 // for digest data structure (which represent the basic unit in flowCache)
 // - which record the information of that packet
 // - the essential part of data detection
@@ -26,12 +28,50 @@ control netflow_flowcache(
     /*
         Using digest mechanism as flowCache, the cache configuration is 
         set by DigestEntry.
-
         - max_timeout_ns
         - max_list_size
         - ack_timeout_ns
 
+        According to NetFlow - FlowCache, the router will using 7 field to
+        identify whether those packet belong to the same flow, which are:
+        - ingress interface
+        - source IP
+        - destination IP
+        - IP protocol number
+        - TCP/UDP source port
+        - TCP/UDP destination port
+        - IP ToS
     */
+    register<bit<32>>(CACHE_SLOT)   FlowCount;
+    register<bit<32>>(1)            FlowCount_Threshold;
+
+    action check_flowcache(){
+        // increase flowcount, and then check its value whether
+        // surpass the threshold or not.
+        bit<32> flowcache_id;
+        bit<32> flowcount_val;
+
+        hash(flowcache_id,
+            HashAlgorithm.crc16,
+            (bit<32>)0,
+            {
+                standard_metadata.ingress_port,
+                hdr.ipv4.srcAddr,
+                hdr.ipv4.dstAddr,
+                hdr.ipv4.protocol,
+                metadata.l4_srcPort,
+                metadata.l4_dstPort,
+                hdr.ipv4.dscp
+            },
+            (bit<32>)CACHE_SLOT
+        );
+
+        // Read from flowcount 
+        FlowCount.read(flowcount_val, flowcache_id);
+
+        // if the value is surpass threshold, then trigger digest (pack into flowcache)
+        
+    }
 
     action pack_into_flowcache(){
         // Fetch the essential element 
@@ -55,7 +95,10 @@ control netflow_flowcache(
         // if sampling find interval larger than delta time threshold,
         // then trigger digest
         if(metadata.pass_sampling == 8w1){
-            pack_into_flowcache();
+            if(hdr.ipv4.isValid() && hdr.tcp.isValid() || hdr.ipv4.isValid() && hdr.udp.isValid() ){
+                check_flowcache();
+                pack_into_flowcache();
+            }
         }
     }
 

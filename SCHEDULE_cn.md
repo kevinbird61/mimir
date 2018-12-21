@@ -2,7 +2,7 @@
 
 | 時程 | 工作內容 | 備註 |
 | ------------- | :------------- | ---: |
-| 2018/12 ~ 2019/1 | <ul><li>實驗環境架設</li><li>sFlow,NetFlow, OF 等實作概念的熟悉，目標在能看到一個 scenario 後馬上 porting 成 OF 版本</li><li>cisco flow recorder（準備錄製系上網路流量，作為後續實驗用途）</li><li>演算法實作（構思演算法、並將我們所選的演算法寫成 pseudo code）</li></ul> | |
+| 2018/12 ~ 2019/1 | <li>實驗環境架設</li><li>sFlow,NetFlow, OF 等實作概念的熟悉，目標在能看到一個 scenario 後馬上 porting 成 OF 版本</li><li>cisco flow recorder（準備錄製系上網路流量，作為後續實驗用途）</li><li>演算法實作（構思演算法、並將我們所選的演算法寫成 pseudo code）</li> | |
 | 2019/1 ~ 2019/2 | <li>準備各個面向的實驗（不同 `工具`、`演算法`、`系統架構` 來做探討）</li><li>`測量指標` 的選擇、 `數據收集、紀錄` 的方式，並統一測試的標準，讓測量的數據有意義</li> | |
 | 2019/2 ~ 2019/3 | <li>繼續準備各個面向實驗</li><li>Code Refactor</li><li>思考是否能繼續改進演算法、與 proposed method</li> | |
 | 2019/3 ~ 2019/4 | <li>完成最小化能展示的項目（OF 版本： Native 與 Hybrid，以及 P4 版本：Polling/Push、Multi-switches）</li><li>對這版本的所有 scenario 做所選指標的效能分析</li><li>將數據視覺化呈獻</li> | |

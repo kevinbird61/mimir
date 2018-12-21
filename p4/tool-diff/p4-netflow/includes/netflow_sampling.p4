@@ -19,7 +19,6 @@ control netflow_sampling(
         LastSeen:
         | Flow ID | LastSeen    |
         | <hash>  | <timestamp> | bit<48>
-
     */
     register<bit<48>>(TABLE_SLOT) LastSeen;
     register<bit<48>>(1)          DeltaTime_Threshold;
