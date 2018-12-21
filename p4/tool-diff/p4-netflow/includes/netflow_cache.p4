@@ -9,15 +9,15 @@
 // - which record the information of that packet
 // - the essential part of data detection
 struct flowCache_t {
-    bit<48> eth_srcAddr;
-    bit<48> eth_dstAddr;
-    bit<16> eth_type;
+    bit<16> ingress_port;
 
     bit<32> ipv4_srcAddr;
     bit<32> ipv4_dstAddr;
     bit<8>  protocol;
 
-    bit<16> ingress_port;
+    bit<16> srcPort;
+    bit<16> dstPort;
+    bit<6>  dscp
 }
 
 control netflow_flowcache(
@@ -50,6 +50,7 @@ control netflow_flowcache(
         // surpass the threshold or not.
         bit<32> flowcache_id;
         bit<32> flowcount_val;
+        bit<32> flowcount_thres;
 
         hash(flowcache_id,
             HashAlgorithm.crc16,
@@ -68,26 +69,34 @@ control netflow_flowcache(
 
         // Read from flowcount 
         FlowCount.read(flowcount_val, flowcache_id);
+        FlowCount_Threshold.read(flowcount_thres, 0);
 
         // if the value is surpass threshold, then trigger digest (pack into flowcache)
-        
+        metadata.pass_aggr = (flowcount_val > flowcount_thres ? 8w1 : 8w0);
+        flowcount_val = (metadata.pass_aggr < 8w1 ? flowcount_val+1 : 8w0);
+
+        // Write back into FlowCount
+        FlowCount.write(flowcache_id, flowcount_val);
     }
 
     action pack_into_flowcache(){
         // Fetch the essential element 
         // , and then pack into digest message list
         // , wait for switch agent sent them to controller
+        
+        // FIXME: 
+        // - Adapt the data structure to meet the requirement
         digest<flowCache_t>((bit<32>) 1024,
-            { 
-                hdr.ethernet.srcAddr,
-                hdr.ethernet.dstAddr,
-                hdr.ethernet.etherType,
-                
+            {   
+                (bit<16>)standard_metadata.ingress_port,
+
                 hdr.ipv4.srcAddr,
                 hdr.ipv4.dstAddr,
                 hdr.ipv4.protocol,
-                
-                (bit<16>)standard_metadata.ingress_port
+
+                metadata.l4_srcPort,
+                metadata.l4_dstPort,
+                hdr.ipv4.dscp
             });
     }
 
@@ -97,7 +106,9 @@ control netflow_flowcache(
         if(metadata.pass_sampling == 8w1){
             if(hdr.ipv4.isValid() && hdr.tcp.isValid() || hdr.ipv4.isValid() && hdr.udp.isValid() ){
                 check_flowcache();
-                pack_into_flowcache();
+                if(metadata.pass_aggr == 8w1){
+                    pack_into_flowcache();
+                }
             }
         }
     }

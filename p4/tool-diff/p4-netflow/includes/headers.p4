@@ -43,6 +43,7 @@ struct metadata_t {
     // flag 
     bit<8>  pass_filter;
     bit<8>  pass_sampling;
+    bit<8>  pass_aggr;
 }
 
 #endif
