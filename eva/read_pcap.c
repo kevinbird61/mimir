@@ -18,6 +18,7 @@ u_int size_ip, size_tcp, size_udp, size_existed=0;
 
 // for evaluation
 struct packet_stat* eva;
+FILE *fIP, *fproto, *ftcpPort, *fudpPort;
 
 int main(int argc, char **argv) 
 { 
@@ -78,7 +79,7 @@ int main(int argc, char **argv)
                 // count IPv4 address statistic
                 pktStat_inc(&eva->ipv4_addr_stat, inet_ntoa(ipv4->srcAddr));
                 pktStat_inc(&eva->ipv4_addr_stat, inet_ntoa(ipv4->dstAddr));
-                char pt[1];
+                char pt[2];
                 sprintf(pt, "%d", ipv4->protocol);
                 pktStat_inc(&eva->ipv4_proto_stat, pt);
             }
@@ -124,6 +125,11 @@ int main(int argc, char **argv)
     } 
     pcap_close(handle);
 
+    fIP = fopen("output/ip_raw.txt", "w+");
+    fproto = fopen("output/proto_raw.txt", "w+");
+    ftcpPort = fopen("output/tcp_raw.txt", "w+");
+    fudpPort = fopen("output/udp_raw.txt", "w+");
+
     /* Check eva result */
     printf("=======================================================================\n");
     const char *key;
@@ -146,6 +152,7 @@ int main(int argc, char **argv)
     printf("=======================================================================\n");
     while ((key = map_next(&eva->ipv4_addr_stat, &iter))) {
         printf("%s -> %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
+        fprintf(fIP, "%s %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
     }
     iter = map_iter(&eva->ipv4_proto_stat);
     printf("=======================================================================\n");
@@ -153,6 +160,7 @@ int main(int argc, char **argv)
     printf("=======================================================================\n");
     while ((key = map_next(&eva->ipv4_proto_stat, &iter))) {
         printf("%s -> %d\n", key, *map_get(&eva->ipv4_proto_stat, key));
+        fprintf(fproto, "%s %d\n", key, *map_get(&eva->ipv4_proto_stat, key));
     }
     iter = map_iter(&eva->tcp_port_stat);
     printf("=======================================================================\n");
@@ -160,6 +168,7 @@ int main(int argc, char **argv)
     printf("=======================================================================\n");
     while ((key = map_next(&eva->tcp_port_stat, &iter))) {
         printf("%s -> %d\n", key, *map_get(&eva->tcp_port_stat, key));
+        fprintf(ftcpPort, "%s %d\n", key, *map_get(&eva->tcp_port_stat, key));
     }
     iter = map_iter(&eva->udp_port_stat);
     printf("=======================================================================\n");
@@ -167,6 +176,7 @@ int main(int argc, char **argv)
     printf("=======================================================================\n");
     while ((key = map_next(&eva->udp_port_stat, &iter))) {
         printf("%s -> %d\n", key, *map_get(&eva->udp_port_stat, key));
+        fprintf(fudpPort, "%s %d\n", key, *map_get(&eva->udp_port_stat, key));
     }
 
     printf("=======================================================================\n");
