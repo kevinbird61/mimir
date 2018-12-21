@@ -55,3 +55,12 @@ Collector 就是資料收集的單位，這部份定位為 Controller。
 而在提供控制這部份上，若是加上 `Anomaly Detection Algorithm`，就可以構成一個 IDS（Intrusion Detection System） 的雛型（擁有資料收集、資料分析處理、以及對應控制處理的功能）。 
 
 以 P4 架構來看這部份的實作，主要會以 Python 的 Controller 來實作這部份的功能。讓操作、與資料接收都一併由 Python 的 P4Runtime Controller 來做統一處理。
+
+
+## P4-NetFlow Mechanism
+
+* Workflow
+![](../../../resource/p4-netflow-workflow.png)
+
+* Dataflow
+![](../../../resource/p4-netflow-dataflow.png)
