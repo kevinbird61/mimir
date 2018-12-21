@@ -107,6 +107,20 @@ actions {
     alias: "update_ts"
   }
 }
+actions {
+  preamble {
+    id: 16823628
+    name: "basic_tutorial_ingress.netflow_flowcache.aggregate"
+    alias: "aggregate"
+  }
+}
+actions {
+  preamble {
+    id: 16819523
+    name: "basic_tutorial_ingress.netflow_flowcache.pack_into_flowcache"
+    alias: "pack_into_flowcache"
+  }
+}
 controller_packet_metadata {
   preamble {
     id: 67146229
@@ -161,5 +175,122 @@ registers {
   }
   size: 1
 }
+registers {
+  preamble {
+    id: 369156692
+    name: "basic_tutorial_ingress.netflow_flowcache.FlowCount"
+    alias: "FlowCount"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 128
+}
+registers {
+  preamble {
+    id: 369163424
+    name: "basic_tutorial_ingress.netflow_flowcache.FlowCount_Threshold"
+    alias: "FlowCount_Threshold"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1
+}
+digests {
+  preamble {
+    id: 385878295
+    name: "flowCache_t"
+    alias: "flowCache_t"
+  }
+  type_spec {
+    struct {
+      name: "flowCache_t"
+    }
+  }
+}
 type_info {
+  structs {
+    key: "flowCache_t"
+    value {
+      members {
+        name: "ingress_port"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 16
+            }
+          }
+        }
+      }
+      members {
+        name: "ipv4_srcAddr"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+      members {
+        name: "ipv4_dstAddr"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+      members {
+        name: "protocol"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 8
+            }
+          }
+        }
+      }
+      members {
+        name: "srcPort"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 16
+            }
+          }
+        }
+      }
+      members {
+        name: "dstPort"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 16
+            }
+          }
+        }
+      }
+      members {
+        name: "dscp"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 6
+            }
+          }
+        }
+      }
+    }
+  }
 }

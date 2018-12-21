@@ -17,7 +17,7 @@ struct flowCache_t {
 
     bit<16> srcPort;
     bit<16> dstPort;
-    bit<6>  dscp
+    bit<6>  dscp;
 }
 
 control netflow_flowcache(
@@ -45,7 +45,7 @@ control netflow_flowcache(
     register<bit<32>>(CACHE_SLOT)   FlowCount;
     register<bit<32>>(1)            FlowCount_Threshold;
 
-    action check_flowcache(){
+    action aggregate(){
         // increase flowcount, and then check its value whether
         // surpass the threshold or not.
         bit<32> flowcache_id;
@@ -73,7 +73,7 @@ control netflow_flowcache(
 
         // if the value is surpass threshold, then trigger digest (pack into flowcache)
         metadata.pass_aggr = (flowcount_val > flowcount_thres ? 8w1 : 8w0);
-        flowcount_val = (metadata.pass_aggr < 8w1 ? flowcount_val+1 : 8w0);
+        flowcount_val = (metadata.pass_aggr < 8w1 ? flowcount_val+1 : 32w0);
 
         // Write back into FlowCount
         FlowCount.write(flowcache_id, flowcount_val);
@@ -104,8 +104,9 @@ control netflow_flowcache(
         // if sampling find interval larger than delta time threshold,
         // then trigger digest
         if(metadata.pass_sampling == 8w1){
+            // In our proposed method, we have to do the aggregation before install into flowCache
             if(hdr.ipv4.isValid() && hdr.tcp.isValid() || hdr.ipv4.isValid() && hdr.udp.isValid() ){
-                check_flowcache();
+                aggregate();
                 if(metadata.pass_aggr == 8w1){
                     pack_into_flowcache();
                 }

@@ -4,14 +4,28 @@
       "name" : "scalars_0",
       "id" : 0,
       "fields" : [
-        ["netflow_sampling_tmp_0", 8, false],
+        ["tmp", 16, false],
+        ["tmp_0", 32, false],
+        ["tmp_1", 32, false],
+        ["tmp_2", 8, false],
+        ["tmp_3", 16, false],
+        ["tmp_4", 16, false],
+        ["tmp_5", 6, false],
+        ["netflow_sampling_tmp", 8, false],
+        ["netflow_flowcache_flowcache_id", 32, false],
+        ["netflow_flowcache_flowcount_val", 32, false],
+        ["netflow_flowcache_flowcount_thres", 32, false],
+        ["netflow_flowcache_tmp", 8, false],
+        ["netflow_flowcache_tmp_0", 32, false],
         ["metadata_t.l4_srcPort", 16, false],
         ["metadata_t.l4_dstPort", 16, false],
         ["metadata_t.flow_id", 32, false],
         ["metadata_t.last_seen_val", 48, false],
         ["metadata_t.delta_time_val", 48, false],
         ["metadata_t.pass_filter", 8, false],
-        ["metadata_t.pass_sampling", 8, false]
+        ["metadata_t.pass_sampling", 8, false],
+        ["metadata_t.pass_aggr", 8, false],
+        ["_padding_0", 2, false]
       ]
     },
     {
@@ -71,7 +85,8 @@
       "fields" : [
         ["version", 4, false],
         ["ihl", 4, false],
-        ["diffserv", 8, false],
+        ["dscp", 6, false],
+        ["ecn", 2, false],
         ["totalLen", 16, false],
         ["identification", 16, false],
         ["flags", 3, false],
@@ -432,7 +447,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "includes/netflow_sampling.p4",
-        "line" : 24,
+        "line" : 23,
         "column" : 27,
         "source_fragment" : "LastSeen"
       },
@@ -444,12 +459,36 @@
       "id" : 1,
       "source_info" : {
         "filename" : "includes/netflow_sampling.p4",
-        "line" : 25,
+        "line" : 24,
         "column" : 25,
         "source_fragment" : "DeltaTime_Threshold"
       },
       "size" : 1,
       "bitwidth" : 48
+    },
+    {
+      "name" : "basic_tutorial_ingress.netflow_flowcache.FlowCount",
+      "id" : 2,
+      "source_info" : {
+        "filename" : "includes/netflow_flowcache.p4",
+        "line" : 45,
+        "column" : 27,
+        "source_fragment" : "FlowCount"
+      },
+      "size" : 128,
+      "bitwidth" : 32
+    },
+    {
+      "name" : "basic_tutorial_ingress.netflow_flowcache.FlowCount_Threshold",
+      "id" : 3,
+      "source_info" : {
+        "filename" : "includes/netflow_flowcache.p4",
+        "line" : 46,
+        "column" : 25,
+        "source_fragment" : "FlowCount_Threshold"
+      },
+      "size" : 1,
+      "bitwidth" : 32
     }
   ],
   "calculations" : [
@@ -483,6 +522,41 @@
     {
       "name" : "calc_0",
       "id" : 1,
+      "algo" : "crc16",
+      "input" : [
+        {
+          "type" : "field",
+          "value" : ["standard_metadata", "ingress_port"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "srcAddr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "dstAddr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "protocol"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "metadata_t.l4_srcPort"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "metadata_t.l4_dstPort"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "dscp"]
+        }
+      ]
+    },
+    {
+      "name" : "calc_1",
+      "id" : 2,
       "source_info" : {
         "filename" : "includes/checksums.p4",
         "line" : 20,
@@ -501,7 +575,11 @@
         },
         {
           "type" : "field",
-          "value" : ["ipv4", "diffserv"]
+          "value" : ["ipv4", "dscp"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "ecn"]
         },
         {
           "type" : "field",
@@ -538,7 +616,48 @@
       ]
     }
   ],
-  "learn_lists" : [],
+  "learn_lists" : [
+    {
+      "id" : 1,
+      "name" : "flowCache_t",
+      "source_info" : {
+        "filename" : "includes/netflow_flowcache.p4",
+        "line" : 90,
+        "column" : 12,
+        "source_fragment" : "{ ..."
+      },
+      "elements" : [
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_0"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_1"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_2"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_3"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_4"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_5"]
+        }
+      ]
+    }
+  ],
   "actions" : [
     {
       "name" : "drop",
@@ -737,7 +856,7 @@
           ],
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 29,
+            "line" : 28,
             "column" : 8,
             "source_fragment" : "hash( ..."
           }
@@ -767,7 +886,7 @@
           ],
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 46,
+            "line" : 45,
             "column" : 8,
             "source_fragment" : "LastSeen.read(metadata.last_seen_val, metadata.flow_id)"
           }
@@ -790,7 +909,7 @@
           ],
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 47,
+            "line" : 46,
             "column" : 8,
             "source_fragment" : "DeltaTime_Threshold.read(metadata.delta_time_val, 0)"
           }
@@ -832,7 +951,7 @@
           ],
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 49,
+            "line" : 48,
             "column" : 8,
             "source_fragment" : "metadata.last_seen_val = standard_metadata.ingress_global_timestamp - metadata.last_seen_val"
           }
@@ -842,7 +961,7 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "netflow_sampling_tmp_0"]
+              "value" : ["scalars", "netflow_sampling_tmp"]
             },
             {
               "type" : "expression",
@@ -856,7 +975,7 @@
                   },
                   "right" : {
                     "type" : "field",
-                    "value" : ["scalars", "netflow_sampling_tmp_0"]
+                    "value" : ["scalars", "netflow_sampling_tmp"]
                   },
                   "cond" : {
                     "type" : "expression",
@@ -878,7 +997,7 @@
           ],
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 51,
+            "line" : 50,
             "column" : 35,
             "source_fragment" : "metadata.last_seen_val > metadata.delta_time_val ? 8w1 : 8w0"
           }
@@ -888,7 +1007,7 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "netflow_sampling_tmp_0"]
+              "value" : ["scalars", "netflow_sampling_tmp"]
             },
             {
               "type" : "expression",
@@ -902,7 +1021,7 @@
                   },
                   "right" : {
                     "type" : "field",
-                    "value" : ["scalars", "netflow_sampling_tmp_0"]
+                    "value" : ["scalars", "netflow_sampling_tmp"]
                   },
                   "cond" : {
                     "type" : "expression",
@@ -931,7 +1050,7 @@
           ],
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 51,
+            "line" : 50,
             "column" : 35,
             "source_fragment" : "metadata.last_seen_val > metadata.delta_time_val ? 8w1 : 8w0"
           }
@@ -945,12 +1064,12 @@
             },
             {
               "type" : "field",
-              "value" : ["scalars", "netflow_sampling_tmp_0"]
+              "value" : ["scalars", "netflow_sampling_tmp"]
             }
           ],
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 51,
+            "line" : 50,
             "column" : 8,
             "source_fragment" : "metadata.pass_sampling ="
           }
@@ -973,9 +1092,540 @@
           ],
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 54,
+            "line" : 53,
             "column" : 8,
             "source_fragment" : "LastSeen.write(metadata.flow_id, standard_metadata.ingress_global_timestamp)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "basic_tutorial_ingress.netflow_flowcache.aggregate",
+      "id" : 7,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "modify_field_with_hash_based_offset",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_flowcache_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            },
+            {
+              "type" : "calculation",
+              "value" : "calc_0"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000080"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 55,
+            "column" : 8,
+            "source_fragment" : "hash(flowcache_id, ..."
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_flowcount_val"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.netflow_flowcache.FlowCount"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_flowcache_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 71,
+            "column" : 8,
+            "source_fragment" : "FlowCount.read(flowcount_val, flowcache_id)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_flowcount_thres"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.netflow_flowcache.FlowCount_Threshold"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 72,
+            "column" : 8,
+            "source_fragment" : "FlowCount_Threshold.read(flowcount_thres, 0)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "hexstr",
+                    "value" : "0x01"
+                  },
+                  "right" : {
+                    "type" : "field",
+                    "value" : ["scalars", "netflow_flowcache_tmp"]
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : ">",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "netflow_flowcache_flowcount_val"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "netflow_flowcache_flowcount_thres"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 75,
+            "column" : 30,
+            "source_fragment" : "flowcount_val > flowcount_thres ? 8w1 : 8w0"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "hexstr",
+                    "value" : "0x00"
+                  },
+                  "right" : {
+                    "type" : "field",
+                    "value" : ["scalars", "netflow_flowcache_tmp"]
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "not",
+                      "left" : null,
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : ">",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["scalars", "netflow_flowcache_flowcount_val"]
+                          },
+                          "right" : {
+                            "type" : "field",
+                            "value" : ["scalars", "netflow_flowcache_flowcount_thres"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 75,
+            "column" : 30,
+            "source_fragment" : "flowcount_val > flowcount_thres ? 8w1 : 8w0"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.pass_aggr"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_tmp"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 75,
+            "column" : 8,
+            "source_fragment" : "metadata.pass_aggr ="
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_tmp_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "+",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["scalars", "netflow_flowcache_flowcount_val"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x00000001"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "field",
+                    "value" : ["scalars", "netflow_flowcache_tmp_0"]
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "<",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "netflow_flowcache_tmp"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x01"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 76,
+            "column" : 25,
+            "source_fragment" : "metadata.pass_aggr < 8w1 ? flowcount_val+1 : 32w0"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_tmp_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "?",
+                  "left" : {
+                    "type" : "hexstr",
+                    "value" : "0x00000000"
+                  },
+                  "right" : {
+                    "type" : "field",
+                    "value" : ["scalars", "netflow_flowcache_tmp_0"]
+                  },
+                  "cond" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "not",
+                      "left" : null,
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["scalars", "netflow_flowcache_tmp"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x01"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 76,
+            "column" : 25,
+            "source_fragment" : "metadata.pass_aggr < 8w1 ? flowcount_val+1 : 32w0"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_flowcount_val"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_tmp_0"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 76,
+            "column" : 8,
+            "source_fragment" : "flowcount_val ="
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.netflow_flowcache.FlowCount"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_flowcache_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "netflow_flowcache_tmp_0"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 79,
+            "column" : 8,
+            "source_fragment" : "FlowCount.write(flowcache_id, flowcount_val)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "basic_tutorial_ingress.netflow_flowcache.pack_into_flowcache",
+      "id" : 8,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["standard_metadata", "ingress_port"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 91,
+            "column" : 16,
+            "source_fragment" : "(bit<16>)standard_metadata.ingress_port"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_0"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "srcAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 93,
+            "column" : 16,
+            "source_fragment" : "hdr.ipv4.srcAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_1"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "dstAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 94,
+            "column" : 16,
+            "source_fragment" : "hdr.ipv4.dstAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_2"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "protocol"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 95,
+            "column" : 16,
+            "source_fragment" : "hdr.ipv4.protocol"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_3"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 97,
+            "column" : 16,
+            "source_fragment" : "metadata.l4_srcPort"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_4"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 98,
+            "column" : 16,
+            "source_fragment" : "metadata.l4_dstPort"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_5"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "dscp"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 99,
+            "column" : 16,
+            "source_fragment" : "hdr.ipv4.dscp"
+          }
+        },
+        {
+          "op" : "generate_digest",
+          "parameters" : [
+            {
+              "type" : "hexstr",
+              "value" : "0x00000400"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x1"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 89,
+            "column" : 8,
+            "source_fragment" : "digest<flowCache_t>((bit<32>) 1024, ..."
           }
         }
       ]
@@ -987,7 +1637,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "basic_tutorial_switch.p4",
-        "line" : 20,
+        "line" : 21,
         "column" : 8,
         "source_fragment" : "basic_tutorial_ingress"
       },
@@ -1115,12 +1765,58 @@
           "direct_meters" : null,
           "action_ids" : [6],
           "actions" : ["basic_tutorial_ingress.netflow_sampling.update_ts"],
-          "base_default_next" : null,
+          "base_default_next" : "node_8",
           "next_tables" : {
-            "basic_tutorial_ingress.netflow_sampling.update_ts" : null
+            "basic_tutorial_ingress.netflow_sampling.update_ts" : "node_8"
           },
           "default_entry" : {
             "action_id" : 6,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_netflow_flowcache_aggregate",
+          "id" : 4,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [7],
+          "actions" : ["basic_tutorial_ingress.netflow_flowcache.aggregate"],
+          "base_default_next" : "node_11",
+          "next_tables" : {
+            "basic_tutorial_ingress.netflow_flowcache.aggregate" : "node_11"
+          },
+          "default_entry" : {
+            "action_id" : 7,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_netflow_flowcache_pack_into_flowcache",
+          "id" : 5,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [8],
+          "actions" : ["basic_tutorial_ingress.netflow_flowcache.pack_into_flowcache"],
+          "base_default_next" : null,
+          "next_tables" : {
+            "basic_tutorial_ingress.netflow_flowcache.pack_into_flowcache" : null
+          },
+          "default_entry" : {
+            "action_id" : 8,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -1157,7 +1853,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
-            "line" : 59,
+            "line" : 58,
             "column" : 11,
             "source_fragment" : "metadata.pass_filter == 8w1"
           },
@@ -1175,8 +1871,134 @@
               }
             }
           },
+          "true_next" : "tbl_netflow_sampling_get_hashkey",
+          "false_next" : "node_8"
+        },
+        {
+          "name" : "node_8",
+          "id" : 2,
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 106,
+            "column" : 11,
+            "source_fragment" : "metadata.pass_sampling == 8w1"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "metadata_t.pass_sampling"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x01"
+              }
+            }
+          },
           "false_next" : null,
-          "true_next" : "tbl_netflow_sampling_get_hashkey"
+          "true_next" : "node_9"
+        },
+        {
+          "name" : "node_9",
+          "id" : 3,
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 108,
+            "column" : 15,
+            "source_fragment" : "hdr.ipv4.isValid() && hdr.tcp.isValid() || hdr.ipv4.isValid() && hdr.udp.isValid()"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "or",
+              "left" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "and",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "d2b",
+                      "left" : null,
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["ipv4", "$valid$"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "d2b",
+                      "left" : null,
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["tcp", "$valid$"]
+                      }
+                    }
+                  }
+                }
+              },
+              "right" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "and",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "d2b",
+                      "left" : null,
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["ipv4", "$valid$"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "d2b",
+                      "left" : null,
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["udp", "$valid$"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "false_next" : null,
+          "true_next" : "tbl_netflow_flowcache_aggregate"
+        },
+        {
+          "name" : "node_11",
+          "id" : 4,
+          "source_info" : {
+            "filename" : "includes/netflow_flowcache.p4",
+            "line" : 110,
+            "column" : 19,
+            "source_fragment" : "metadata.pass_aggr == 8w1"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "metadata_t.pass_aggr"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x01"
+              }
+            }
+          },
+          "false_next" : null,
+          "true_next" : "tbl_netflow_flowcache_pack_into_flowcache"
         }
       ]
     },
@@ -1185,7 +2007,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "basic_tutorial_switch.p4",
-        "line" : 46,
+        "line" : 47,
         "column" : 8,
         "source_fragment" : "basic_tutorial_egress"
       },
@@ -1199,9 +2021,15 @@
     {
       "name" : "cksum",
       "id" : 0,
+      "source_info" : {
+        "filename" : "includes/checksums.p4",
+        "line" : 20,
+        "column" : 8,
+        "source_fragment" : "update_checksum( ..."
+      },
       "target" : ["ipv4", "hdrChecksum"],
       "type" : "generic",
-      "calculation" : "calc_0",
+      "calculation" : "calc_1",
       "if_cond" : {
         "type" : "expression",
         "value" : {

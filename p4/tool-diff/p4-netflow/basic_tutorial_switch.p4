@@ -13,7 +13,7 @@
 #include "includes/ipv4_forward.p4"
 #include "includes/netflow_filter.p4"
 #include "includes/netflow_sampling.p4"
-#include "includes/netflow_cache.p4"
+#include "includes/netflow_flowcache.p4"
 
 //------------------------------------------------------------------------------
 // INGRESS PIPELINE
@@ -37,7 +37,7 @@ control basic_tutorial_ingress(
         netflow_sampling.apply(hdr, metadata, standard_metadata);
 
         // Cache / Aggregate
-        netflow_cache.apply(hdr, metadata, standard_metadata);
+        netflow_flowcache.apply(hdr, metadata, standard_metadata);
     }
 }
 
