@@ -689,8 +689,14 @@
       "primitives" : []
     },
     {
-      "name" : "basic_tutorial_ingress.ipv4_forwarding.ipv4_forward",
+      "name" : "NoAction",
       "id" : 3,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "basic_tutorial_ingress.ipv4_forwarding.ipv4_forward",
+      "id" : 4,
       "runtime_data" : [
         {
           "name" : "dstAddr",
@@ -805,7 +811,7 @@
     },
     {
       "name" : "basic_tutorial_ingress.netflow_filter.pass_filter",
-      "id" : 4,
+      "id" : 5,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -822,7 +828,33 @@
           ],
           "source_info" : {
             "filename" : "includes/netflow_filter.p4",
-            "line" : 15,
+            "line" : 14,
+            "column" : 8,
+            "source_fragment" : "metadata.pass_filter = 8w1"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "basic_tutorial_ingress.netflow_filter.pass_filter",
+      "id" : 6,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.pass_filter"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x01"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/netflow_filter.p4",
+            "line" : 14,
             "column" : 8,
             "source_fragment" : "metadata.pass_filter = 8w1"
           }
@@ -831,7 +863,7 @@
     },
     {
       "name" : "basic_tutorial_ingress.netflow_sampling.get_hashkey",
-      "id" : 5,
+      "id" : 7,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -865,7 +897,7 @@
     },
     {
       "name" : "basic_tutorial_ingress.netflow_sampling.update_ts",
-      "id" : 6,
+      "id" : 8,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1101,7 +1133,7 @@
     },
     {
       "name" : "basic_tutorial_ingress.netflow_flowcache.aggregate",
-      "id" : 7,
+      "id" : 9,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1460,7 +1492,7 @@
     },
     {
       "name" : "basic_tutorial_ingress.netflow_flowcache.pack_into_flowcache",
-      "id" : 8,
+      "id" : 10,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1666,7 +1698,7 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [3, 0, 1],
+          "action_ids" : [4, 0, 1],
           "actions" : ["basic_tutorial_ingress.ipv4_forwarding.ipv4_forward", "drop", "NoAction"],
           "base_default_next" : "basic_tutorial_ingress.netflow_filter.tb_filter",
           "next_tables" : {
@@ -1686,7 +1718,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "includes/netflow_filter.p4",
-            "line" : 18,
+            "line" : 17,
             "column" : 10,
             "source_fragment" : "tb_filter"
           },
@@ -1716,12 +1748,12 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [2, 4],
+          "action_ids" : [2, 5],
           "actions" : ["NoAction", "basic_tutorial_ingress.netflow_filter.pass_filter"],
-          "base_default_next" : "node_5",
+          "base_default_next" : "basic_tutorial_ingress.netflow_filter.tb_simple_filter",
           "next_tables" : {
-            "NoAction" : "node_5",
-            "basic_tutorial_ingress.netflow_filter.pass_filter" : "node_5"
+            "NoAction" : "basic_tutorial_ingress.netflow_filter.tb_simple_filter",
+            "basic_tutorial_ingress.netflow_filter.pass_filter" : "basic_tutorial_ingress.netflow_filter.tb_simple_filter"
           },
           "default_entry" : {
             "action_id" : 2,
@@ -1731,30 +1763,44 @@
           }
         },
         {
-          "name" : "tbl_netflow_sampling_get_hashkey",
+          "name" : "basic_tutorial_ingress.netflow_filter.tb_simple_filter",
           "id" : 2,
-          "key" : [],
-          "match_type" : "exact",
+          "source_info" : {
+            "filename" : "includes/netflow_filter.p4",
+            "line" : 34,
+            "column" : 10,
+            "source_fragment" : "tb_simple_filter"
+          },
+          "key" : [
+            {
+              "match_type" : "lpm",
+              "name" : "hdr.ipv4.srcAddr",
+              "target" : ["ipv4", "srcAddr"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "lpm",
           "type" : "simple",
           "max_size" : 1024,
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [5],
-          "actions" : ["basic_tutorial_ingress.netflow_sampling.get_hashkey"],
-          "base_default_next" : "tbl_netflow_sampling_update_ts",
+          "action_ids" : [3, 6],
+          "actions" : ["NoAction", "basic_tutorial_ingress.netflow_filter.pass_filter"],
+          "base_default_next" : "node_6",
           "next_tables" : {
-            "basic_tutorial_ingress.netflow_sampling.get_hashkey" : "tbl_netflow_sampling_update_ts"
+            "NoAction" : "node_6",
+            "basic_tutorial_ingress.netflow_filter.pass_filter" : "node_6"
           },
           "default_entry" : {
-            "action_id" : 5,
-            "action_const" : true,
+            "action_id" : 6,
+            "action_const" : false,
             "action_data" : [],
-            "action_entry_const" : true
+            "action_entry_const" : false
           }
         },
         {
-          "name" : "tbl_netflow_sampling_update_ts",
+          "name" : "tbl_netflow_sampling_get_hashkey",
           "id" : 3,
           "key" : [],
           "match_type" : "exact",
@@ -1763,34 +1809,11 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [6],
-          "actions" : ["basic_tutorial_ingress.netflow_sampling.update_ts"],
-          "base_default_next" : "node_8",
-          "next_tables" : {
-            "basic_tutorial_ingress.netflow_sampling.update_ts" : "node_8"
-          },
-          "default_entry" : {
-            "action_id" : 6,
-            "action_const" : true,
-            "action_data" : [],
-            "action_entry_const" : true
-          }
-        },
-        {
-          "name" : "tbl_netflow_flowcache_aggregate",
-          "id" : 4,
-          "key" : [],
-          "match_type" : "exact",
-          "type" : "simple",
-          "max_size" : 1024,
-          "with_counters" : false,
-          "support_timeout" : false,
-          "direct_meters" : null,
           "action_ids" : [7],
-          "actions" : ["basic_tutorial_ingress.netflow_flowcache.aggregate"],
-          "base_default_next" : "node_11",
+          "actions" : ["basic_tutorial_ingress.netflow_sampling.get_hashkey"],
+          "base_default_next" : "tbl_netflow_sampling_update_ts",
           "next_tables" : {
-            "basic_tutorial_ingress.netflow_flowcache.aggregate" : "node_11"
+            "basic_tutorial_ingress.netflow_sampling.get_hashkey" : "tbl_netflow_sampling_update_ts"
           },
           "default_entry" : {
             "action_id" : 7,
@@ -1800,8 +1823,8 @@
           }
         },
         {
-          "name" : "tbl_netflow_flowcache_pack_into_flowcache",
-          "id" : 5,
+          "name" : "tbl_netflow_sampling_update_ts",
+          "id" : 4,
           "key" : [],
           "match_type" : "exact",
           "type" : "simple",
@@ -1810,13 +1833,59 @@
           "support_timeout" : false,
           "direct_meters" : null,
           "action_ids" : [8],
+          "actions" : ["basic_tutorial_ingress.netflow_sampling.update_ts"],
+          "base_default_next" : "node_9",
+          "next_tables" : {
+            "basic_tutorial_ingress.netflow_sampling.update_ts" : "node_9"
+          },
+          "default_entry" : {
+            "action_id" : 8,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_netflow_flowcache_aggregate",
+          "id" : 5,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [9],
+          "actions" : ["basic_tutorial_ingress.netflow_flowcache.aggregate"],
+          "base_default_next" : "node_12",
+          "next_tables" : {
+            "basic_tutorial_ingress.netflow_flowcache.aggregate" : "node_12"
+          },
+          "default_entry" : {
+            "action_id" : 9,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_netflow_flowcache_pack_into_flowcache",
+          "id" : 6,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [10],
           "actions" : ["basic_tutorial_ingress.netflow_flowcache.pack_into_flowcache"],
           "base_default_next" : null,
           "next_tables" : {
             "basic_tutorial_ingress.netflow_flowcache.pack_into_flowcache" : null
           },
           "default_entry" : {
-            "action_id" : 8,
+            "action_id" : 10,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -1849,7 +1918,7 @@
           "false_next" : "basic_tutorial_ingress.netflow_filter.tb_filter"
         },
         {
-          "name" : "node_5",
+          "name" : "node_6",
           "id" : 1,
           "source_info" : {
             "filename" : "includes/netflow_sampling.p4",
@@ -1872,10 +1941,10 @@
             }
           },
           "true_next" : "tbl_netflow_sampling_get_hashkey",
-          "false_next" : "node_8"
+          "false_next" : "node_9"
         },
         {
-          "name" : "node_8",
+          "name" : "node_9",
           "id" : 2,
           "source_info" : {
             "filename" : "includes/netflow_flowcache.p4",
@@ -1898,10 +1967,10 @@
             }
           },
           "false_next" : null,
-          "true_next" : "node_9"
+          "true_next" : "node_10"
         },
         {
-          "name" : "node_9",
+          "name" : "node_10",
           "id" : 3,
           "source_info" : {
             "filename" : "includes/netflow_flowcache.p4",
@@ -1975,7 +2044,7 @@
           "true_next" : "tbl_netflow_flowcache_aggregate"
         },
         {
-          "name" : "node_11",
+          "name" : "node_12",
           "id" : 4,
           "source_info" : {
             "filename" : "includes/netflow_flowcache.p4",

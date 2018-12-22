@@ -8,7 +8,6 @@ control netflow_filter(
     inout metadata_t metadata, 
     inout standard_metadata_t standard_metadata
 ){
-
     /* pass filter */
     action pass_filter(){
         // set the flag to 1
@@ -29,8 +28,27 @@ control netflow_filter(
         default_action=NoAction();
     }
 
+    /* simply using LPM (longest prefix matching) 
+        to represent the filter functionality
+    */
+    table tb_simple_filter{
+        key = {
+            hdr.ipv4.srcAddr: lpm;
+        }
+        actions = {
+            NoAction;
+            pass_filter;
+        }
+        size=1024;
+        // FIXME: Debug only 
+        default_action=pass_filter();
+    }
+
     apply {
+        // complex filter
         tb_filter.apply();
+        // simple filter (for minimal testcase)
+        tb_simple_filter.apply();
     }
 }
 

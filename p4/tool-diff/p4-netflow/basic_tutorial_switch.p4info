@@ -55,6 +55,27 @@ tables {
   size: 1024
   idle_timeout_behavior: NO_TIMEOUT
 }
+tables {
+  preamble {
+    id: 33560518
+    name: "basic_tutorial_ingress.netflow_filter.tb_simple_filter"
+    alias: "tb_simple_filter"
+  }
+  match_fields {
+    id: 1
+    name: "hdr.ipv4.srcAddr"
+    bitwidth: 32
+    match_type: LPM
+  }
+  action_refs {
+    id: 16800567
+  }
+  action_refs {
+    id: 16795770
+  }
+  size: 1024
+  idle_timeout_behavior: NO_TIMEOUT
+}
 actions {
   preamble {
     id: 16793508

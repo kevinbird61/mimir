@@ -74,10 +74,29 @@ def main(p4info_file_path, bmv2_file_path):
         print "Installed P4 Program using SetForardingPipelineConfig on s1"
 
         # Send digest entry
-        SendDigestEntry(p4info_helper, sw=s1, max_timeout_ns=300, max_list_size=100, ack_timeout_ns=30, digest_name="flowCache_t")
+        SendDigestEntry(p4info_helper, sw=s1, max_timeout_ns=0, max_list_size=1, ack_timeout_ns=30, digest_name="flowCache_t")
 
-        # Using stream channel to receive DigestList
-        # TODO
+        # Monitoring (receive DigestMessage from s1)
+        while True: 
+            digests = s1.DigestList()
+            if digests.WhichOneof('update')=='digest':
+                print("Received DigestList message")
+                """
+                    Digest format:
+                    * uint32 digest_id 
+                    * uint64 list_id 
+                    * repeated P4Data data 
+                    * int64 timestamp 
+                """
+                digest = digests.digest
+                print "===============================" 
+                print "Digest ID: ", digest.digest_id 
+                print "List ID: ", digest.digest_id
+                # print "[Raw]Digest msg: ", digest.data 
+                digest_message_list = digest.data   
+                for members in digest_message_list:
+                    print members
+                    #if members.WhichOneof('data')=='struct':
 
     except KeyboardInterrupt:
         # using ctrl + c to exit

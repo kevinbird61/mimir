@@ -1,0 +1,2 @@
+register_write basic_tutorial_ingress.netflow_flowcache.FlowCount_Threshold 0 10
+register_write basic_tutorial_ingress.netflow_sampling.DeltaTime_Threshold 0 100

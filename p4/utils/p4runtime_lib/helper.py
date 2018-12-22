@@ -209,6 +209,16 @@ class P4InfoHelper(object):
         digest_entry.config.ack_timeout_ns = ack_timeout_ns # 0
         return digest_entry
 
+    def buildRegisterEntry(self, index, value, register_name):
+        register_entry = p4runtime_pb2.RegisterEntry()
+        # using name 
+        register_entry.register_id = self.get_registers_id(register_name)
+        # set index 
+        register_entry.index.index = index 
+        # set value 
+        register_entry.data.bitstring = value 
+        return register_entry
+
     def buildTableEntry(self,
                         table_name,
                         match_fields=None,

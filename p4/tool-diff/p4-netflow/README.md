@@ -4,7 +4,7 @@
 
 ## How does NetFlow work? 
 
-![](../../../resource/netflow_mechanism.png)
+![](../../../resource/p4-netflow/netflow_mechanism.png)
 
 可以看到，在封包經過 interface 時，可以依據 Policy map 將 traffic 打進哪一個 sampler 當中。這麼一來，我們 **可以依據不同 traffic、來選擇我們需要的 sampling rate**。（*這麼一來，便能夠達成在 `overhead` 與 `accuracy` 之間取得平衡*）
 
@@ -60,7 +60,25 @@ Collector 就是資料收集的單位，這部份定位為 Controller。
 ## P4-NetFlow Mechanism
 
 * Workflow
-![](../../../resource/p4-netflow-workflow.png)
+![](../../../resource/p4-netflow/p4-netflow-workflow.png)
 
 * Dataflow
-![](../../../resource/p4-netflow-dataflow.png)
+![](../../../resource/p4-netflow/p4-netflow-dataflow.png)
+
+## P4-NetFlow Implementation 
+
+在介紹完機制以及設計後，我們便可以進到實作層面。從上面的圖解當中，可以看到我們的流量會經過：
+* Filter: 攔截我們想觀察的單位（*在實驗當中，為了減少複雜度，我們選擇將 filter 的部份暫時停止功能，將所有的 flow 都通過 filter*）
+* Sampling: 為了緩解 control plane 與 data plane 之間通訊的頻率，達到 **mitigation** 的效果、限制觀察 flow 的回報頻率。這邊實作上採用了 register table 以及 threshold 來達到這項功能。
+  * 我們將通過 filter 的流量，依據其 flow id (實作上，我們選用 5-tuple 搭配 crc16 的 Hash algorithm) 作為 key，對應的 value 為最近一次看到這條 flow 的時間（實作上我們選用 BMv2 standard_metadata 內的 `ingress_global_timestamp` 這個欄位）
+  * 在新的擁有相同 flow id 的 packet 進來時，先從這個 table 當中取出該 flow id 對應到的 value (e.g. 也就是最近一次看到該 flow 的時間)，並用目前 packet 的 standard_metadata 當中的 ingress_global_timestamp 來做相減，取 delta time，並且跟設定好的 Delta_Time_Threshold 做比較。 當 delta time 超過所設定的閥值時，便將該 packet 的 metadata.pass_sampling 設為 1，表示將該 packet 資訊送到 flowcache 當中做儲存。
+* FlowCache & Aggregation: 而在這個部份，由於考量到 NetFlow 擁有 Aggregation 的功能，所以我們將 Aggregation 的特性一樣利用 register 所製成的 K-V table 來完成，利用對送到 flowCache 的 traffic 依據 flow id （以 NetFlow 的設定，是選擇 *七項欄位* 做為 flow id 的判斷。）做 counting，並當 counter 數值大於所設定的 threshold 時，將 metadata.pass_aggr 的旗標拉起來，讓在下個 stage 中判斷 pass_aggr 來 **決定是否呼叫 Digest，將要保存的資訊存進設定好的 Digest data structure 中。**
+
+這麼一來，在運行起我們的系統後，在 mininet CLI 當中開啟連接 s1 的 h1，並且使用寫好的 sender 指令 `./sender.sh` 呼叫 python 腳本來傳送大量封包，作為觸發我們所設定的條件，並在另一個已經開啟 `./start_p4_controller.sh` 當中，看到 target switch 回傳上來的訊息（這訊息類似於 NetFlow 的機制當中 sw 上傳給 Collector 的訊息），可以看截圖結果左側部份收到的訊息：
+
+![](../../../resource/p4-netflow/p4-netflow-screenshot.png)
+
+> 由於當時實作時，simple_switch_grpc 並沒有實作 register write/read 的功能，所以我是透過 simple_switch_CLI 來將各個 stage 的 threshold 做設定。 
+> 
+> 並利用 DigestEntry 來設定 FlowCache 將收集的資訊回傳給 Collector 的頻率、時機。
+
