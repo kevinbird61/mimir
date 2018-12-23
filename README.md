@@ -20,6 +20,9 @@ Planning of our project layout of MIMIR.
 │   ├── sys-diff
 │   |   ├── single-switch
 │   |   ├── multi-switches
+│   ├── gran-diff
+│   |   ├── sampling
+│   |   ├── flowlet
 │   └── utils
 ├── algorithm
 ├── resource
