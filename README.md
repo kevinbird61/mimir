@@ -1,5 +1,8 @@
-# MIMIR
-Researching work on anomaly detection with SDN / PDP.
+# Mímir
+
+Researching work on *anomaly detection* with SDN (software-defined network) / PDP (programmable data plane), which is named `Mímir`.
+
+**Mímir** (Old Norse "The rememberer, the wise one") or Mim is a figure in Norse mythology, renowned for his **knowledge and wisdom**, who is beheaded during the Æsir-Vanir War. Afterward, the god Odin carries around Mímir's head and it recites secret knowledge and counsel to him.
 
 ## Project Layout
 

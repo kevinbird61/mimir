@@ -1,11 +1,11 @@
 #ifndef __HEADERS__
 #define __HEADERS__
 
-#include "codex/enum.p4"
-#include "codex/l2.p4"
-#include "codex/l3.p4"
-#include "codex/l4.p4"
-#include "codex/l567.p4"
+#include "def/enum.p4"
+#include "def/l2.p4"
+#include "def/l3.p4"
+#include "def/l4.p4"
+#include "def/l567.p4"
 
 #define CPU_PORT 255
 
@@ -33,7 +33,8 @@ struct headers_t {
 
 // metadata inside switch pipeline
 struct metadata_t {
-
+    bit<16>     l4_srcPort;
+    bit<16>     l4_dstPort;
 }
 
 #endif

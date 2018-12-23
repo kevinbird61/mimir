@@ -1,0 +1,5 @@
+register_write basic_tutorial_ingress.flowlet.counter_threshold 0 10
+register_write basic_tutorial_ingress.flowlet.deltatime_threshold 0 900000000
+
+register_read basic_tutorial_ingress.flowlet.counter_threshold 0 
+register_read basic_tutorial_ingress.flowlet.deltatime_threshold 0 

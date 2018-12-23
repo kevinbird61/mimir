@@ -27,7 +27,7 @@ control ipv4_forwarding(
             NoAction;
         }
         size = 1024;
-        default_action = drop();
+        default_action = NoAction();
     }
 
     apply {
