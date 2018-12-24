@@ -126,6 +126,7 @@ int main(int argc, char **argv)
     pcap_close(handle);
 
     fIP = fopen("output/ip_raw.txt", "w+");
+    FILE *pure_ip = fopen("output/ip_without_counter.txt", "w+");
     fproto = fopen("output/proto_raw.txt", "w+");
     ftcpPort = fopen("output/tcp_raw.txt", "w+");
     fudpPort = fopen("output/udp_raw.txt", "w+");
@@ -153,6 +154,7 @@ int main(int argc, char **argv)
     while ((key = map_next(&eva->ipv4_addr_stat, &iter))) {
         printf("%s -> %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
         fprintf(fIP, "%s %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
+        fprintf(pure_ip, "%s\n", key);
     }
     iter = map_iter(&eva->ipv4_proto_stat);
     printf("=======================================================================\n");
