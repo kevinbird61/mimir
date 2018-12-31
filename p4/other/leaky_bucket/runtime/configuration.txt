@@ -1,0 +1,5 @@
+register_write basic_tutorial_ingress.leaky_bucket.full_capacity 0 10240
+register_write basic_tutorial_ingress.leaky_bucket.total_capacity 0 10240
+register_write basic_tutorial_ingress.leaky_bucket.total_slot 0 10
+register_write basic_tutorial_ingress.leaky_bucket.each_leak_rate 0 1024
+register_write basic_tutorial_ingress.leaky_bucket.thres_interarr 0 5000000
