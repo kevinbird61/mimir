@@ -25,8 +25,8 @@ def main():
     parser.add_argument('--ip', type=str, help="The destination IP address.")
     parser.add_argument('--loop', type=int, help="Number of loop.", default=0)
     parser.add_argument('--msg', type=str, help="The message which will send to dst.",default="Hello World")
-    parser.add_argument('--dport', type=int, help="TCP/UDP source port.", default=1234)
-    parser.add_argument('--sport', type=int, help="TCP/UDP destination port.", default=random.randint(49152,65535))
+    parser.add_argument('--dport', type=int, help="TCP/UDP destination port.", default=1234)
+    parser.add_argument('--sport', type=int, help="TCP/UDP source port.", default=random.randint(49152,65535))
 
 
     args = parser.parse_args()

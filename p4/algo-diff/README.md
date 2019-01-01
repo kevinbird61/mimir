@@ -18,3 +18,15 @@
 | Outage Events | Traffic shifts due to equipment failures or maintenance | Mainly source & destination address |
 | Point to multipoint | Traffic from single source to many destinations, e.g. content distribution | Source address, destination address |
 | Worms | Scanning by worms for vulnerable hosts (special case of Network scan) | Destination address & port |
+
+
+## 實作考量
+
+DP 上的兩條分支：
+* 異常偵測
+    * 上報 controller 
+        * CP 做資料彙整後判斷，將對應的 Match/Action rules 安裝於特定 switch 上
+    * 直接做 volume-based detection
+        * 當某個 counter 在一定時間內、或是一定量內大於某個 threshold 後，再做對應的處理：
+            * 上報 controller
+            * 或是透過 rate limit algorithm 先做第1層的管控
