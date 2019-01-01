@@ -57,6 +57,8 @@ control leaky_bucket(
                 if( cap > full_cap ){
                     cap = full_cap;
                 }
+            } else if (delta_t > thres_t * 3){
+                cap = full_cap;
             }
             total_capacity.write(0, cap);
             last_seen.write(0, standard_metadata.ingress_global_timestamp);

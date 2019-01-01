@@ -996,6 +996,32 @@
       "runtime_data" : [],
       "primitives" : [
         {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "leaky_bucket_cap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "leaky_bucket_full_cap"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/leaky_bucket.p4",
+            "line" : 61,
+            "column" : 16,
+            "source_fragment" : "cap = full_cap"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_5",
+      "id" : 9,
+      "runtime_data" : [],
+      "primitives" : [
+        {
           "op" : "register_write",
           "parameters" : [
             {
@@ -1013,7 +1039,7 @@
           ],
           "source_info" : {
             "filename" : "includes/leaky_bucket.p4",
-            "line" : 61,
+            "line" : 63,
             "column" : 12,
             "source_fragment" : "total_capacity.write(0, cap)"
           }
@@ -1036,7 +1062,7 @@
           ],
           "source_info" : {
             "filename" : "includes/leaky_bucket.p4",
-            "line" : 62,
+            "line" : 64,
             "column" : 12,
             "source_fragment" : "last_seen.write(0, standard_metadata.ingress_global_timestamp)"
           }
@@ -1198,9 +1224,9 @@
           "direct_meters" : null,
           "action_ids" : [6],
           "actions" : ["act_2"],
-          "base_default_next" : "tbl_act_4",
+          "base_default_next" : "tbl_act_5",
           "next_tables" : {
-            "act_2" : "tbl_act_4"
+            "act_2" : "tbl_act_5"
           },
           "default_entry" : {
             "action_id" : 6,
@@ -1221,12 +1247,35 @@
           "direct_meters" : null,
           "action_ids" : [8],
           "actions" : ["act_4"],
-          "base_default_next" : null,
+          "base_default_next" : "tbl_act_5",
           "next_tables" : {
-            "act_4" : null
+            "act_4" : "tbl_act_5"
           },
           "default_entry" : {
             "action_id" : 8,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_5",
+          "id" : 7,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [9],
+          "actions" : ["act_5"],
+          "base_default_next" : null,
+          "next_tables" : {
+            "act_5" : null
+          },
+          "default_entry" : {
+            "action_id" : 9,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -1328,7 +1377,7 @@
             }
           },
           "true_next" : "tbl_act_2",
-          "false_next" : "tbl_act_4"
+          "false_next" : "node_12"
         },
         {
           "name" : "node_10",
@@ -1354,7 +1403,73 @@
             }
           },
           "true_next" : "tbl_act_3",
-          "false_next" : "tbl_act_4"
+          "false_next" : "tbl_act_5"
+        },
+        {
+          "name" : "node_12",
+          "id" : 4,
+          "source_info" : {
+            "filename" : "includes/leaky_bucket.p4",
+            "line" : 60,
+            "column" : 23,
+            "source_fragment" : "delta_t > thres_t * 3"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "-",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["standard_metadata", "ingress_global_timestamp"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "leaky_bucket_last_t"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffffffff"
+                  }
+                }
+              },
+              "right" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "*",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "leaky_bucket_thres_t"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x000000000003"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffffffff"
+                  }
+                }
+              }
+            }
+          },
+          "true_next" : "tbl_act_4",
+          "false_next" : "tbl_act_5"
         }
       ]
     },
