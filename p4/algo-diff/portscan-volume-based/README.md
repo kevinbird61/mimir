@@ -17,5 +17,12 @@
 在一開始時有提到 Port Distribution 的來源、以及 Port Diff 的使用。在預設情況是直接比這次與上一次的結果是否不同作為累加條件（e.g. 視為 abnormal 之行為，故累加）。而思考使用 `聯集、交集` 來對 current 跟 previous 的 port distribution（port id）結果來做運算，先取這兩個值的聯集後，在減去 current 察看之間的差值。思考：
 * 因為運算的 port id 是由 hash algorithm 所得到的輸出，會失去其原本的數值（假設 A，B 原本是鄰近的數字，但在經過 Hash 過後，Hash(A)、Hash(B) 或許不會保留原本的特性，也就是結果不再是鄰近數值。）
 * 即使保留原本的數值意義，但取完差值後，所得的結果能夠以大小來作判定？ 其差值的數值具有意義嗎？
+    * `取兩者聯集` 後，減去其 `兩倍交集` 即為兩者之間完全沒有聯集的地方（Overlapping 情況也適用！）
 * 再來是 Hash collision 的問題，由於使用的是 Key-Value Table，而且 Key 使用的是 IP addresses 經過 Hash 過後的值；在 Hash 當中，當進入的來源非常複雜時（e.g. srcIP-dstIP pairs 非常多對時），很有可能造成 Hash Collision，這使得原本不該持續累加的欄位，由於碰撞的關係，導致其 counter 當中混入了其他單位所貢獻的次數，使得更快達到 threshold，進而被判定為異常。
     * 解決方法： 增加 Hash Table Size、或是加入 timeout 機制（e.g. 在發生 difference 時，察看上一次發生 diff 到目前所經過的時間；若已經超過所設定的 timeout value，則清除 counter，重新計算）
+
+> 嘗試使用 Hamming Weight 來表示該數值意義！
+> https://en.wikipedia.org/wiki/Hamming_weight
+> 而 Hamming Weight 也可以拿來與 "`取兩者聯集` 後，減去其 `兩倍交集`" 做比較！（透過實驗，看哪種數值能夠提供比較有意義的數值 - 能夠表示 "差距" 的概念，作為我們 port diff 累加的可信來源）
+> 也可以參考其他性質，像是 [ffs](https://en.wikipedia.org/wiki/Find_first_set), clz ... 等等。
+
