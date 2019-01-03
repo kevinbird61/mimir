@@ -21,6 +21,18 @@
   * 使用這支腳本程式，來對 read_pcap.out 輸出的 `ip_without_counter.txt` 做分析。
   * 主要功能為 ip prefix aggregation，察看該來源 pcap 的分散程度。（直接比較輸入與輸出的 entries 數量）
 
+## Repository Layout 
+
+```
+.
+├── images          # Output result of gnuplot under scripts/
+├── manual          # Some discussions of IDS/algorithms ..., writing in readable files (e.g. Markdown)
+├── output          # Output statistics of evaluation programs
+├── third_party
+│   └── cmap        # Library of map structure in C
+└── scripts         # Plotting scripts of gnuplot
+```
+
 ## Useful Reference/Resource
 
 * [Linux 工具快速教程](https://linuxtools-rst.readthedocs.io/zh_CN/latest/index.html)

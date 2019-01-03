@@ -10,28 +10,32 @@ Planning of our project layout of MIMIR.
 
 ```
 .
-├── eva
-├── of
-├── p4
+├── eva                             # Collection of Evaluation-related methodology 
+├── of                              # Collection of OpenFlow scenario
+├── p4                              # Collection of P4 scenario/methodology
 │   ├── tool-diff
 │   |   ├── polling-based
 │   |   ├── pushing-based
 │   ├── algo-diff
 │   |   ├── TRW-CB
-│   |   ├── entropy
+│   |   ├── entropy-based
 │   |   ├── OpenWatch
+│   |   ├── volume-based
 │   ├── sys-diff
 │   |   ├── single-switch
 │   |   ├── multi-switches
 │   ├── gran-diff
 │   |   ├── sampling
 │   |   ├── flowlet
+│   ├── basic-p4-template           # Basic p4 switch template source code, copy-and-paste to new scenario.
+│   ├── main-ids                    # Mímir's main program goes here
+│   ├── other                       
 │   └── utils
-├── algorithm
-├── resource
-├── dataset
-├── malware
-└── paper
+├── algorithm                       # Some discussions/Pseudo code of our algorithms' candidates.
+├── resource                        # Gliffy, image sources used in this repository
+├── dataset                         # Description of the traffic data (e.g. How to record the traffic? ... etc) used in Mímir
+├── malware                         # Implementation/Discussion of Malware or Attacking pattern packet generator.
+└── paper                           # After finish Mímir, the LaTeX files will go here.
 ```
 
 ## Explanation of project layout
