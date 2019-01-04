@@ -61,30 +61,30 @@ int main(void)
     // using native implementation
     printf("[32bits] Origin Value: %u -> Hamming Weight: %u\n", in1, popcount32_better(in1));
     printf("[32bits] Origin Value: %u -> Hamming Weight: %u\n", in2, popcount32_better(in2));
-    printf("Hamming Distance: %u\n", in1 ^ in2);
-    printf("Union & Intersection: %u\n", (in1|in2)-2*(in1&in2));
-    printf("Hamming D / Union & Intersection: %f\n", (in1 ^ in2)/(float)((in1|in2)-2*(in1&in2)));
+    printf("Hamming Distance: %u\n", popcount32_better(in1 ^ in2));
+    //printf("Union & Intersection: %u\n", (in1|in2)-2*(in1&in2));
+    //printf("Hamming D / Union & Intersection: %f\n", (in1 ^ in2)/(float)((in1|in2)-2*(in1&in2)));
     printf("==================================================\n");
 
     printf("[32bits] Origin Value: %u -> Hamming Weight: %u\n", in3, popcount32_better(in3));
     printf("[32bits] Origin Value: %u -> Hamming Weight: %u\n", in4, popcount32_better(in4));
-    printf("Hamming Distance: %u\n", in3 ^ in4);
-    printf("Union & Intersection: %u\n", (in3|in4)-2*(in3&in4));
-    printf("Hamming D / Union & Intersection: %f\n", (in3 ^ in4)/(float)((in3|in4)-2*(in3&in4)));
+    printf("Hamming Distance: %u\n", popcount32_better(in3 ^ in4));
+    //printf("Union & Intersection: %u\n", (in3|in4)-2*(in3&in4));
+    //printf("Hamming D / Union & Intersection: %f\n", (in3 ^ in4)/(float)((in3|in4)-2*(in3&in4)));
     printf("==================================================\n");
 
     printf("[32bits] Origin Value: %u -> Hamming Weight: %u\n", in1, popcount32_better(in1));
     printf("[32bits] Origin Value: %u -> Hamming Weight: %u\n", in4, popcount32_better(in4));
-    printf("Hamming Distance: %u\n", in1 ^ in4);
-    printf("Union & Intersection: %u\n", (in1|in4)-2*(in1&in4));
-    printf("Hamming D / Union & Intersection: %f\n", (in1 ^ in4)/(float)((in1|in4)-2*(in1&in4)));
+    printf("Hamming Distance: %u\n", popcount32_better(in1 ^ in4));
+    //printf("Union & Intersection: %u\n", (in1|in4)-2*(in1&in4));
+    //printf("Hamming D / Union & Intersection: %f\n", (in1 ^ in4)/(float)((in1|in4)-2*(in1&in4)));
     printf("==================================================\n");
 
     printf("[32bits] Origin Value: %u -> Hamming Weight: %u\n", in1, popcount32_better(in1));
     printf("[32bits] Origin Value: %u -> Hamming Weight: %u\n", in5, popcount32_better(in5));
-    printf("Hamming Distance: %u\n", in1 ^ in5);
-    printf("Union & Intersection: %u\n", (in1|in5)-2*(in1&in5));
-    printf("Hamming D / Union & Intersection: %f\n", (in1 ^ in5)/(float)((in1|in5)-2*(in1&in5)));
+    printf("Hamming Distance: %u\n", popcount32_better(in1 ^ in5));
+    //printf("Union & Intersection: %u\n", (in1|in5)-2*(in1&in5));
+    //printf("Hamming D / Union & Intersection: %f\n", (in1 ^ in5)/(float)((in1|in5)-2*(in1&in5)));
     printf("==================================================\n");
 
     return 0;

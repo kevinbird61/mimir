@@ -26,6 +26,7 @@
 
     lp.learn( { hdr.ethernet.srcAddr, hdr.ipv4.src } );
     ```
+    > 這部份需要 target 支援才能夠使用。
 * Parser - [header stacks](https://p4.org/p4-spec/docs/P4-16-v1.1.0-spec.html#sec-parse-header-stacks)
     * Header stack 的操作，適用於 segment routing、in-band network telemetry ... 等操作時使用。
 
