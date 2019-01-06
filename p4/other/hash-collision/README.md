@@ -6,7 +6,7 @@
 
 程式由 P4 的 software switch 來做摹擬，並透過 register 來製作對應的 key-value table，對 IP、Port 所造成的 Hash collision 做探討。
 
-透過 tcpreplay 的方式，我們將一份於我自己實驗室電腦（IP: `140.116.245.247`）所錄製的流量 - 1.1G，整份 available packets 數量為 `1678982` 個，以 `100 mbps` 的速度於 software switch 與 mininet 的摹擬網路當中做測試。
+透過 tcpreplay 的方式，我們將一份於我自己實驗室電腦（IP: `140.116.245.247`）所錄製的流量 - 1.1G，整份 available packets 數量為 `1678982` 個，當中 unique hosts 數量為 `10432` 個，以 `100 mbps` 的速度於 software switch 與 mininet 的摹擬網路當中做測試。（以上數值由 tcpreplay 所示，以及透過 eva/ 底下的相關分析程式所統計）
 
 IP collision 的來源是計算，在同樣的 flow id (srcIP & dstIP 所做的 hash) 下，其 srcIP, dstIP 與 packet 當中的 `ipv4.srcAddr`, `ipv4.dstAddr` 不同下所計的數值。 而 Port collision 也是一樣，基於 port id (srcPort & dstPort 所做的 hash) 下，其 srcPort, dstPort 與 packet 當中的 `l4_srcPort`, `l4_dstPort` 不同所寄的數值。
 
@@ -19,3 +19,26 @@ IP collision 的來源是計算，在同樣的 flow id (srcIP & dstIP 所做的 
 | 1024 | crc16 | 0.61% (10341) | 2.16% (36321) | 
 | 512 | crc32 | 0.609% (10226) | 2.13% (35772) |
 | 1024 | crc32 | 0.58% (9763) | 2.02% (33989) |
+
+## 試作其他 hashing function
+
+* djb2
+* jenkins
+* sdbm
+* loselose
+* MD5
+
+| Table size | Hash algorithm | IP Collision | Port Collision |
+| :--- | :--- | :--- | :--- |
+| 256 | djb2 | 5391 | 72568 |
+| 512 | djb2 | 4853 | 69550 | 
+| 1024 | djb2 | 4872 | 71967 | 
+| 256 | jenkins | 4447 | 48113 | 
+| 512 | jenkins | 4320 | 67298 |
+| 1024 | jenkins | 4253 | 65640 |
+| 256 | sdbm | 5172 | 74025 |
+| 512 | sdbm | 4951 | 74061 | 
+| 1024 | sdbm | 4626 | 71881 |
+| 256 | loselose | 5331 | 75024 |
+| 512 | loselose | 5047 | 75531 |
+| 1024 | loselose | 4820 | 72994 |

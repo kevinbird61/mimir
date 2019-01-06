@@ -11,6 +11,7 @@
 
 // application
 #include "includes/ipv4_forward.p4"
+#include "includes/custom_sketch.p4"
 #include "includes/sketch.p4"
 
 //------------------------------------------------------------------------------
@@ -28,7 +29,10 @@ control basic_tutorial_ingress(
         ipv4_forwarding.apply(hdr, metadata, standard_metadata);
 
         // traffic sketch
-        traffic_sketch.apply(hdr, metadata, standard_metadata);
+        // traffic_sketch.apply(hdr, metadata, standard_metadata);
+
+        // custom sketch
+        custom_sketch.apply(hdr, metadata, standard_metadata);
     }
 }
 

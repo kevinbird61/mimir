@@ -15,6 +15,7 @@ const struct sniff_tcp *tcp;   // TCP header
 const struct sniff_udp *udp;   // UDP header
 const char *payload; // packet payload
 u_int size_ip, size_tcp, size_udp, size_existed=0;
+int unique_hosts=0;
 
 // for evaluation
 struct packet_stat* eva;
@@ -155,6 +156,8 @@ int main(int argc, char **argv)
         printf("%s -> %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
         fprintf(fIP, "%s %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
         fprintf(pure_ip, "%s\n", key);
+        // Unique count 
+        unique_hosts++;
     }
     iter = map_iter(&eva->ipv4_proto_stat);
     printf("=======================================================================\n");
@@ -182,7 +185,7 @@ int main(int argc, char **argv)
     }
 
     printf("=======================================================================\n");
-
     printf("Number of packets: %d\n", packet_counter);
+    printf("Unique hosts: %d\n", unique_hosts);
     return 0;
 }

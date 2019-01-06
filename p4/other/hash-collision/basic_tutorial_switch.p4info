@@ -79,8 +79,8 @@ controller_packet_metadata {
 }
 registers {
   preamble {
-    id: 369103815
-    name: "basic_tutorial_ingress.traffic_sketch.FlowSrcIP"
+    id: 369159135
+    name: "basic_tutorial_ingress.custom_sketch.FlowSrcIP"
     alias: "FlowSrcIP"
   }
   type_spec {
@@ -94,8 +94,8 @@ registers {
 }
 registers {
   preamble {
-    id: 369130202
-    name: "basic_tutorial_ingress.traffic_sketch.FlowDstIP"
+    id: 369139761
+    name: "basic_tutorial_ingress.custom_sketch.FlowDstIP"
     alias: "FlowDstIP"
   }
   type_spec {
@@ -109,8 +109,8 @@ registers {
 }
 registers {
   preamble {
-    id: 369120821
-    name: "basic_tutorial_ingress.traffic_sketch.FlowSrcPort"
+    id: 369144365
+    name: "basic_tutorial_ingress.custom_sketch.FlowSrcPort"
     alias: "FlowSrcPort"
   }
   type_spec {
@@ -124,8 +124,8 @@ registers {
 }
 registers {
   preamble {
-    id: 369102905
-    name: "basic_tutorial_ingress.traffic_sketch.FlowDstPort"
+    id: 369137239
+    name: "basic_tutorial_ingress.custom_sketch.FlowDstPort"
     alias: "FlowDstPort"
   }
   type_spec {
@@ -139,8 +139,8 @@ registers {
 }
 registers {
   preamble {
-    id: 369109646
-    name: "basic_tutorial_ingress.traffic_sketch.IP_C_cnt"
+    id: 369124856
+    name: "basic_tutorial_ingress.custom_sketch.IP_C_cnt"
     alias: "IP_C_cnt"
   }
   type_spec {
@@ -154,9 +154,39 @@ registers {
 }
 registers {
   preamble {
-    id: 369117657
-    name: "basic_tutorial_ingress.traffic_sketch.Port_C_cnt"
+    id: 369099098
+    name: "basic_tutorial_ingress.custom_sketch.Port_C_cnt"
     alias: "Port_C_cnt"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1
+}
+registers {
+  preamble {
+    id: 369117263
+    name: "basic_tutorial_ingress.custom_sketch.flow_id"
+    alias: "flow_id"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1
+}
+registers {
+  preamble {
+    id: 369116808
+    name: "basic_tutorial_ingress.custom_sketch.port_id"
+    alias: "port_id"
   }
   type_spec {
     bitstring {
