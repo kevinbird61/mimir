@@ -10,6 +10,11 @@
 * [`Hamming-weight`](https://en.wikipedia.org/wiki/Hamming_weight)
 * [`floating point (IEEE-754)`](http://jmiiv.blogspot.com/2008/08/ieee-754.html) 的操作
     * 參考： 可以搭配 stream processing 一起使用
+* [`hash collision` 的探討]()
+    * 探討在不同 table size、以及不同的 hash algorithm 下，同一筆 pcap file 所產生的 Hash collision 次數。
+
+
+## P4-related 相關的規格（較少用到的操作）
 
 * ValueSet（[P4Runtime](https://s3-us-west-2.amazonaws.com/p4runtime/docs/v1.0.0-rc4/P4Runtime-Spec.html#sec-valuesetentry), [P4-16](https://p4.org/p4-spec/docs/P4-16-v1.1.0-spec.html#sec-value-set)） 的使用
     * Dynamic Parser transition support
