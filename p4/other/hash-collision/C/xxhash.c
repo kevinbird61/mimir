@@ -1,6 +1,8 @@
 #include "stdio.h"
 #include "stdint.h"
 
+/* base on the spec in github/xxhash repository - https://github.com/Cyan4973/xxHash/blob/dev/doc/xxhash_spec.md */
+
 /* xxhash algorithm - xx32 */
 static const uint32_t PRIME32_1 = 2654435761U;  // 0b10011110001101110111100110110001
 static const uint32_t PRIME32_2 = 2246822519U;  // 0b10000101111010111100101001110111
