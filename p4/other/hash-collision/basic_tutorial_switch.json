@@ -4,12 +4,16 @@
       "name" : "scalars_0",
       "id" : 0,
       "fields" : [
+        ["tmp", 32, false],
+        ["tmp_0", 32, false],
         ["custom_sketch_srcIP", 32, false],
         ["custom_sketch_dstIP", 32, false],
         ["custom_sketch_srcPort", 16, false],
         ["custom_sketch_dstPort", 16, false],
         ["custom_sketch_cnt", 32, false],
-        ["custom_sketch_result_0", 32, false],
+        ["custom_sketch_acc_0", 32, false],
+        ["custom_sketch_xxhash_init_result", 32, false],
+        ["custom_sketch_xxhash_tmp", 32, false],
         ["metadata_t.l4_srcPort", 16, false],
         ["metadata_t.l4_dstPort", 16, false],
         ["metadata_t.flow_id", 32, false],
@@ -435,11 +439,11 @@
       "id" : 0,
       "source_info" : {
         "filename" : "includes/custom_sketch.p4",
-        "line" : 26,
-        "column" : 28,
+        "line" : 29,
+        "column" : 27,
         "source_fragment" : "FlowSrcIP"
       },
-      "size" : 1024,
+      "size" : 256,
       "bitwidth" : 32
     },
     {
@@ -447,11 +451,11 @@
       "id" : 1,
       "source_info" : {
         "filename" : "includes/custom_sketch.p4",
-        "line" : 27,
-        "column" : 28,
+        "line" : 30,
+        "column" : 27,
         "source_fragment" : "FlowDstIP"
       },
-      "size" : 1024,
+      "size" : 256,
       "bitwidth" : 32
     },
     {
@@ -459,11 +463,11 @@
       "id" : 2,
       "source_info" : {
         "filename" : "includes/custom_sketch.p4",
-        "line" : 29,
-        "column" : 28,
+        "line" : 32,
+        "column" : 27,
         "source_fragment" : "FlowSrcPort"
       },
-      "size" : 1024,
+      "size" : 256,
       "bitwidth" : 16
     },
     {
@@ -471,11 +475,11 @@
       "id" : 3,
       "source_info" : {
         "filename" : "includes/custom_sketch.p4",
-        "line" : 30,
-        "column" : 28,
+        "line" : 33,
+        "column" : 27,
         "source_fragment" : "FlowDstPort"
       },
-      "size" : 1024,
+      "size" : 256,
       "bitwidth" : 16
     },
     {
@@ -483,7 +487,7 @@
       "id" : 4,
       "source_info" : {
         "filename" : "includes/custom_sketch.p4",
-        "line" : 33,
+        "line" : 36,
         "column" : 25,
         "source_fragment" : "IP_C_cnt"
       },
@@ -495,7 +499,7 @@
       "id" : 5,
       "source_info" : {
         "filename" : "includes/custom_sketch.p4",
-        "line" : 34,
+        "line" : 37,
         "column" : 25,
         "source_fragment" : "Port_C_cnt"
       },
@@ -507,7 +511,7 @@
       "id" : 6,
       "source_info" : {
         "filename" : "includes/custom_sketch.p4",
-        "line" : 37,
+        "line" : 40,
         "column" : 25,
         "source_fragment" : "flow_id"
       },
@@ -519,7 +523,7 @@
       "id" : 7,
       "source_info" : {
         "filename" : "includes/custom_sketch.p4",
-        "line" : 38,
+        "line" : 41,
         "column" : 25,
         "source_fragment" : "port_id"
       },
@@ -740,6 +744,648 @@
           "parameters" : [
             {
               "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 31,
+            "column" : 12,
+            "source_fragment" : "= 0"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<<",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "+",
+                                  "left" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x24234428"
+                                  },
+                                  "right" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : "*",
+                                          "left" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "field",
+                                                "value" : ["scalars", "metadata_t.l4_srcPort"]
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          },
+                                          "right" : {
+                                            "type" : "hexstr",
+                                            "value" : "0x85ebca77"
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x0d"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : ">>",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "+",
+                                  "left" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x24234428"
+                                  },
+                                  "right" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : "*",
+                                          "left" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "field",
+                                                "value" : ["scalars", "metadata_t.l4_srcPort"]
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          },
+                                          "right" : {
+                                            "type" : "hexstr",
+                                            "value" : "0x85ebca77"
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x13"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<<",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "*",
+                                  "left" : {
+                                    "type" : "field",
+                                    "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                                  },
+                                  "right" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x9e3779b1"
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x01"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : ">>",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "*",
+                                  "left" : {
+                                    "type" : "field",
+                                    "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                                  },
+                                  "right" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x9e3779b1"
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x1f"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000000"
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 41,
+            "column" : 12,
+            "source_fragment" : "= acc + tmp"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0xf5e53bc2"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_acc_0"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 43,
+            "column" : 12,
+            "source_fragment" : "= acc + tmp"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_acc_0"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 45,
+            "column" : 12,
+            "source_fragment" : "= acc + tmp"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x193d8722"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_acc_0"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 47,
+            "column" : 12,
+            "source_fragment" : "= acc + tmp"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_acc_0"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000020"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 50,
+            "column" : 12,
+            "source_fragment" : "= acc + 32"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<<",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["scalars", "custom_sketch_acc_0"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x0b"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : ">>",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["scalars", "custom_sketch_acc_0"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x15"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift)); ..."
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
               "value" : ["scalars", "metadata_t.port_id"]
             },
             {
@@ -751,7 +1397,7 @@
                   "left" : {
                     "type" : "expression",
                     "value" : {
-                      "op" : "-",
+                      "op" : "^",
                       "left" : {
                         "type" : "expression",
                         "value" : {
@@ -759,34 +1405,84 @@
                           "left" : {
                             "type" : "expression",
                             "value" : {
-                              "op" : "+",
+                              "op" : "*",
                               "left" : {
                                 "type" : "expression",
                                 "value" : {
-                                  "op" : "&",
+                                  "op" : "^",
                                   "left" : {
                                     "type" : "expression",
                                     "value" : {
-                                      "op" : "+",
+                                      "op" : "&",
                                       "left" : {
                                         "type" : "expression",
                                         "value" : {
-                                          "op" : "&",
+                                          "op" : "*",
                                           "left" : {
                                             "type" : "expression",
                                             "value" : {
-                                              "op" : "+",
+                                              "op" : "^",
                                               "left" : {
-                                                "type" : "hexstr",
-                                                "value" : "0x00000000"
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "&",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "*",
+                                                      "left" : {
+                                                        "type" : "field",
+                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0x9e3779b1"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xffffffff"
+                                                  }
+                                                }
                                               },
                                               "right" : {
                                                 "type" : "expression",
                                                 "value" : {
                                                   "op" : "&",
                                                   "left" : {
-                                                    "type" : "field",
-                                                    "value" : ["scalars", "metadata_t.l4_srcPort"]
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : ">>",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0xf"
+                                                      }
+                                                    }
                                                   },
                                                   "right" : {
                                                     "type" : "hexstr",
@@ -798,13 +1494,377 @@
                                           },
                                           "right" : {
                                             "type" : "hexstr",
-                                            "value" : "0xffffffff"
+                                            "value" : "0x85ebca77"
                                           }
                                         }
                                       },
                                       "right" : {
                                         "type" : "hexstr",
-                                        "value" : "0x00000000"
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  },
+                                  "right" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : ">>",
+                                          "left" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "*",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "^",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : ">>",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0xf"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0x85ebca77"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          },
+                                          "right" : {
+                                            "type" : "hexstr",
+                                            "value" : "0xd"
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xc2b2ae3d"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : ">>",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "&",
+                                  "left" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "*",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : "^",
+                                          "left" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "*",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "^",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : ">>",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0xf"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0x85ebca77"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          },
+                                          "right" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : ">>",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "&",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "*",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "^",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : ">>",
+                                                                      "left" : {
+                                                                        "type" : "expression",
+                                                                        "value" : {
+                                                                          "op" : "&",
+                                                                          "left" : {
+                                                                            "type" : "expression",
+                                                                            "value" : {
+                                                                              "op" : "*",
+                                                                              "left" : {
+                                                                                "type" : "field",
+                                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                              },
+                                                                              "right" : {
+                                                                                "type" : "hexstr",
+                                                                                "value" : "0x9e3779b1"
+                                                                              }
+                                                                            }
+                                                                          },
+                                                                          "right" : {
+                                                                            "type" : "hexstr",
+                                                                            "value" : "0xffffffff"
+                                                                          }
+                                                                        }
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0xf"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0x85ebca77"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0xffffffff"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xd"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xc2b2ae3d"
                                       }
                                     }
                                   },
@@ -816,7 +1876,7 @@
                               },
                               "right" : {
                                 "type" : "hexstr",
-                                "value" : "0x00000000"
+                                "value" : "0x10"
                               }
                             }
                           },
@@ -825,16 +1885,12 @@
                             "value" : "0xffffffff"
                           }
                         }
-                      },
-                      "right" : {
-                        "type" : "hexstr",
-                        "value" : "0x00000000"
                       }
                     }
                   },
                   "right" : {
                     "type" : "hexstr",
-                    "value" : "0xffffffff"
+                    "value" : "0x000000ff"
                   }
                 }
               }
@@ -846,7 +1902,7 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "custom_sketch_result_0"]
+              "value" : ["scalars", "tmp"]
             },
             {
               "type" : "expression",
@@ -857,7 +1913,7 @@
                   "left" : {
                     "type" : "expression",
                     "value" : {
-                      "op" : "-",
+                      "op" : "^",
                       "left" : {
                         "type" : "expression",
                         "value" : {
@@ -865,34 +1921,84 @@
                           "left" : {
                             "type" : "expression",
                             "value" : {
-                              "op" : "+",
+                              "op" : "*",
                               "left" : {
                                 "type" : "expression",
                                 "value" : {
-                                  "op" : "&",
+                                  "op" : "^",
                                   "left" : {
                                     "type" : "expression",
                                     "value" : {
-                                      "op" : "+",
+                                      "op" : "&",
                                       "left" : {
                                         "type" : "expression",
                                         "value" : {
-                                          "op" : "&",
+                                          "op" : "*",
                                           "left" : {
                                             "type" : "expression",
                                             "value" : {
-                                              "op" : "+",
+                                              "op" : "^",
                                               "left" : {
-                                                "type" : "field",
-                                                "value" : ["scalars", "custom_sketch_result_0"]
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "&",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "*",
+                                                      "left" : {
+                                                        "type" : "field",
+                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0x9e3779b1"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xffffffff"
+                                                  }
+                                                }
                                               },
                                               "right" : {
                                                 "type" : "expression",
                                                 "value" : {
                                                   "op" : "&",
                                                   "left" : {
-                                                    "type" : "field",
-                                                    "value" : ["scalars", "metadata_t.l4_dstPort"]
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : ">>",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0xf"
+                                                      }
+                                                    }
                                                   },
                                                   "right" : {
                                                     "type" : "hexstr",
@@ -904,65 +2010,135 @@
                                           },
                                           "right" : {
                                             "type" : "hexstr",
-                                            "value" : "0xffffffff"
+                                            "value" : "0x85ebca77"
                                           }
                                         }
                                       },
                                       "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  },
+                                  "right" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
                                         "type" : "expression",
                                         "value" : {
-                                          "op" : "&",
+                                          "op" : ">>",
                                           "left" : {
                                             "type" : "expression",
                                             "value" : {
-                                              "op" : "<<",
+                                              "op" : "&",
                                               "left" : {
-                                                "type" : "field",
-                                                "value" : ["scalars", "custom_sketch_result_0"]
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "*",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "^",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : ">>",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0xf"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0x85ebca77"
+                                                  }
+                                                }
                                               },
                                               "right" : {
                                                 "type" : "hexstr",
-                                                "value" : "0x6"
+                                                "value" : "0xffffffff"
                                               }
                                             }
                                           },
                                           "right" : {
                                             "type" : "hexstr",
-                                            "value" : "0xffffffff"
+                                            "value" : "0xd"
                                           }
                                         }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
                                       }
                                     }
-                                  },
-                                  "right" : {
-                                    "type" : "hexstr",
-                                    "value" : "0xffffffff"
                                   }
                                 }
                               },
                               "right" : {
-                                "type" : "expression",
-                                "value" : {
-                                  "op" : "&",
-                                  "left" : {
-                                    "type" : "expression",
-                                    "value" : {
-                                      "op" : "<<",
-                                      "left" : {
-                                        "type" : "field",
-                                        "value" : ["scalars", "custom_sketch_result_0"]
-                                      },
-                                      "right" : {
-                                        "type" : "hexstr",
-                                        "value" : "0x10"
-                                      }
-                                    }
-                                  },
-                                  "right" : {
-                                    "type" : "hexstr",
-                                    "value" : "0xffffffff"
-                                  }
-                                }
+                                "type" : "hexstr",
+                                "value" : "0xc2b2ae3d"
                               }
                             }
                           },
@@ -973,70 +2149,275 @@
                         }
                       },
                       "right" : {
-                        "type" : "field",
-                        "value" : ["scalars", "custom_sketch_result_0"]
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : ">>",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "&",
+                                  "left" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "*",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : "^",
+                                          "left" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "*",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "^",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : ">>",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0xf"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0x85ebca77"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          },
+                                          "right" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : ">>",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "&",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "*",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "^",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : ">>",
+                                                                      "left" : {
+                                                                        "type" : "expression",
+                                                                        "value" : {
+                                                                          "op" : "&",
+                                                                          "left" : {
+                                                                            "type" : "expression",
+                                                                            "value" : {
+                                                                              "op" : "*",
+                                                                              "left" : {
+                                                                                "type" : "field",
+                                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                              },
+                                                                              "right" : {
+                                                                                "type" : "hexstr",
+                                                                                "value" : "0x9e3779b1"
+                                                                              }
+                                                                            }
+                                                                          },
+                                                                          "right" : {
+                                                                            "type" : "hexstr",
+                                                                            "value" : "0xffffffff"
+                                                                          }
+                                                                        }
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0xf"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0x85ebca77"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0xffffffff"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xd"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xc2b2ae3d"
+                                      }
+                                    }
+                                  },
+                                  "right" : {
+                                    "type" : "hexstr",
+                                    "value" : "0xffffffff"
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0x10"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
                       }
                     }
                   },
                   "right" : {
                     "type" : "hexstr",
-                    "value" : "0xffffffff"
+                    "value" : "0x000000ff"
                   }
                 }
               }
             }
           ],
           "source_info" : {
-            "filename" : "includes/hash.p4",
-            "line" : 137,
-            "column" : 15,
-            "source_fragment" : "= result + number + (result << 6) + (result << 16) - result"
+            "filename" : "includes/xxhash.p4",
+            "line" : 94,
+            "column" : 17,
+            "source_fragment" : "result & (ub-lb-1)"
           }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "custom_sketch_result_0"]
-            },
-            {
-              "type" : "expression",
-              "value" : {
-                "type" : "expression",
-                "value" : {
-                  "op" : "&",
-                  "left" : {
-                    "type" : "field",
-                    "value" : ["scalars", "custom_sketch_result_0"]
-                  },
-                  "right" : {
-                    "type" : "hexstr",
-                    "value" : "0x000003ff"
-                  }
-                }
-              }
-            }
-          ],
-          "source_info" : {
-            "filename" : "includes/hash.p4",
-            "line" : 139,
-            "column" : 15,
-            "source_fragment" : "= result & (ub-lb-1)"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "metadata_t.port_id"]
-            },
-            {
-              "type" : "field",
-              "value" : ["scalars", "custom_sketch_result_0"]
-            }
-          ]
         },
         {
           "op" : "register_read",
@@ -1051,12 +2432,12 @@
             },
             {
               "type" : "field",
-              "value" : ["scalars", "custom_sketch_result_0"]
+              "value" : ["scalars", "tmp"]
             }
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 71,
+            "line" : 81,
             "column" : 12,
             "source_fragment" : "FlowSrcPort.read(srcPort, metadata.port_id)"
           }
@@ -1079,7 +2460,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 72,
+            "line" : 82,
             "column" : 12,
             "source_fragment" : "FlowDstPort.read(dstPort, metadata.port_id)"
           }
@@ -1105,7 +2486,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 75,
+            "line" : 85,
             "column" : 12,
             "source_fragment" : "srcPort = 16w0"
           }
@@ -1124,7 +2505,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 76,
+            "line" : 86,
             "column" : 12,
             "source_fragment" : "dstPort = 16w0"
           }
@@ -1141,6 +2522,628 @@
           "parameters" : [
             {
               "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 31,
+            "column" : 12,
+            "source_fragment" : "= 0"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<<",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "+",
+                                  "left" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x24234428"
+                                  },
+                                  "right" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : "*",
+                                          "left" : {
+                                            "type" : "field",
+                                            "value" : ["ipv4", "srcAddr"]
+                                          },
+                                          "right" : {
+                                            "type" : "hexstr",
+                                            "value" : "0x85ebca77"
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x0d"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : ">>",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "+",
+                                  "left" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x24234428"
+                                  },
+                                  "right" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : "*",
+                                          "left" : {
+                                            "type" : "field",
+                                            "value" : ["ipv4", "srcAddr"]
+                                          },
+                                          "right" : {
+                                            "type" : "hexstr",
+                                            "value" : "0x85ebca77"
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x13"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<<",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "*",
+                                  "left" : {
+                                    "type" : "field",
+                                    "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                                  },
+                                  "right" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x9e3779b1"
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x01"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : ">>",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : "&",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "*",
+                                  "left" : {
+                                    "type" : "field",
+                                    "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                                  },
+                                  "right" : {
+                                    "type" : "hexstr",
+                                    "value" : "0x9e3779b1"
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xffffffff"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x1f"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000000"
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 41,
+            "column" : 12,
+            "source_fragment" : "= acc + tmp"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0xf5e53bc2"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_acc_0"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 43,
+            "column" : 12,
+            "source_fragment" : "= acc + tmp"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_acc_0"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 45,
+            "column" : 12,
+            "source_fragment" : "= acc + tmp"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x193d8722"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift))"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_acc_0"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_xxhash_init_result"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 47,
+            "column" : 12,
+            "source_fragment" : "= acc + tmp"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_acc_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "custom_sketch_acc_0"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000020"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/xxhash.p4",
+            "line" : 50,
+            "column" : 12,
+            "source_fragment" : "= acc + 32"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "<<",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["scalars", "custom_sketch_acc_0"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x0b"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "&",
+                      "left" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : ">>",
+                          "left" : {
+                            "type" : "field",
+                            "value" : ["scalars", "custom_sketch_acc_0"]
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0x15"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xffffffff"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/rotate.p4",
+            "line" : 16,
+            "column" : 19,
+            "source_fragment" : "= (val << shift) | (val >> (8w32 - shift)); ..."
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
               "value" : ["scalars", "metadata_t.flow_id"]
             },
             {
@@ -1152,7 +3155,7 @@
                   "left" : {
                     "type" : "expression",
                     "value" : {
-                      "op" : "-",
+                      "op" : "^",
                       "left" : {
                         "type" : "expression",
                         "value" : {
@@ -1160,7 +3163,241 @@
                           "left" : {
                             "type" : "expression",
                             "value" : {
-                              "op" : "+",
+                              "op" : "*",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "^",
+                                  "left" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : "*",
+                                          "left" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "^",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "&",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "*",
+                                                      "left" : {
+                                                        "type" : "field",
+                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0x9e3779b1"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xffffffff"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "&",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : ">>",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0xf"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xffffffff"
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "right" : {
+                                            "type" : "hexstr",
+                                            "value" : "0x85ebca77"
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  },
+                                  "right" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : ">>",
+                                          "left" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "*",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "^",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : ">>",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0xf"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0x85ebca77"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          },
+                                          "right" : {
+                                            "type" : "hexstr",
+                                            "value" : "0xd"
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0xc2b2ae3d"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
+                      },
+                      "right" : {
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : ">>",
                               "left" : {
                                 "type" : "expression",
                                 "value" : {
@@ -1168,34 +3405,224 @@
                                   "left" : {
                                     "type" : "expression",
                                     "value" : {
-                                      "op" : "+",
+                                      "op" : "*",
                                       "left" : {
                                         "type" : "expression",
                                         "value" : {
-                                          "op" : "&",
+                                          "op" : "^",
                                           "left" : {
                                             "type" : "expression",
                                             "value" : {
-                                              "op" : "+",
+                                              "op" : "&",
                                               "left" : {
-                                                "type" : "hexstr",
-                                                "value" : "0x00000000"
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "*",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "^",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : ">>",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0xf"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0x85ebca77"
+                                                  }
+                                                }
                                               },
                                               "right" : {
-                                                "type" : "field",
-                                                "value" : ["ipv4", "srcAddr"]
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
                                               }
                                             }
                                           },
                                           "right" : {
-                                            "type" : "hexstr",
-                                            "value" : "0xffffffff"
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : ">>",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "&",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "*",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "^",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : ">>",
+                                                                      "left" : {
+                                                                        "type" : "expression",
+                                                                        "value" : {
+                                                                          "op" : "&",
+                                                                          "left" : {
+                                                                            "type" : "expression",
+                                                                            "value" : {
+                                                                              "op" : "*",
+                                                                              "left" : {
+                                                                                "type" : "field",
+                                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                              },
+                                                                              "right" : {
+                                                                                "type" : "hexstr",
+                                                                                "value" : "0x9e3779b1"
+                                                                              }
+                                                                            }
+                                                                          },
+                                                                          "right" : {
+                                                                            "type" : "hexstr",
+                                                                            "value" : "0xffffffff"
+                                                                          }
+                                                                        }
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0xf"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0x85ebca77"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0xffffffff"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xd"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
                                           }
                                         }
                                       },
                                       "right" : {
                                         "type" : "hexstr",
-                                        "value" : "0x00000000"
+                                        "value" : "0xc2b2ae3d"
                                       }
                                     }
                                   },
@@ -1207,7 +3634,7 @@
                               },
                               "right" : {
                                 "type" : "hexstr",
-                                "value" : "0x00000000"
+                                "value" : "0x10"
                               }
                             }
                           },
@@ -1216,16 +3643,12 @@
                             "value" : "0xffffffff"
                           }
                         }
-                      },
-                      "right" : {
-                        "type" : "hexstr",
-                        "value" : "0x00000000"
                       }
                     }
                   },
                   "right" : {
                     "type" : "hexstr",
-                    "value" : "0xffffffff"
+                    "value" : "0x000000ff"
                   }
                 }
               }
@@ -1237,7 +3660,7 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "custom_sketch_result_0"]
+              "value" : ["scalars", "tmp_0"]
             },
             {
               "type" : "expression",
@@ -1248,7 +3671,7 @@
                   "left" : {
                     "type" : "expression",
                     "value" : {
-                      "op" : "-",
+                      "op" : "^",
                       "left" : {
                         "type" : "expression",
                         "value" : {
@@ -1256,94 +3679,224 @@
                           "left" : {
                             "type" : "expression",
                             "value" : {
-                              "op" : "+",
+                              "op" : "*",
                               "left" : {
                                 "type" : "expression",
                                 "value" : {
-                                  "op" : "&",
+                                  "op" : "^",
                                   "left" : {
                                     "type" : "expression",
                                     "value" : {
-                                      "op" : "+",
+                                      "op" : "&",
                                       "left" : {
                                         "type" : "expression",
                                         "value" : {
-                                          "op" : "&",
+                                          "op" : "*",
                                           "left" : {
                                             "type" : "expression",
                                             "value" : {
-                                              "op" : "+",
+                                              "op" : "^",
                                               "left" : {
-                                                "type" : "field",
-                                                "value" : ["scalars", "custom_sketch_result_0"]
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "&",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "*",
+                                                      "left" : {
+                                                        "type" : "field",
+                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0x9e3779b1"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xffffffff"
+                                                  }
+                                                }
                                               },
                                               "right" : {
-                                                "type" : "field",
-                                                "value" : ["ipv4", "dstAddr"]
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "&",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : ">>",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0xf"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xffffffff"
+                                                  }
+                                                }
                                               }
                                             }
                                           },
                                           "right" : {
                                             "type" : "hexstr",
-                                            "value" : "0xffffffff"
+                                            "value" : "0x85ebca77"
                                           }
                                         }
                                       },
                                       "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
+                                      }
+                                    }
+                                  },
+                                  "right" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "&",
+                                      "left" : {
                                         "type" : "expression",
                                         "value" : {
-                                          "op" : "&",
+                                          "op" : ">>",
                                           "left" : {
                                             "type" : "expression",
                                             "value" : {
-                                              "op" : "<<",
+                                              "op" : "&",
                                               "left" : {
-                                                "type" : "field",
-                                                "value" : ["scalars", "custom_sketch_result_0"]
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "*",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "^",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : ">>",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0xf"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0x85ebca77"
+                                                  }
+                                                }
                                               },
                                               "right" : {
                                                 "type" : "hexstr",
-                                                "value" : "0x6"
+                                                "value" : "0xffffffff"
                                               }
                                             }
                                           },
                                           "right" : {
                                             "type" : "hexstr",
-                                            "value" : "0xffffffff"
+                                            "value" : "0xd"
                                           }
                                         }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xffffffff"
                                       }
                                     }
-                                  },
-                                  "right" : {
-                                    "type" : "hexstr",
-                                    "value" : "0xffffffff"
                                   }
                                 }
                               },
                               "right" : {
-                                "type" : "expression",
-                                "value" : {
-                                  "op" : "&",
-                                  "left" : {
-                                    "type" : "expression",
-                                    "value" : {
-                                      "op" : "<<",
-                                      "left" : {
-                                        "type" : "field",
-                                        "value" : ["scalars", "custom_sketch_result_0"]
-                                      },
-                                      "right" : {
-                                        "type" : "hexstr",
-                                        "value" : "0x10"
-                                      }
-                                    }
-                                  },
-                                  "right" : {
-                                    "type" : "hexstr",
-                                    "value" : "0xffffffff"
-                                  }
-                                }
+                                "type" : "hexstr",
+                                "value" : "0xc2b2ae3d"
                               }
                             }
                           },
@@ -1354,70 +3907,275 @@
                         }
                       },
                       "right" : {
-                        "type" : "field",
-                        "value" : ["scalars", "custom_sketch_result_0"]
+                        "type" : "expression",
+                        "value" : {
+                          "op" : "&",
+                          "left" : {
+                            "type" : "expression",
+                            "value" : {
+                              "op" : ">>",
+                              "left" : {
+                                "type" : "expression",
+                                "value" : {
+                                  "op" : "&",
+                                  "left" : {
+                                    "type" : "expression",
+                                    "value" : {
+                                      "op" : "*",
+                                      "left" : {
+                                        "type" : "expression",
+                                        "value" : {
+                                          "op" : "^",
+                                          "left" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : "*",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "^",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "*",
+                                                              "left" : {
+                                                                "type" : "field",
+                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0x9e3779b1"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "&",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : ">>",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "hexstr",
+                                                                "value" : "0xf"
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0xffffffff"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0x85ebca77"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          },
+                                          "right" : {
+                                            "type" : "expression",
+                                            "value" : {
+                                              "op" : "&",
+                                              "left" : {
+                                                "type" : "expression",
+                                                "value" : {
+                                                  "op" : ">>",
+                                                  "left" : {
+                                                    "type" : "expression",
+                                                    "value" : {
+                                                      "op" : "&",
+                                                      "left" : {
+                                                        "type" : "expression",
+                                                        "value" : {
+                                                          "op" : "*",
+                                                          "left" : {
+                                                            "type" : "expression",
+                                                            "value" : {
+                                                              "op" : "^",
+                                                              "left" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : "*",
+                                                                      "left" : {
+                                                                        "type" : "field",
+                                                                        "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0x9e3779b1"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              },
+                                                              "right" : {
+                                                                "type" : "expression",
+                                                                "value" : {
+                                                                  "op" : "&",
+                                                                  "left" : {
+                                                                    "type" : "expression",
+                                                                    "value" : {
+                                                                      "op" : ">>",
+                                                                      "left" : {
+                                                                        "type" : "expression",
+                                                                        "value" : {
+                                                                          "op" : "&",
+                                                                          "left" : {
+                                                                            "type" : "expression",
+                                                                            "value" : {
+                                                                              "op" : "*",
+                                                                              "left" : {
+                                                                                "type" : "field",
+                                                                                "value" : ["scalars", "custom_sketch_xxhash_tmp"]
+                                                                              },
+                                                                              "right" : {
+                                                                                "type" : "hexstr",
+                                                                                "value" : "0x9e3779b1"
+                                                                              }
+                                                                            }
+                                                                          },
+                                                                          "right" : {
+                                                                            "type" : "hexstr",
+                                                                            "value" : "0xffffffff"
+                                                                          }
+                                                                        }
+                                                                      },
+                                                                      "right" : {
+                                                                        "type" : "hexstr",
+                                                                        "value" : "0xf"
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "right" : {
+                                                                    "type" : "hexstr",
+                                                                    "value" : "0xffffffff"
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "right" : {
+                                                            "type" : "hexstr",
+                                                            "value" : "0x85ebca77"
+                                                          }
+                                                        }
+                                                      },
+                                                      "right" : {
+                                                        "type" : "hexstr",
+                                                        "value" : "0xffffffff"
+                                                      }
+                                                    }
+                                                  },
+                                                  "right" : {
+                                                    "type" : "hexstr",
+                                                    "value" : "0xd"
+                                                  }
+                                                }
+                                              },
+                                              "right" : {
+                                                "type" : "hexstr",
+                                                "value" : "0xffffffff"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "right" : {
+                                        "type" : "hexstr",
+                                        "value" : "0xc2b2ae3d"
+                                      }
+                                    }
+                                  },
+                                  "right" : {
+                                    "type" : "hexstr",
+                                    "value" : "0xffffffff"
+                                  }
+                                }
+                              },
+                              "right" : {
+                                "type" : "hexstr",
+                                "value" : "0x10"
+                              }
+                            }
+                          },
+                          "right" : {
+                            "type" : "hexstr",
+                            "value" : "0xffffffff"
+                          }
+                        }
                       }
                     }
                   },
                   "right" : {
                     "type" : "hexstr",
-                    "value" : "0xffffffff"
+                    "value" : "0x000000ff"
                   }
                 }
               }
             }
           ],
           "source_info" : {
-            "filename" : "includes/hash.p4",
-            "line" : 137,
-            "column" : 15,
-            "source_fragment" : "= result + number + (result << 6) + (result << 16) - result"
+            "filename" : "includes/xxhash.p4",
+            "line" : 94,
+            "column" : 17,
+            "source_fragment" : "result & (ub-lb-1)"
           }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "custom_sketch_result_0"]
-            },
-            {
-              "type" : "expression",
-              "value" : {
-                "type" : "expression",
-                "value" : {
-                  "op" : "&",
-                  "left" : {
-                    "type" : "field",
-                    "value" : ["scalars", "custom_sketch_result_0"]
-                  },
-                  "right" : {
-                    "type" : "hexstr",
-                    "value" : "0x000003ff"
-                  }
-                }
-              }
-            }
-          ],
-          "source_info" : {
-            "filename" : "includes/hash.p4",
-            "line" : 139,
-            "column" : 15,
-            "source_fragment" : "= result & (ub-lb-1)"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "metadata_t.flow_id"]
-            },
-            {
-              "type" : "field",
-              "value" : ["scalars", "custom_sketch_result_0"]
-            }
-          ]
         },
         {
           "op" : "register_read",
@@ -1432,12 +4190,12 @@
             },
             {
               "type" : "field",
-              "value" : ["scalars", "custom_sketch_result_0"]
+              "value" : ["scalars", "tmp_0"]
             }
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 57,
+            "line" : 64,
             "column" : 8,
             "source_fragment" : "FlowSrcIP.read(srcIP, metadata.flow_id)"
           }
@@ -1460,7 +4218,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 58,
+            "line" : 65,
             "column" : 8,
             "source_fragment" : "FlowDstIP.read(dstIP, metadata.flow_id)"
           }
@@ -1490,7 +4248,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 87,
+            "line" : 97,
             "column" : 20,
             "source_fragment" : "IP_C_cnt.read(cnt, 0)"
           }
@@ -1532,7 +4290,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 88,
+            "line" : 98,
             "column" : 20,
             "source_fragment" : "cnt = cnt + 1"
           }
@@ -1555,7 +4313,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 89,
+            "line" : 99,
             "column" : 20,
             "source_fragment" : "IP_C_cnt.write(0, cnt)"
           }
@@ -1585,7 +4343,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 96,
+            "line" : 106,
             "column" : 20,
             "source_fragment" : "Port_C_cnt.read(cnt, 0)"
           }
@@ -1627,7 +4385,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 97,
+            "line" : 107,
             "column" : 20,
             "source_fragment" : "cnt = cnt + 1"
           }
@@ -1650,7 +4408,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 98,
+            "line" : 108,
             "column" : 20,
             "source_fragment" : "Port_C_cnt.write(0, cnt)"
           }
@@ -1680,7 +4438,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 103,
+            "line" : 113,
             "column" : 12,
             "source_fragment" : "FlowSrcIP.write(metadata.flow_id, hdr.ipv4.srcAddr)"
           }
@@ -1703,7 +4461,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 104,
+            "line" : 114,
             "column" : 12,
             "source_fragment" : "FlowDstIP.write(metadata.flow_id, hdr.ipv4.dstAddr)"
           }
@@ -1726,7 +4484,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 106,
+            "line" : 116,
             "column" : 12,
             "source_fragment" : "FlowSrcPort.write(metadata.port_id, metadata.l4_srcPort)"
           }
@@ -1749,7 +4507,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 107,
+            "line" : 117,
             "column" : 12,
             "source_fragment" : "FlowDstPort.write(metadata.port_id, metadata.l4_dstPort)"
           }
@@ -1779,7 +4537,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 79,
+            "line" : 89,
             "column" : 8,
             "source_fragment" : "flow_id.write(0, metadata.flow_id)"
           }
@@ -1802,7 +4560,7 @@
           ],
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 80,
+            "line" : 90,
             "column" : 8,
             "source_fragment" : "port_id.write(0, metadata.port_id)"
           }
@@ -2052,7 +4810,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 60,
+            "line" : 67,
             "column" : 11,
             "source_fragment" : "hdr.tcp.isValid() || hdr.udp.isValid()"
           },
@@ -2092,7 +4850,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 85,
+            "line" : 95,
             "column" : 15,
             "source_fragment" : "srcIP != 32w0 && dstIP != 32w0"
           },
@@ -2138,7 +4896,7 @@
           "id" : 3,
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 86,
+            "line" : 96,
             "column" : 19,
             "source_fragment" : "srcIP != hdr.ipv4.srcAddr || dstIP != hdr.ipv4.dstAddr"
           },
@@ -2184,7 +4942,7 @@
           "id" : 4,
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 94,
+            "line" : 104,
             "column" : 15,
             "source_fragment" : "srcPort != 16w0 && dstPort != 16w0"
           },
@@ -2230,7 +4988,7 @@
           "id" : 5,
           "source_info" : {
             "filename" : "includes/custom_sketch.p4",
-            "line" : 95,
+            "line" : 105,
             "column" : 19,
             "source_fragment" : "srcPort != metadata.l4_srcPort || dstPort != metadata.l4_dstPort"
           },

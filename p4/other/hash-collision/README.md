@@ -26,7 +26,7 @@ IP collision 的來源是計算，在同樣的 flow id (srcIP & dstIP 所做的 
 * jenkins
 * sdbm
 * loselose
-* MD5
+* xxhash
 
 | Table size | Hash algorithm | IP Collision | Port Collision |
 | :--- | :--- | :--- | :--- |
@@ -42,3 +42,6 @@ IP collision 的來源是計算，在同樣的 flow id (srcIP & dstIP 所做的 
 | 256 | loselose | 5331 | 75024 |
 | 512 | loselose | 5047 | 75531 |
 | 1024 | loselose | 4820 | 72994 |
+| 256 | xxhash_32 | 2861 | 52365 |
+| 512 | xxhash_32 | 2803 | 52577 |
+| 1024 | xxhash_32 | 2749 | 50851 |

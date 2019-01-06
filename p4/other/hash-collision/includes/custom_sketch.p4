@@ -2,9 +2,10 @@
 #define __SKETCH__
 
 #include "headers.p4"
-#include "hash.p4"  // our custom hash function
+#include "hash.p4"      // our custom hash function
+#include "xxhash.p4"    // xxhash
 
-#define TABLE_SLOT 1024
+#define TABLE_SLOT 256
 
 control custom_sketch(
     inout headers_t hdr,
@@ -20,6 +21,8 @@ control custom_sketch(
     sdbm_32()         sdbm;
     loselose_32_init()  loselose_init;
     loselose_32()       loselose;
+    xxhash32_init()     xxhash_init;
+    xxhash32()          xxhash;
 
     // record 
     //register<bit<32>>(TABLE_SLOT) Flow_t;   // flow table
@@ -50,9 +53,13 @@ control custom_sketch(
         // jenkins.apply((bit<32>)hdr.ipv4.dstAddr, 0, TABLE_SLOT, metadata.flow_id);
         // sdbm_init.apply((bit<32>)hdr.ipv4.srcAddr, 0, TABLE_SLOT, metadata.flow_id);
         // sdbm.apply((bit<32>)hdr.ipv4.dstAddr, 0, TABLE_SLOT, metadata.flow_id);
-        loselose_init.apply((bit<32>)hdr.ipv4.srcAddr, 0, TABLE_SLOT, metadata.flow_id);
-        loselose.apply((bit<32>)hdr.ipv4.dstAddr, 0, TABLE_SLOT, metadata.flow_id);
-
+        // loselose_init.apply((bit<32>)hdr.ipv4.srcAddr, 0, TABLE_SLOT, metadata.flow_id);
+        // loselose.apply((bit<32>)hdr.ipv4.dstAddr, 0, TABLE_SLOT, metadata.flow_id);
+        
+        // xxhash only
+        bit<32> acc;
+        xxhash_init.apply((bit<32>)hdr.ipv4.srcAddr, 32w0, acc);
+        xxhash.apply((bit<32>)hdr.ipv4.dstAddr, acc, 0, TABLE_SLOT, metadata.flow_id);
 
         FlowSrcIP.read(srcIP, metadata.flow_id);
         FlowDstIP.read(dstIP, metadata.flow_id);
@@ -65,8 +72,11 @@ control custom_sketch(
             // jenkins.apply((bit<32>)metadata.l4_dstPort, 0, TABLE_SLOT, metadata.port_id);
             // sdbm_init.apply((bit<32>)metadata.l4_srcPort, 0, TABLE_SLOT, metadata.port_id);
             // sdbm.apply((bit<32>)metadata.l4_dstPort, 0, TABLE_SLOT, metadata.port_id);
-            loselose_init.apply((bit<32>)metadata.l4_srcPort, 0, TABLE_SLOT, metadata.port_id);
-            loselose.apply((bit<32>)metadata.l4_dstPort, 0, TABLE_SLOT, metadata.port_id);
+            // loselose_init.apply((bit<32>)metadata.l4_srcPort, 0, TABLE_SLOT, metadata.port_id);
+            // loselose.apply((bit<32>)metadata.l4_dstPort, 0, TABLE_SLOT, metadata.port_id);
+
+            xxhash_init.apply((bit<32>)metadata.l4_srcPort, 32w0, acc);
+            xxhash.apply((bit<32>)metadata.l4_dstPort, acc, 0, TABLE_SLOT, metadata.port_id);
 
             FlowSrcPort.read(srcPort, metadata.port_id);
             FlowDstPort.read(dstPort, metadata.port_id);
