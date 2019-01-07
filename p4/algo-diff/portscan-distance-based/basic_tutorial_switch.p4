@@ -11,6 +11,7 @@
 
 // application
 #include "includes/ipv4_forward.p4"
+#include "includes/ps_distance.p4"
 
 //------------------------------------------------------------------------------
 // INGRESS PIPELINE
@@ -25,6 +26,9 @@ control basic_tutorial_ingress(
 
         // forwarding
         ipv4_forwarding.apply(hdr, metadata, standard_metadata);
+
+        // distance-based portscan
+        portscan_d.apply(hdr, metadata, standard_metadata);
     }
 }
 

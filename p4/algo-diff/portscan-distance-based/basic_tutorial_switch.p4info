@@ -53,6 +53,13 @@ actions {
     bitwidth: 9
   }
 }
+actions {
+  preamble {
+    id: 16789705
+    name: "basic_tutorial_ingress.portscan_d.get_OD_pair_id"
+    alias: "get_OD_pair_id"
+  }
+}
 controller_packet_metadata {
   preamble {
     id: 67146229
@@ -76,6 +83,66 @@ controller_packet_metadata {
     name: "egress_port"
     bitwidth: 16
   }
+}
+registers {
+  preamble {
+    id: 369123371
+    name: "basic_tutorial_ingress.portscan_d.PortDist"
+    alias: "PortDist"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1024
+}
+registers {
+  preamble {
+    id: 369111596
+    name: "basic_tutorial_ingress.portscan_d.DistWeight"
+    alias: "DistWeight"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1024
+}
+registers {
+  preamble {
+    id: 369159791
+    name: "basic_tutorial_ingress.portscan_d.WeightThres"
+    alias: "WeightThres"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1
+}
+registers {
+  preamble {
+    id: 369103993
+    name: "basic_tutorial_ingress.portscan_d.ReportCnt"
+    alias: "ReportCnt"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1
 }
 type_info {
 }

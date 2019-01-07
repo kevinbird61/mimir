@@ -4,7 +4,7 @@ set title "IP Protocol Distribution"
 set xlabel "Protocol"
 set ylabel "Counter value"
 set terminal png font " Times_New_Roman,12 "
-set output "images/ip_proto_dist.png"
+set output "images/ip_proto_stat.png"
 
 # Set xtic & xlabel 
 # set xtics rotate by 45 right

@@ -35,6 +35,9 @@ struct headers_t {
 struct metadata_t {
     bit<16>     l4_srcPort;
     bit<16>     l4_dstPort;
+
+    bit<32>     flow_id;
+    bit<32>     port_id;
 }
 
 #endif
