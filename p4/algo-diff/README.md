@@ -30,3 +30,5 @@ DP 上的兩條分支：
         * 當某個 counter 在一定時間內、或是一定量內大於某個 threshold 後，再做對應的處理：
             * 上報 controller
             * 或是透過 rate limit algorithm 先做第1層的管控
+
+> volume-based & distance-based 需要先計算總量，再去決定 threshold

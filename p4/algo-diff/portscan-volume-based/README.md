@@ -12,6 +12,15 @@
 
 本實驗進行方式： （用 tmux ）開啟兩個視窗後，先運行 `./build.sh` 將 mininet 給運行起來、並將 p4 program 部署於各個 switch 上，完成後即會進入到 mininet CLI 當中。再來透過另一個視窗，呼叫 `./configure.sh` 將所需要的 configuration 一併安裝於 target switches。這時候便可以回到 mininet CLI 當中，呼叫 `xterm h1 h2`，將這兩個 virtual host 給叫出來。於 h2 上運行 `./receiver.sh`，並於 h1 當中運行 `./scanner.sh` 作為 port scanning 的流量產生器。觀察兩個 xterm 視窗內所顯示的內容，可以看到，因為預設的 configuration 是設 threshold 為 10，所以在一段時間後， scanner 視窗內的訊息仍繼續傳輸，但 receiver 的則會停下來。原因可以看到在 scanner.sh 中設定傳輸次數為 20 次，所以在中間時，便會將後續的封包都丟掉。而在沒有設定 inter-arrival time 來做輔助之下，這樣便會持續封住這組 srcIP, dstIP。
 
+透過 tcpreplay 的方式，我們將一份於我自己實驗室電腦（IP: `140.116.245.247`）所錄製的流量 - 1.1G，整份 available packets 數量為 `1678982` 個，當中 unique hosts 數量為 `10432` 個，以 `100 mbps` 的速度於 software switch 與 mininet 的摹擬網路當中做測試。（以上數值由 tcpreplay 所示，以及透過 eva/ 底下的相關分析程式所統計）
+
+在發生 hash collision 的考量下，以下是 Report 次數與 Table size 的圖表：
+
+| Table size | Hash Algorithm | Diff Threshold | Report Count |
+| :--- | :--- | :--- | :--- |
+| 32 | crc16 | 10 | 12970 |
+| 512 | crc16 | 10 | 12692 |
+
 ## 思考
 
 在一開始時有提到 Port Distribution 的來源、以及 Port Diff 的使用。在預設情況是直接比這次與上一次的結果是否不同作為累加條件（e.g. 視為 abnormal 之行為，故累加）。而思考使用 `聯集、交集` 來對 current 跟 previous 的 port distribution（port id）結果來做運算，先取這兩個值的聯集後，在減去 current 察看之間的差值。思考：

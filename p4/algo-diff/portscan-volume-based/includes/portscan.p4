@@ -1,7 +1,7 @@
 #ifndef __PORTSCAN__
 #define __PORTSCAN__
 
-#define TABLE_SLOT 32 // Cause edge switch don't have so many ID pair (so we can minimize the slot)
+#define TABLE_SLOT 512 // Cause edge switch don't have so many ID pair (so we can minimize the slot)
 
 // Volume-based portscan detection method
 control portscan_v(
@@ -18,6 +18,8 @@ control portscan_v(
 
     // threshold
     register<bit<32>>(1)    CntThres;
+    // Report Count
+    register<bit<32>>(1)    ReportCnt;
 
     action update_OD_pair_id(){
         // get hash id 
@@ -59,12 +61,18 @@ control portscan_v(
 
                 // Check the counter value 
                 bit<32> c_thres;
-                CntThres.read(c_thres, 0);
+                // CntThres.read(c_thres, 0);
+                c_thres = 32w10;
                 if(pre_diffcnt > c_thres && c_thres > 0){
                     // if surpass the threshold, then report_flag=1 
-                    metadata.report_flag = 1w1;
+                    // metadata.report_flag = 1w1;
+                    bit<32> rcnt;
+                    ReportCnt.read(rcnt, 0);
+                    ReportCnt.write(0, rcnt+1);
                     // FIXME: currently drop the packet 
                     mark_to_drop();
+                    // reset diffcnt 
+                    pre_diffcnt = 0;
                 }
 
                 DiffCnt.write(metadata.flow_id, pre_diffcnt);

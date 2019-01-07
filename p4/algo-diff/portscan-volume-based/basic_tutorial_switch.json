@@ -4,9 +4,10 @@
       "name" : "scalars_0",
       "id" : 0,
       "fields" : [
+        ["tmp", 32, false],
         ["portscan_v_pre_portstatus", 32, false],
         ["portscan_v_pre_diffcnt", 32, false],
-        ["portscan_v_c_thres", 32, false],
+        ["portscan_v_rcnt", 32, false],
         ["metadata_t.l4_srcPort", 16, false],
         ["metadata_t.l4_dstPort", 16, false],
         ["metadata_t.flow_id", 32, false],
@@ -435,10 +436,10 @@
       "source_info" : {
         "filename" : "includes/portscan.p4",
         "line" : 16,
-        "column" : 26,
+        "column" : 27,
         "source_fragment" : "PortDist"
       },
-      "size" : 32,
+      "size" : 512,
       "bitwidth" : 32
     },
     {
@@ -447,10 +448,10 @@
       "source_info" : {
         "filename" : "includes/portscan.p4",
         "line" : 17,
-        "column" : 26,
+        "column" : 27,
         "source_fragment" : "DiffCnt"
       },
-      "size" : 32,
+      "size" : 512,
       "bitwidth" : 32
     },
     {
@@ -461,6 +462,18 @@
         "line" : 20,
         "column" : 25,
         "source_fragment" : "CntThres"
+      },
+      "size" : 1,
+      "bitwidth" : 32
+    },
+    {
+      "name" : "basic_tutorial_ingress.portscan_v.ReportCnt",
+      "id" : 3,
+      "source_info" : {
+        "filename" : "includes/portscan.p4",
+        "line" : 22,
+        "column" : 25,
+        "source_fragment" : "ReportCnt"
       },
       "size" : 1,
       "bitwidth" : 32
@@ -721,12 +734,12 @@
             },
             {
               "type" : "hexstr",
-              "value" : "0x00000020"
+              "value" : "0x00000200"
             }
           ],
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 24,
+            "line" : 26,
             "column" : 8,
             "source_fragment" : "hash(metadata.flow_id, ..."
           }
@@ -753,7 +766,7 @@
           ],
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 34,
+            "line" : 36,
             "column" : 8,
             "source_fragment" : "hash(metadata.port_id, ..."
           }
@@ -802,7 +815,7 @@
           ],
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 57,
+            "line" : 59,
             "column" : 20,
             "source_fragment" : "pre_diffcnt = pre_diffcnt + 1"
           }
@@ -832,7 +845,7 @@
           ],
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 51,
+            "line" : 53,
             "column" : 16,
             "source_fragment" : "PortDist.read(pre_portstatus, metadata.flow_id)"
           }
@@ -855,7 +868,7 @@
           ],
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 52,
+            "line" : 54,
             "column" : 16,
             "source_fragment" : "DiffCnt.read(pre_diffcnt, metadata.flow_id)"
           }
@@ -868,51 +881,15 @@
       "runtime_data" : [],
       "primitives" : [
         {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "metadata_t.report_flag"]
-            },
-            {
-              "type" : "hexstr",
-              "value" : "0x01"
-            }
-          ],
-          "source_info" : {
-            "filename" : "includes/portscan.p4",
-            "line" : 65,
-            "column" : 20,
-            "source_fragment" : "metadata.report_flag = 1w1"
-          }
-        },
-        {
-          "op" : "drop",
-          "parameters" : [],
-          "source_info" : {
-            "filename" : "includes/portscan.p4",
-            "line" : 67,
-            "column" : 20,
-            "source_fragment" : "mark_to_drop()"
-          }
-        }
-      ]
-    },
-    {
-      "name" : "act_2",
-      "id" : 7,
-      "runtime_data" : [],
-      "primitives" : [
-        {
           "op" : "register_read",
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["scalars", "portscan_v_c_thres"]
+              "value" : ["scalars", "portscan_v_rcnt"]
             },
             {
               "type" : "register_array",
-              "value" : "basic_tutorial_ingress.portscan_v.CntThres"
+              "value" : "basic_tutorial_ingress.portscan_v.ReportCnt"
             },
             {
               "type" : "hexstr",
@@ -921,16 +898,110 @@
           ],
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 62,
-            "column" : 16,
-            "source_fragment" : "CntThres.read(c_thres, 0)"
+            "line" : 70,
+            "column" : 20,
+            "source_fragment" : "ReportCnt.read(rcnt, 0)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "portscan_v_rcnt"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/portscan.p4",
+            "line" : 71,
+            "column" : 39,
+            "source_fragment" : "rcnt+1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.portscan_v.ReportCnt"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/portscan.p4",
+            "line" : 71,
+            "column" : 20,
+            "source_fragment" : "ReportCnt.write(0, rcnt+1)"
+          }
+        },
+        {
+          "op" : "drop",
+          "parameters" : [],
+          "source_info" : {
+            "filename" : "includes/portscan.p4",
+            "line" : 73,
+            "column" : 20,
+            "source_fragment" : "mark_to_drop()"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "portscan_v_pre_diffcnt"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/portscan.p4",
+            "line" : 75,
+            "column" : 20,
+            "source_fragment" : "pre_diffcnt = 0"
           }
         }
       ]
     },
     {
-      "name" : "act_3",
-      "id" : 8,
+      "name" : "act_2",
+      "id" : 7,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -951,7 +1022,7 @@
           ],
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 70,
+            "line" : 78,
             "column" : 16,
             "source_fragment" : "DiffCnt.write(metadata.flow_id, pre_diffcnt)"
           }
@@ -974,7 +1045,7 @@
           ],
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 71,
+            "line" : 79,
             "column" : 16,
             "source_fragment" : "PortDist.write(metadata.flow_id, metadata.port_id)"
           }
@@ -1090,9 +1161,9 @@
           "direct_meters" : null,
           "action_ids" : [4],
           "actions" : ["act"],
-          "base_default_next" : "tbl_act_1",
+          "base_default_next" : "node_9",
           "next_tables" : {
-            "act" : "tbl_act_1"
+            "act" : "node_9"
           },
           "default_entry" : {
             "action_id" : 4,
@@ -1111,14 +1182,14 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [7],
-          "actions" : ["act_2"],
-          "base_default_next" : "node_10",
+          "action_ids" : [6],
+          "actions" : ["act_1"],
+          "base_default_next" : "tbl_act_2",
           "next_tables" : {
-            "act_2" : "node_10"
+            "act_1" : "tbl_act_2"
           },
           "default_entry" : {
-            "action_id" : 7,
+            "action_id" : 6,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -1134,37 +1205,14 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [6],
-          "actions" : ["act_1"],
-          "base_default_next" : "tbl_act_3",
-          "next_tables" : {
-            "act_1" : "tbl_act_3"
-          },
-          "default_entry" : {
-            "action_id" : 6,
-            "action_const" : true,
-            "action_data" : [],
-            "action_entry_const" : true
-          }
-        },
-        {
-          "name" : "tbl_act_3",
-          "id" : 6,
-          "key" : [],
-          "match_type" : "exact",
-          "type" : "simple",
-          "max_size" : 1024,
-          "with_counters" : false,
-          "support_timeout" : false,
-          "direct_meters" : null,
-          "action_ids" : [8],
-          "actions" : ["act_3"],
+          "action_ids" : [7],
+          "actions" : ["act_2"],
           "base_default_next" : null,
           "next_tables" : {
-            "act_3" : null
+            "act_2" : null
           },
           "default_entry" : {
-            "action_id" : 8,
+            "action_id" : 7,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -1201,7 +1249,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 45,
+            "line" : 47,
             "column" : 11,
             "source_fragment" : "hdr.tcp.isValid() || hdr.udp.isValid()"
           },
@@ -1241,7 +1289,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 56,
+            "line" : 58,
             "column" : 19,
             "source_fragment" : "pre_portstatus != metadata.port_id"
           },
@@ -1260,14 +1308,14 @@
             }
           },
           "true_next" : "tbl_act_0",
-          "false_next" : "tbl_act_1"
+          "false_next" : "node_9"
         },
         {
-          "name" : "node_10",
+          "name" : "node_9",
           "id" : 3,
           "source_info" : {
             "filename" : "includes/portscan.p4",
-            "line" : 63,
+            "line" : 66,
             "column" : 19,
             "source_fragment" : "pre_diffcnt > c_thres && c_thres > 0"
           },
@@ -1284,29 +1332,19 @@
                     "value" : ["scalars", "portscan_v_pre_diffcnt"]
                   },
                   "right" : {
-                    "type" : "field",
-                    "value" : ["scalars", "portscan_v_c_thres"]
+                    "type" : "hexstr",
+                    "value" : "0x0000000a"
                   }
                 }
               },
               "right" : {
-                "type" : "expression",
-                "value" : {
-                  "op" : ">",
-                  "left" : {
-                    "type" : "field",
-                    "value" : ["scalars", "portscan_v_c_thres"]
-                  },
-                  "right" : {
-                    "type" : "hexstr",
-                    "value" : "0x00000000"
-                  }
-                }
+                "type" : "bool",
+                "value" : true
               }
             }
           },
-          "true_next" : "tbl_act_2",
-          "false_next" : "tbl_act_3"
+          "true_next" : "tbl_act_1",
+          "false_next" : "tbl_act_2"
         }
       ]
     },

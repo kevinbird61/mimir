@@ -20,6 +20,7 @@ tables {
     id: 16800567
   }
   size: 1024
+  idle_timeout_behavior: NO_TIMEOUT
 }
 actions {
   preamble {
@@ -96,7 +97,7 @@ registers {
       }
     }
   }
-  size: 32
+  size: 512
 }
 registers {
   preamble {
@@ -111,13 +112,28 @@ registers {
       }
     }
   }
-  size: 32
+  size: 512
 }
 registers {
   preamble {
     id: 369156977
     name: "basic_tutorial_ingress.portscan_v.CntThres"
     alias: "CntThres"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1
+}
+registers {
+  preamble {
+    id: 369129245
+    name: "basic_tutorial_ingress.portscan_v.ReportCnt"
+    alias: "ReportCnt"
   }
   type_spec {
     bitstring {
