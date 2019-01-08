@@ -62,7 +62,7 @@ control portscan_v(
                 // Check the counter value 
                 bit<32> c_thres;
                 // CntThres.read(c_thres, 0);
-                c_thres = 32w10;
+                c_thres = 32w271;
                 if(pre_diffcnt > c_thres && c_thres > 0){
                     // if surpass the threshold, then report_flag=1 
                     // metadata.report_flag = 1w1;

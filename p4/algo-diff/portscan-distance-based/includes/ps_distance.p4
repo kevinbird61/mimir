@@ -30,14 +30,14 @@ control portscan_d(
 
     action get_OD_pair_id(){
         // get hash id 
-        /*hash(metadata.flow_id, 
+        hash(metadata.flow_id, 
             HashAlgorithm.crc16,
             (bit<32>)0,
             {
                 hdr.ipv4.srcAddr,
                 hdr.ipv4.dstAddr
             },
-            (bit<32>)TABLE_SLOT);*/
+            (bit<32>)TABLE_SLOT);
         
         // Get hash value of port (src, dst)
         // aim to represent the port distribution
@@ -54,9 +54,9 @@ control portscan_d(
     apply {
         if(hdr.tcp.isValid() || hdr.udp.isValid()){
             // xxhash only (can't place in action block)
-            bit<32> acc;
-            xxhash_init.apply((bit<32>)hdr.ipv4.srcAddr, 32w0, acc);
-            xxhash.apply((bit<32>)hdr.ipv4.dstAddr, acc, 0, TABLE_SLOT, metadata.flow_id);
+            //bit<32> acc;
+            //xxhash_init.apply((bit<32>)hdr.ipv4.srcAddr, 32w0, acc);
+            //xxhash.apply((bit<32>)hdr.ipv4.dstAddr, acc, 0, TABLE_SLOT, metadata.flow_id);
         
             get_OD_pair_id();
             @atomic{
@@ -76,7 +76,7 @@ control portscan_d(
                 // Check the weight
                 bit<32> c_thres;
                 // WeightThres.read(c_thres, 0); 
-                c_thres = 32w60;
+                c_thres = 32w2131;
                 if(pre_weight > c_thres && c_thres > 0){
                     // if surpass the threshold, then report_flag=1 
                     // metadata.report_flag = 1w1;
