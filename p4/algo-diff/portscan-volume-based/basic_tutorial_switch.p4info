@@ -144,5 +144,20 @@ registers {
   }
   size: 1
 }
+registers {
+  preamble {
+    id: 369099958
+    name: "basic_tutorial_egress.pct.avg_pct"
+    alias: "avg_pct"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 48
+      }
+    }
+  }
+  size: 1
+}
 type_info {
 }

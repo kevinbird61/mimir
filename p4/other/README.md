@@ -10,9 +10,10 @@
 * [`Hamming-weight`](https://en.wikipedia.org/wiki/Hamming_weight)
 * [`floating point (IEEE-754)`](http://jmiiv.blogspot.com/2008/08/ieee-754.html) 的操作
     * 參考： 可以搭配 stream processing 一起使用
-* [`hash collision` 的探討]()
+* [`hash collision` 的探討](hash-collision/)
     * 探討在不同 table size、以及不同的 hash algorithm 下，同一筆 pcap file 所產生的 Hash collision 次數。
-
+* [time](time/)
+    * 探討時間相關的操作（如 process-complete-time）
 
 ## P4-related 相關的規格（較少用到的操作）
 

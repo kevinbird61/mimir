@@ -13,6 +13,8 @@
 #include "includes/ipv4_forward.p4"
 #include "includes/ps_distance.p4"
 
+#include "includes/pct.p4"
+
 //------------------------------------------------------------------------------
 // INGRESS PIPELINE
 //------------------------------------------------------------------------------
@@ -42,6 +44,8 @@ control basic_tutorial_egress(
 ){
     apply {
         /* Pipelines in Egress */
+
+        pct.apply(standard_metadata);
     }
 }
 
