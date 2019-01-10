@@ -38,5 +38,14 @@ nb_src_addr < 5
 
 ## 觀察
 
-* 在利用 nmap 工具製造 UDP scan 操作後，觀察 sw 上所統計的資料來看，並不符合 refs 所提到的比例。 可以看到 refs 內的比例，也許是要 global view 的情況下才會符合其條件（需要收集多台 sw 的資訊做整合，應該才能夠得到該比例）。
-* 故 signature-based 暫時歸類在 Control plane 的範疇，不考慮在 DP 上去做偵測。
+* 在利用 nmap 工具製造 UDP scan 操作後，觀察 sw 上所統計的資料來看，並不符合 refs 所提到的比例。 可以看到 refs 內的比例，也許是要 global view 的情況下才會符合其條件（需要收集多台 sw 的資訊做整合，應該才能夠得到該比例）。或是當有多個 UDP scan 行為同時經過該 sw 時，才會有比較明顯對於這項數據的變化。
+  * **但以目前 DP 上的實作來看，我們只能判斷該 sw 上有 UDP scan 的行為出現，若要進一步去 identify 是哪個 host 為攻擊來源時，則需要額外的記憶體與資源來做狀態保存與確認！**
+* 故 signature-based 暫時歸類在 Control plane 的範疇，或是確定拿到含有 UDP scan 的流量測資，會比較接近該條件。
+  * 可以看到在這概念下，其 threshold **應該要依據 traffic 變化，做出些微的動態調整才是！**
+* 而依據 UDP scanning 的概念，利用 scapy 直接硬幹了爆破解法的 UDP scan 程式 - `udp_scan.py`，在其 destination address 上直接用 random 方式來決定，並且都為 UDP 封包，以高速方式做傳送。以下數據便是利用人為方式建立的流量，便符合 refs 所提出 signature 的條件：
+
+| Statistics | nb_pkts | nb_src_addr | nb_dst_addr | nb_udp_pkts |
+| :--- | :--- | ---: | ---: | ---: |
+| udp_scan.py | 432 | 3 | 317 | 390 |
+
+上述的測資結果，便很容易看出，其為一個 UDP scan 攻擊。（缺點： 流量當中，不太可能有這麼單純、乾淨的狀態，讓你這麼容易就判斷出；正常情況下測資是非常混亂的，如上一個從 pcap 內取出的測資。）
