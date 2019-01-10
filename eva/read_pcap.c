@@ -133,59 +133,60 @@ int main(int argc, char **argv)
     fudpPort = fopen("output/udp_raw.txt", "w+");
 
     /* Check eva result */
-    printf("=======================================================================\n");
     const char *key;
     map_iter_t iter = map_iter(&eva->eth_addr_stat);
-    printf("MAC Address Stat: \n");
-    printf("=======================================================================\n");
+    //printf("=======================================================================\n");
+    //printf("MAC Address Stat: \n");
+    //printf("=======================================================================\n");
     while ((key = map_next(&eva->eth_addr_stat, &iter))) {
-        printf("%s -> %d\n",  ether_ntoa((struct ether_addr*)key), *map_get(&eva->eth_addr_stat, key));
+        // printf("%s -> %d\n",  ether_ntoa((struct ether_addr*)key), *map_get(&eva->eth_addr_stat, key));
     }
     iter = map_iter(&eva->eth_type_stat);
-    printf("=======================================================================\n");
-    printf("EtherType Stat: \n");
-    printf("=======================================================================\n");
+    //printf("=======================================================================\n");
+    //printf("EtherType Stat: \n");
+    //printf("=======================================================================\n");
     while ((key = map_next(&eva->eth_type_stat, &iter))) {
-        printf("%s -> %d\n", key, *map_get(&eva->eth_type_stat, key));
+        // printf("%s -> %d\n", key, *map_get(&eva->eth_type_stat, key));
     }
     iter = map_iter(&eva->ipv4_addr_stat);
-    printf("=======================================================================\n");
-    printf("IP Address Stat: \n");
-    printf("=======================================================================\n");
+    //printf("=======================================================================\n");
+    //printf("IP Address Stat: \n");
+    //printf("=======================================================================\n");
     while ((key = map_next(&eva->ipv4_addr_stat, &iter))) {
-        printf("%s -> %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
+        // printf("%s -> %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
         fprintf(fIP, "%s %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
         fprintf(pure_ip, "%s\n", key);
         // Unique count 
         unique_hosts++;
     }
     iter = map_iter(&eva->ipv4_proto_stat);
-    printf("=======================================================================\n");
-    printf("IP Protocol Stat: \n");
-    printf("=======================================================================\n");
+    //printf("=======================================================================\n");
+    //printf("IP Protocol Stat: \n");
+    //printf("=======================================================================\n");
     while ((key = map_next(&eva->ipv4_proto_stat, &iter))) {
-        printf("%s -> %d\n", key, *map_get(&eva->ipv4_proto_stat, key));
+        // printf("%s -> %d\n", key, *map_get(&eva->ipv4_proto_stat, key));
         fprintf(fproto, "%s %d\n", key, *map_get(&eva->ipv4_proto_stat, key));
     }
     iter = map_iter(&eva->tcp_port_stat);
-    printf("=======================================================================\n");
-    printf("TCP Port Stat: \n");
-    printf("=======================================================================\n");
+    //printf("=======================================================================\n");
+    //printf("TCP Port Stat: \n");
+    //printf("=======================================================================\n");
     while ((key = map_next(&eva->tcp_port_stat, &iter))) {
-        printf("%s -> %d\n", key, *map_get(&eva->tcp_port_stat, key));
+        // printf("%s -> %d\n", key, *map_get(&eva->tcp_port_stat, key));
         fprintf(ftcpPort, "%s %d\n", key, *map_get(&eva->tcp_port_stat, key));
     }
     iter = map_iter(&eva->udp_port_stat);
-    printf("=======================================================================\n");
-    printf("UDP Port Stat: \n");
-    printf("=======================================================================\n");
+    //printf("=======================================================================\n");
+    //printf("UDP Port Stat: \n");
+    //printf("=======================================================================\n");
     while ((key = map_next(&eva->udp_port_stat, &iter))) {
-        printf("%s -> %d\n", key, *map_get(&eva->udp_port_stat, key));
+        // printf("%s -> %d\n", key, *map_get(&eva->udp_port_stat, key));
         fprintf(fudpPort, "%s %d\n", key, *map_get(&eva->udp_port_stat, key));
     }
 
     printf("=======================================================================\n");
     printf("Number of packets: %d\n", packet_counter);
     printf("Unique hosts: %d\n", unique_hosts);
+    printf("=======================================================================\n");
     return 0;
 }
