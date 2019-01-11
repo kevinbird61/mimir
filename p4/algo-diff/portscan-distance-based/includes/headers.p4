@@ -38,6 +38,11 @@ struct metadata_t {
 
     bit<32>     flow_id;
     bit<32>     port_id;
+
+    // for MA-stage version
+    bit<32>     popout;     // popout value
+    bit<32>     avail_cnt;  // available count (N)
+    bit<32>     amd;         // accumulated moving distance, use to compute moving average
 }
 
 #endif
