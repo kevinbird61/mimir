@@ -6,3 +6,6 @@ basic_tutorial_switch: basic_tutorial_switch.p4
 		-o basic_tutorial_switch.json \
 		--p4runtime-file basic_tutorial_switch.p4info \
 		--p4runtime-format text basic_tutorial_switch.p4
+
+clean: 
+	sudo rm -rf logs/ pcaps/ basic_tutorial_switch.json basic_tutorial_switch.p4info

@@ -87,4 +87,82 @@ control portscan_ma_stage1(
     }
 }
 
+control portscan_ma_stage2(
+    inout headers_t hdr,
+    inout metadata_t metadata,
+    inout standard_metadata_t standard_metadata
+){
+    // xxhash     
+    xxhash32_init()     xxhash_init;
+    xxhash32()          xxhash;
+    // Hamming weight
+    popcount32_native() popcount;
+
+    register<bit<32>>(TABLE_SLOT) PortDist; // Port Distribution
+
+    apply {
+        if(metadata.popout == 0){
+            // without any popout value, skip this stage, do nothing
+        } else {
+            // write this value into PortDist
+            @atomic {
+                bit<32> pre_portstatus;
+                // FIXME: 
+                // In sketch algorithm, need to use a different hashing function. 
+                PortDist.read(pre_portstatus, metadata.flow_id);
+                if(pre_portstatus == 0){
+                    // place the popout value into this stage
+                    PortDist.write(metadata.flow_id, metadata.popout);
+                    // clear
+                    metadata.popout = 0;
+                } else {
+                    bit<32> weight;
+                    weight = pre_portstatus ^ metadata.popout;
+                    if(weight > 0){
+                        // Update PortDist
+                        PortDist.write(metadata.flow_id, metadata.popout);
+                        // popout 
+                        metadata.popout = pre_portstatus;
+                        // weight will > 0 if pre_portstatus is diff from port_id
+                        // , also reuse variable
+                        popcount.apply(weight, pre_portstatus); 
+                        // pre_status now represent the distance change
+                        metadata.avail_cnt = metadata.avail_cnt+1;
+                        metadata.amd = metadata.amd + pre_portstatus;
+                    } else {
+                        // not change, do nothing
+                        metadata.popout = 0;
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+// final stage
+control portscan_ma_stage_fin(
+    inout headers_t hdr,
+    inout metadata_t metadata,
+    inout standard_metadata_t standard_metadata
+){
+    register<bit<32>>(TABLE_SLOT) DistWeight;  // (Hamming) Distance volume (the amount of changing)
+
+    apply {
+        /* 
+            metadata.avail_cnt  : available counter (e.g. how many stage has changed)
+            metadata.amd        : total moving distance
+        */
+        @atomic{
+            // Get its MA
+            // metadata.amd = metadata.amd / metadata.avail_cnt; // dont support divide, need to use another way to measure, or just do nothing
+            DistWeight.write(metadata.flow_id, metadata.amd);
+
+            // TODO:
+            // If MA > threshold, send back to controller
+        }
+    }
+}
+
+
 #endif 
