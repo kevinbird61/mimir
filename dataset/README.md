@@ -26,3 +26,5 @@
 ## 延伸閱讀
 
 * [High Volume of GRE traffic](https://badpackets.net/high-volume-of-protocol-47-gre-traffic-from-hinet-as3462-found/)
+* [Traces available in the Internet Traffic Archive](http://ita.ee.lbl.gov/html/traces.html)
+* [Publicly available PCAP files](https://www.netresec.com/?page=pcapfiles)

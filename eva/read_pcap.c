@@ -15,7 +15,7 @@ const struct sniff_tcp *tcp;   // TCP header
 const struct sniff_udp *udp;   // UDP header
 const char *payload; // packet payload
 u_int size_ip, size_tcp, size_udp, size_existed=0;
-int unique_hosts=0;
+int unique_hosts=0, uniq_tcp=0, uniq_udp=0;
 
 // for evaluation
 struct packet_stat* eva;
@@ -84,37 +84,37 @@ int main(int argc, char **argv)
                 sprintf(pt, "%d", ipv4->protocol);
                 pktStat_inc(&eva->ipv4_proto_stat, pt);
             }
-        }
 
-        // Parse TCP 
-        if(ipv4->protocol == (u_char)6){
-            tcp = (struct sniff_tcp*)(packet + SIZE_ETHER + size_ip);
-            size_tcp = TH_OFF(tcp)*4;
-            size_existed += size_tcp;
+            // Parse TCP 
+            if(ipv4->protocol == (u_char)6){
+                tcp = (struct sniff_tcp*)(packet + SIZE_ETHER + size_ip);
+                size_tcp = TH_OFF(tcp)*4;
+                size_existed += size_tcp;
 
-            if(size_tcp < 20){
-                printf("Invalid TCP header length: %u bytes\n", size_tcp);
-            } else {
-                // printf("TCP src Port: %d\n", tcp->sport);
-                // printf("TCP dst Port: %d\n", tcp->dport);
+                if(size_tcp < 20){
+                    printf("Invalid TCP header length: %u bytes\n", size_tcp);
+                } else {
+                    // printf("TCP src Port: %d\n", tcp->sport);
+                    // printf("TCP dst Port: %d\n", tcp->dport);
+                    char port[2];
+                    sprintf(port, "%d", tcp->sport);
+                    pktStat_inc(&eva->tcp_port_stat, port);
+                    sprintf(port, "%d", tcp->dport);
+                    pktStat_inc(&eva->tcp_port_stat, port);
+                }
+            } else if(ipv4->protocol == (u_char)17){
+                udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
+                size_udp = 8; // 8 bytes
+                size_existed += size_udp;
+
+                // printf("UDP src Port: %d\n", tcp->sport);
+                // printf("UDP dst Port: %d\n", tcp->dport);
                 char port[2];
-                sprintf(port, "%d", tcp->sport);
-                pktStat_inc(&eva->tcp_port_stat, port);
-                sprintf(port, "%d", tcp->dport);
-                pktStat_inc(&eva->tcp_port_stat, port);
+                sprintf(port, "%d", udp->sport);
+                pktStat_inc(&eva->udp_port_stat, port);
+                sprintf(port, "%d", udp->dport);
+                pktStat_inc(&eva->udp_port_stat, port);
             }
-        } else if(ipv4->protocol == (u_char)17){
-            udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
-            size_udp = 8; // 8 bytes
-            size_existed += size_udp;
-
-            // printf("UDP src Port: %d\n", tcp->sport);
-            // printf("UDP dst Port: %d\n", tcp->dport);
-            char port[2];
-            sprintf(port, "%d", udp->sport);
-            pktStat_inc(&eva->udp_port_stat, port);
-            sprintf(port, "%d", udp->dport);
-            pktStat_inc(&eva->udp_port_stat, port);
         }
         // printf("=======================================================================\n");
 
@@ -126,11 +126,14 @@ int main(int argc, char **argv)
     } 
     pcap_close(handle);
 
+
+#ifdef WRITE 
     fIP = fopen("output/ip_raw.txt", "w+");
     FILE *pure_ip = fopen("output/ip_without_counter.txt", "w+");
     fproto = fopen("output/proto_raw.txt", "w+");
     ftcpPort = fopen("output/tcp_raw.txt", "w+");
     fudpPort = fopen("output/udp_raw.txt", "w+");
+#endif
 
     /* Check eva result */
     const char *key;
@@ -154,8 +157,10 @@ int main(int argc, char **argv)
     //printf("=======================================================================\n");
     while ((key = map_next(&eva->ipv4_addr_stat, &iter))) {
         // printf("%s -> %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
+#ifdef WRITE
         fprintf(fIP, "%s %d\n", key, *map_get(&eva->ipv4_addr_stat, key));
         fprintf(pure_ip, "%s\n", key);
+#endif 
         // Unique count 
         unique_hosts++;
     }
@@ -165,7 +170,9 @@ int main(int argc, char **argv)
     //printf("=======================================================================\n");
     while ((key = map_next(&eva->ipv4_proto_stat, &iter))) {
         // printf("%s -> %d\n", key, *map_get(&eva->ipv4_proto_stat, key));
+#ifdef WRITE
         fprintf(fproto, "%s %d\n", key, *map_get(&eva->ipv4_proto_stat, key));
+#endif
     }
     iter = map_iter(&eva->tcp_port_stat);
     //printf("=======================================================================\n");
@@ -173,7 +180,10 @@ int main(int argc, char **argv)
     //printf("=======================================================================\n");
     while ((key = map_next(&eva->tcp_port_stat, &iter))) {
         // printf("%s -> %d\n", key, *map_get(&eva->tcp_port_stat, key));
+#ifdef WRITE
         fprintf(ftcpPort, "%s %d\n", key, *map_get(&eva->tcp_port_stat, key));
+#endif
+        uniq_tcp++;
     }
     iter = map_iter(&eva->udp_port_stat);
     //printf("=======================================================================\n");
@@ -181,12 +191,17 @@ int main(int argc, char **argv)
     //printf("=======================================================================\n");
     while ((key = map_next(&eva->udp_port_stat, &iter))) {
         // printf("%s -> %d\n", key, *map_get(&eva->udp_port_stat, key));
+#ifdef WRITE
         fprintf(fudpPort, "%s %d\n", key, *map_get(&eva->udp_port_stat, key));
+#endif
+        uniq_udp++;
     }
 
     printf("=======================================================================\n");
     printf("Number of packets: %d\n", packet_counter);
     printf("Unique hosts: %d\n", unique_hosts);
+    printf("Unique TCP ports: %d\n", uniq_tcp);
+    printf("Unique UDP ports: %d\n", uniq_udp);
     printf("=======================================================================\n");
     return 0;
 }
