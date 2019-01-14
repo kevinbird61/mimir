@@ -14,6 +14,7 @@
 | packet_record_1_7_ncku_csie_imslab_5M.pcap | 5000000 | 3008 | 錄製於 NCKU CSIE IMSLAB server 1, 2019/1/7 | [📁 google](https://drive.google.com/file/d/1oJPSlny-jN-TBZxnqYxGVBFrpaBBa-y8/view?usp=sharing) |
 | packet_record_1_8_ncku_csie_imslab_1day.pcap | 16163020 (11 G) | 4487 | 錄製於 NCKU CSIE IMSLAB server 1, 錄製時間為一整天, 2019/1/8 | [📁 google](https://drive.google.com/file/d/1AYkUjAOGVleQHmhr1M_W_rKDg2_eULEw/view?usp=sharing) |
 | packet_record_1_8_imslab_org_1day.pcap | 900710 | 5867 | 錄製於 NCKU CSIE IMSLAB server 2, 錄製時間為一整天, 2019/1/8 | [📁 google](https://drive.google.com/file/d/1LEs58vzjojSwHJHT_rIdz3OAjeIt-FHq/view?usp=sharing) |
+| packet_record_1_9_imslab_org_3day.pcap | 2885968 | 14999 | 錄製於 NCKU CSIE IMSLAB server 2, 錄製時間為 3 天, 2019/1/9~12 | [📁 google](https://drive.google.com/file/d/1dVeB1akriHTqAtnXIQE8T97i4zjPjohP/view?usp=sharing) |
 | packet_record_1_7_imslab_org_5M.pcap | 5000000 | 25665 | 錄製於 NCKU CSIE IMSLAB server 2, 2019/1/7 | [📁 google](https://drive.google.com/file/d/1BhzG3MHfSFzPTjPPa0AISwp1qL1focfB/view?usp=sharing) |
 
 
