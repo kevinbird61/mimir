@@ -8,10 +8,19 @@ struct packet_stat* pktStat_init(){
     // call map init
     map_init(&pktStat->eth_addr_stat);
     map_init(&pktStat->eth_type_stat);
+
     map_init(&pktStat->ipv4_addr_stat);
+    map_init(&pktStat->ipv4_src_addr);
+    map_init(&pktStat->ipv4_dst_addr);
     map_init(&pktStat->ipv4_proto_stat);
+    
     map_init(&pktStat->tcp_port_stat);
+    map_init(&pktStat->tcp_src_port);
+    map_init(&pktStat->tcp_dst_port);
+
     map_init(&pktStat->udp_port_stat);
+    map_init(&pktStat->udp_src_port);
+    map_init(&pktStat->udp_dst_port);
 
     return pktStat;
 }

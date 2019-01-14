@@ -29,11 +29,17 @@ struct packet_stat {
     map_int_t eth_type_stat;
     // IPv4
     map_int_t ipv4_addr_stat;
+    map_int_t ipv4_src_addr;
+    map_int_t ipv4_dst_addr;
     map_int_t ipv4_proto_stat;
     // TCP
     map_int_t tcp_port_stat;
+    map_int_t tcp_src_port;
+    map_int_t tcp_dst_port;
     // UDP
     map_int_t udp_port_stat;
+    map_int_t udp_src_port;
+    map_int_t udp_dst_port;
 };
 
 struct packet_stat* pktStat_init();
