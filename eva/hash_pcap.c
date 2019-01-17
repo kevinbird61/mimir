@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <pcap/pcap.h>
@@ -78,9 +79,9 @@ int main(int argc, char **argv)
                 *IP = ipv4->srcAddr.s_addr;
                 *(IP+4) = ipv4->dstAddr.s_addr;
                 // get flow id
-                unsigned long index = XXH32(IP, 8, TABLE_SLOT) % TABLE_SLOT;
+                // unsigned long index = XXH32(IP, 8, TABLE_SLOT) % TABLE_SLOT;
                 // unsigned long index = jenkins(IP) % TABLE_SLOT;
-                // unsigned int index = crc16(IP, 16) % TABLE_SLOT;
+                unsigned int index = crc16(IP, 8) % TABLE_SLOT;
                 // unsigned int index = crc32(IP) % TABLE_SLOT;
                 // check 
                 if(flow[index].srcIP != ipv4->srcAddr.s_addr || flow[index].dstIP != ipv4->dstAddr.s_addr){
@@ -91,8 +92,6 @@ int main(int argc, char **argv)
                         flow_unuse--;
                         flow[index].used=1;
                     }
-                } else {
-                    ipm++;
                 }
             }
             // Parse TCP 
@@ -159,14 +158,15 @@ int main(int argc, char **argv)
     } 
     pcap_close(handle);
 
+    printf("Table Size: %d\n", TABLE_SLOT);
     printf("=======================================================================\n");
-    printf("IP Collision: %u, Collision rate: %f\n", ip_collision, (float)ip_collision/packet_counter);
-    printf("TCP Port Collision: %u, Collision rate: %f\n", tcp_port_collision, (float)tcp_port_collision/tcp_counter);
-    printf("UDP Port Collision: %u Collision rate: %f\n", udp_port_collision, (float)udp_port_collision/udp_counter);
+    printf("IP Collision:       %10u, Collision rate: %10f (%.2f %%)\n", ip_collision, (float)ip_collision/packet_counter, ((float)ip_collision/packet_counter)*100);
+    printf("TCP Port Collision: %10u, Collision rate: %10f (%.2f %%)\n", tcp_port_collision, (float)tcp_port_collision/tcp_counter, ((float)tcp_port_collision/tcp_counter)*100);
+    printf("UDP Port Collision: %10u, Collision rate: %10f (%.2f %%)\n", udp_port_collision, (float)udp_port_collision/udp_counter, ((float)udp_port_collision/udp_counter)*100);
     printf("=======================================================================\n");
-    printf("Unuse flow table: %u\n", flow_unuse);
-    printf("Unuse TCP Port table: %u\n", tcp_unuse);
-    printf("Unuse UDP Port table: %u\n", udp_unuse);
+    printf("Unuse flow table:     %10u (%.2f %%)\n", flow_unuse, ((float)flow_unuse/TABLE_SLOT)*100);
+    printf("Unuse TCP Port table: %10u (%.2f %%)\n", tcp_unuse, ((float)tcp_unuse/TABLE_SLOT)*100);
+    printf("Unuse UDP Port table: %10u (%.2f %%)\n", udp_unuse, ((float)udp_unuse/TABLE_SLOT)*100);
     printf("=======================================================================\n");
 
     return 0;
