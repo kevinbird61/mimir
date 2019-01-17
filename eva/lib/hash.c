@@ -1,18 +1,16 @@
 #include "hash.h"
 
-unsigned int
-crc32 (const unsigned char *buf, int len, unsigned int init)
+unsigned int crc32 (unsigned char *str)
 {
-  unsigned int crc = init;
-  while (len--)
+    unsigned int crc, c;
+    while (c=*str++)
     {
-      crc = (crc << 8) ^ crc32_table[((crc >> 24) ^ *buf) & 255];
-      buf++;
+        crc = (crc << 8) ^ crc32_table[((crc >> 24) ^ c) & 255];
     }
-  return crc;
+    return crc;
 }
 
-unsigned short crc16(char *data_p, unsigned short length)
+unsigned int crc16(unsigned char *data_p, unsigned short length)
 {
     unsigned char i;
     unsigned int data;
@@ -103,7 +101,7 @@ unsigned long xxhash32(unsigned char *str, unsigned int seed){
     acc = _rotl(acc1, 1) + _rotl(acc2, 7) + 
         _rotl(acc3, 12) + _rotl(acc4, 18);
 
-    acc += 32;
+    acc += 16;
 
     while(c=*str++){
         c = acc + c * PRIME32_5;

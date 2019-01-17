@@ -3,11 +3,12 @@
 #include <stdint.h>
 #include <pcap/pcap.h>
 
+#include "hash/xxhash.h"
 #include "lib/packet_def.h"
 #include "lib/hash.h"
 
 // hash table size 
-#define TABLE_SLOT 1024
+#define TABLE_SLOT 512
 // ethernet 
 #define SIZE_ETHER 14
 
@@ -34,12 +35,12 @@ typedef struct _port {
 flow_id flow[TABLE_SLOT]={0};
 port_id tcp_port[TABLE_SLOT]={0};
 port_id udp_port[TABLE_SLOT]={0};
-unsigned int ip_collision=0, tcp_port_collision=0, udp_port_collision=0;
+unsigned int ip_collision=0, ipm=0, tcp_port_collision=0, udp_port_collision=0;
 unsigned int flow_unuse=TABLE_SLOT, tcp_unuse=TABLE_SLOT, udp_unuse=TABLE_SLOT;
 
 int main(int argc, char **argv) 
 { 
-    unsigned int packet_counter=0;
+    unsigned int packet_counter=0,tcp_counter=0,udp_counter=0;
     struct pcap_pkthdr header; 
     const u_char *packet;
     if (argc < 2) { 
@@ -73,12 +74,14 @@ int main(int argc, char **argv)
             } else {
                 //printf("IPv4 src Addr: %s\n", inet_ntoa(ipv4->srcAddr));
                 //printf("IPv4 dst Addr: %s\n", inet_ntoa(ipv4->dstAddr));
-                unsigned char IP[16];
+                unsigned char IP[8]={0};
                 *IP = ipv4->srcAddr.s_addr;
-                *(IP+8) = ipv4->dstAddr.s_addr;
+                *(IP+4) = ipv4->dstAddr.s_addr;
                 // get flow id
-                // unsigned long index = xxhash32(IP, 0) % TABLE_SLOT;
-                unsigned long index = jenkins(IP) % TABLE_SLOT;
+                unsigned long index = XXH32(IP, 8, TABLE_SLOT) % TABLE_SLOT;
+                // unsigned long index = jenkins(IP) % TABLE_SLOT;
+                // unsigned int index = crc16(IP, 16) % TABLE_SLOT;
+                // unsigned int index = crc32(IP) % TABLE_SLOT;
                 // check 
                 if(flow[index].srcIP != ipv4->srcAddr.s_addr || flow[index].dstIP != ipv4->dstAddr.s_addr){
                     ip_collision++;
@@ -88,6 +91,8 @@ int main(int argc, char **argv)
                         flow_unuse--;
                         flow[index].used=1;
                     }
+                } else {
+                    ipm++;
                 }
             }
             // Parse TCP 
@@ -99,14 +104,14 @@ int main(int argc, char **argv)
                 if(size_tcp < 20){
                     printf("Invalid TCP header length: %u bytes\n", size_tcp);
                 } else {
-                    // printf("TCP src Port: %d\n", tcp->sport);
-                    // printf("TCP dst Port: %d\n", tcp->dport);
-                    unsigned char Port[4];
+                    unsigned char Port[4]={0};
                     *Port = tcp->sport;
                     *(Port+2) = tcp->dport;
                     // get flow id
-                    // unsigned long index = xxhash32(Port, 0) % TABLE_SLOT;
-                    unsigned long index = jenkins(Port) % TABLE_SLOT;
+                    // unsigned long index = XXH32(Port, 4, TABLE_SLOT) % TABLE_SLOT;
+                    // unsigned long index = jenkins(Port) % TABLE_SLOT;
+                    unsigned int index = crc16(Port, 4) % TABLE_SLOT;
+                    // unsigned int index = crc32(Port) % TABLE_SLOT;
                     // check 
                     if(tcp_port[index].sport != tcp->sport || tcp_port[index].dport != tcp->dport){
                         tcp_port_collision++;
@@ -118,19 +123,22 @@ int main(int argc, char **argv)
                         }
                     }
                 }
+
+                tcp_counter++;
             } else if(ipv4->protocol == (u_char)17){
                 udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
                 size_udp = 8; // 8 bytes
                 size_existed += size_udp;
 
-                // printf("UDP src Port: %d\n", udp->sport);
-                // printf("UDP dst Port: %d\n", udp->dport);
-                unsigned char Port[4];
+                unsigned char Port[4]={0};
                 *Port = udp->sport;
                 *(Port+2) = udp->dport;
                 // get flow id
-                // unsigned long index = xxhash32(Port, 0) % TABLE_SLOT;
-                unsigned long index = jenkins(Port) % TABLE_SLOT;
+                // unsigned long index = XXH32(Port, 4, TABLE_SLOT) % TABLE_SLOT;
+                // unsigned long index = jenkins(Port) % TABLE_SLOT;
+                // unsigned long index = djb2(Port) % TABLE_SLOT;
+                unsigned int index = crc16(Port, 4) % TABLE_SLOT;
+                // unsigned int index = crc32(Port) % TABLE_SLOT;
                 // check 
                 if(udp_port[index].sport != udp->sport || udp_port[index].dport != udp->dport){
                     udp_port_collision++;
@@ -141,20 +149,20 @@ int main(int argc, char **argv)
                         udp_port[index].used=1;
                     }
                 }
+                udp_counter++;
             }
+            packet_counter++;
         }
         // Rest part
         payload = (u_char*)(packet + size_existed);
         size_existed = 0; // reset
-
-        packet_counter++;
     } 
     pcap_close(handle);
 
     printf("=======================================================================\n");
-    printf("IP Collision: %u\n", ip_collision);
-    printf("TCP Port Collision: %u\n", tcp_port_collision);
-    printf("UDP Port Collision: %u\n", udp_port_collision);
+    printf("IP Collision: %u, Collision rate: %f\n", ip_collision, (float)ip_collision/packet_counter);
+    printf("TCP Port Collision: %u, Collision rate: %f\n", tcp_port_collision, (float)tcp_port_collision/tcp_counter);
+    printf("UDP Port Collision: %u Collision rate: %f\n", udp_port_collision, (float)udp_port_collision/udp_counter);
     printf("=======================================================================\n");
     printf("Unuse flow table: %u\n", flow_unuse);
     printf("Unuse TCP Port table: %u\n", tcp_unuse);

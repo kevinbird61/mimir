@@ -10,8 +10,8 @@
 */
 
 // crc
-unsigned short crc16(char *data_p, unsigned short length);
-unsigned int crc32 (const unsigned char *buf, int len, unsigned int init);
+unsigned int crc16(unsigned char *data_p, unsigned short length);
+unsigned int crc32(unsigned char *str);
 // djb2
 unsigned long djb2(unsigned char *str);
 // jenkins 
