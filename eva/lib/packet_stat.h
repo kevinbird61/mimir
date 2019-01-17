@@ -3,7 +3,7 @@
 
 // KV table library
 // Ref: https://github.com/rxi/map
-#include "third_party/cmap/map.h"
+#include "cmap/map.h"
 
 /*
     For evaluation: 
