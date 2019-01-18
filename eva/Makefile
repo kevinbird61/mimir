@@ -1,13 +1,17 @@
-all: read_pcap hash_pcap port_diff
+all: read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
 
 # executable file
-read_pcap: cmap.o pktstat.o 
-	gcc -o read_pcap.out cmap.o pktstat.o read_pcap.c -lpcap -Ithird_party
-	gcc -o read_pcap_w.out -DWRITE cmap.o pktstat.o read_pcap.c -lpcap -Ithird_party # run and write the statistics into txt
-hash_pcap: hash.o xxhash.o 
-	gcc -o hash_pcap.out hash.o xxhash.o hash_pcap.c -lpcap -Ithird_party
-port_diff: cmap.o hash.o xxhash.o 
-	gcc -o port_diff.out cmap.o hash.o xxhash.o port_diff.c -lm -lpcap -Ithird_party
+read_pcap.out: cmap.o pktstat.o read_pcap.c 
+	gcc $^ -o $@ -lpcap -Ithird_party
+read_pcap_w.out: cmap.o pktstat.o read_pcap.c 
+	# run and write the statistics into txt
+	gcc $^ -o $@ -DWRITE -lpcap -Ithird_party
+hash_pcap.out: hash.o xxhash.o hash_pcap.c
+	gcc $^ -o $@ -lpcap -Ithird_party
+port_diff.out: cmap.o hash.o xxhash.o port_diff.c 
+	gcc $^ -o $@ -lm -lpcap -Ithird_party
+heavy_hitter.out: cmap.o hash.o xxhash.o pktstat.o heavy_hitter.c
+	gcc $^ -o $@ -lm -lpcap -Ithird_party
 
 # plot 
 plot_read_pcap:
