@@ -29,9 +29,12 @@ typedef struct _eva {
     uint32_t hamming;   // hamming distance
 } eva_t;
 
-// report ip 
+// report ip (diffcnt)
 map_int_t ipv4_src_addr;
 map_int_t ipv4_dst_addr;
+// report ip (hamming)
+map_int_t ipv4_src_addr_h;
+map_int_t ipv4_dst_addr_h;
 
 // Key-Value pair 
 eva_t tcp_tb[TABLE_SLOT]={0};
@@ -69,6 +72,8 @@ int main(int argc, char **argv)
     // eva 
     map_init(&ipv4_src_addr);
     map_init(&ipv4_dst_addr);
+    map_init(&ipv4_src_addr_h);
+    map_init(&ipv4_dst_addr_h);
 
     // Get each packet from pcap file
     while (packet = pcap_next(handle,&header)) {
@@ -108,14 +113,104 @@ int main(int argc, char **argv)
                     unsigned int index = crc16(Port, 4) % TABLE_SLOT;
                     // cal 
                     if(tcp_tb[flow_id].port_id != index){
+                        tcp_tb[flow_id].hamming += tcp_tb[flow_id].port_id ^ index; // get hamming 
+                        tcp_tb[flow_id].port_id = index; // update
+                        tcp_tb[flow_id].diffcnt++;
+                    }
+                }
+            } else if(ipv4->protocol == (u_char)17){
+                udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
+                size_udp = 8; // 8 bytes
+                size_existed += size_udp;
+
+                unsigned char Port[4]={0};
+                *Port = udp->sport;
+                *(Port+2) = udp->dport;
+                // get port id
+                unsigned int index = crc16(Port, 4) % TABLE_SLOT;
+                // cal 
+                if(udp_tb[flow_id].port_id != index){
+                    udp_tb[flow_id].hamming += udp_tb[flow_id].port_id ^ index; // get hamming 
+                    udp_tb[flow_id].port_id = index; // update
+                    udp_tb[flow_id].diffcnt++;
+                }
+            }
+        }
+        // Rest part
+        payload = (u_char*)(packet + size_existed);
+        size_existed = 0; // reset
+    } 
+    pcap_close(handle);
+
+    uint32_t tdiff=0, udiff=0, thamm=0, uhamm=0;
+    for(int i=0;i<TABLE_SLOT;i++){
+        tdiff += tcp_tb[i].diffcnt;
+        udiff += udp_tb[i].diffcnt;
+        thamm += tcp_tb[i].hamming;
+        uhamm += udp_tb[i].hamming;
+
+        // clear 
+        tcp_tb[i].diffcnt = 0;
+        tcp_tb[i].hamming = 0;
+        udp_tb[i].diffcnt = 0;
+        udp_tb[i].hamming = 0;
+    }
+
+    printf("Avg TCP diff. count: %.2f\n", (float)tdiff/TABLE_SLOT);
+    printf("Avg UDP diff. count: %.2f\n", (float)udiff/TABLE_SLOT);
+    printf("Avg TCP hamming distance: %.2f\n", (float)thamm/TABLE_SLOT);
+    printf("Avg UDP hamming distance: %.2f\n", (float)uhamm/TABLE_SLOT);
+
+    // Compare with the threshold
+    handle = pcap_open_offline(argv[1], errbuf);  // reload 
+    while (packet = pcap_next(handle,&header)) {
+        // printf("%d\n", header.len);
+        /* Packet parsing process */
+        ethernet = (struct sniff_ethernet*)(packet);
+        size_existed += SIZE_ETHER;
+
+        // Parse IPv4
+        if(ethernet->etherType == (u_short)8){
+            ipv4 = (struct sniff_ipv4*)(packet + SIZE_ETHER);
+            size_ip = IP_HL(ipv4)*4;
+            size_existed += size_ip;
+
+            if(size_ip < 20){
+                printf("Invalid IPv4 header length: %u bytes\n", size_ip);
+            } else {
+                unsigned char IP[8]={0};
+                *IP = ipv4->srcAddr.s_addr;
+                *(IP+4) = ipv4->dstAddr.s_addr;
+                // get flow id
+                flow_id = crc16(IP, 8) % TABLE_SLOT;
+            }
+            // Parse TCP 
+            if(ipv4->protocol == (u_char)6){
+                tcp = (struct sniff_tcp*)(packet + SIZE_ETHER + size_ip);
+                size_tcp = TH_OFF(tcp)*4;
+                size_existed += size_tcp;
+
+                if(size_tcp < 20){
+                    printf("Invalid TCP header length: %u bytes\n", size_tcp);
+                } else {
+                    unsigned char Port[4]={0};
+                    *Port = tcp->sport;
+                    *(Port+2) = tcp->dport;
+                    // get port id
+                    unsigned int index = crc16(Port, 4) % TABLE_SLOT;
+                    // cal 
+                    if(tcp_tb[flow_id].port_id != index){
+                        tcp_tb[flow_id].hamming += tcp_tb[flow_id].port_id ^ index; // get hamming 
                         tcp_tb[flow_id].port_id = index; // update
                         tcp_tb[flow_id].diffcnt++;
                         // report
-                        if(tcp_tb[flow_id].diffcnt > 30){
-                            //printf("ipv4 src addr: %s\n", inet_ntoa(ipv4->srcAddr));
-                            //printf("ipv4 dst addr: %s\n", inet_ntoa(ipv4->dstAddr));
+                        if(tcp_tb[flow_id].diffcnt > tdiff/TABLE_SLOT){
                             map_inc(&ipv4_src_addr, inet_ntoa(ipv4->srcAddr));
                             map_inc(&ipv4_dst_addr, inet_ntoa(ipv4->dstAddr));
+                        }
+                        if(tcp_tb[flow_id].hamming > thamm/TABLE_SLOT){
+                            map_inc(&ipv4_src_addr_h, inet_ntoa(ipv4->srcAddr));
+                            map_inc(&ipv4_dst_addr_h, inet_ntoa(ipv4->dstAddr));
                         }
                     }
                 }
@@ -131,14 +226,17 @@ int main(int argc, char **argv)
                 unsigned int index = crc16(Port, 4) % TABLE_SLOT;
                 // cal 
                 if(udp_tb[flow_id].port_id != index){
+                    udp_tb[flow_id].hamming += udp_tb[flow_id].port_id ^ index; // get hamming 
                     udp_tb[flow_id].port_id = index; // update
                     udp_tb[flow_id].diffcnt++;
                     // report
-                    if(udp_tb[flow_id].diffcnt > 20){
-                        //printf("ipv4 src addr: %s\n", inet_ntoa(ipv4->srcAddr));
-                        //printf("ipv4 dst addr: %s\n", inet_ntoa(ipv4->dstAddr));
+                    if(udp_tb[flow_id].diffcnt > udiff/TABLE_SLOT){
                         map_inc(&ipv4_src_addr, inet_ntoa(ipv4->srcAddr));
                         map_inc(&ipv4_dst_addr, inet_ntoa(ipv4->dstAddr));
+                    }
+                    if(udp_tb[flow_id].hamming > uhamm/TABLE_SLOT){
+                        map_inc(&ipv4_src_addr_h, inet_ntoa(ipv4->srcAddr));
+                        map_inc(&ipv4_dst_addr_h, inet_ntoa(ipv4->dstAddr));
                     }
                 }
             }
@@ -149,31 +247,48 @@ int main(int argc, char **argv)
     } 
     pcap_close(handle);
 
-    uint32_t tdiff=0, udiff=0;
-    for(int i=0;i<TABLE_SLOT;i++){
-        tdiff += tcp_tb[i].diffcnt;
-        udiff += udp_tb[i].diffcnt;
-    }
-
-    printf("Avg TCP diff. count: %.2f\n", (float)tdiff/TABLE_SLOT);
-    printf("Avg UDP diff. count: %.2f\n", (float)udiff/TABLE_SLOT);
-
     const char *key;
-    uint32_t reportCntAvg=0, Cnt=0;
+    uint32_t reportCntAvg=0, Cnt=0, ReportNum=0;
     map_iter_t iter = map_iter(&ipv4_src_addr);
     while ((key = map_next(&ipv4_src_addr, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
-        // reportCntAvg += reportCnt;
-        // Cnt++;
-        if(*map_get(&ipv4_src_addr, key) > 500){
+        reportCntAvg += reportCnt;
+        Cnt++;
+    }
+    printf("Avg Report Counter (diffcnt): %f\n", reportCntAvg/(float)Cnt);
+    iter = map_iter(&ipv4_src_addr);
+    while ((key = map_next(&ipv4_src_addr, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
+        if(*map_get(&ipv4_src_addr, key) > reportCntAvg/Cnt){
             printf("%s -> %d\n",  key , reportCnt);
+            ReportNum++;
         }
     }
-    // printf("Avg Report Counter: %f\n", reportCntAvg/(float)Cnt);
+    printf("Number of Reports: %d\n", ReportNum);
+    printf("=============================================================\n");
     /*iter = map_iter(&ipv4_dst_addr);
     while ((key = map_next(&ipv4_dst_addr, &iter))) {
         printf("%s -> %d\n",  key , *map_get(&ipv4_dst_addr, key));
     }*/
-
+    reportCntAvg=0;
+    Cnt=0;
+    ReportNum=0;
+    iter = map_iter(&ipv4_src_addr_h);
+    while ((key = map_next(&ipv4_src_addr_h, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_h, key);
+        reportCntAvg += reportCnt;
+        Cnt++;
+    }
+    printf("Avg Report Counter (hamming): %f\n", reportCntAvg/(float)Cnt);
+    iter = map_iter(&ipv4_src_addr_h);
+    while ((key = map_next(&ipv4_src_addr_h, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_h, key);
+        if(*map_get(&ipv4_src_addr_h, key) > reportCntAvg/Cnt){
+            printf("%s -> %d\n",  key , reportCnt);
+            ReportNum++;
+        }
+    }
+    printf("Number of Reports: %d\n", ReportNum);
+    printf("=============================================================\n");
     return 0;
 }
