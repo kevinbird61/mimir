@@ -37,9 +37,12 @@ typedef struct _sketch {
 // t = table size 
 sketch_t hh[3][TABLE_SLOT]={0};
 
-// report ip (diffcnt)
+// report ip (non-sketch)
 map_int_t ipv4_src_addr;
 map_int_t ipv4_dst_addr;
+// report ip (sketch)
+map_int_t ipv4_src_addr_s;
+map_int_t ipv4_dst_addr_s;
 
 int main(int argc, char **argv)
 {
@@ -105,6 +108,8 @@ int main(int argc, char **argv)
                 hh[0][index].srcAddr = ipv4->srcAddr;
                 hh[0][index].dstAddr = ipv4->dstAddr;
                 min = MIN(hh[0][index].cnt, min);
+                map_set(&ipv4_src_addr, inet_ntoa(ipv4->srcAddr), min);
+                map_set(&ipv4_dst_addr, inet_ntoa(ipv4->dstAddr), min);
                 // - Second hash function
                 index = (unsigned int)XXH32(IP, 8, TABLE_SLOT)%TABLE_SLOT;
                 hh[1][index].cnt++;
@@ -118,8 +123,8 @@ int main(int argc, char **argv)
                 hh[2][index].dstAddr = ipv4->dstAddr;
                 min = MIN(hh[2][index].cnt, min);
                 // Write 
-                map_set(&ipv4_src_addr, inet_ntoa(ipv4->srcAddr), min);
-                map_set(&ipv4_dst_addr, inet_ntoa(ipv4->dstAddr), min);
+                map_set(&ipv4_src_addr_s, inet_ntoa(ipv4->srcAddr), min);
+                map_set(&ipv4_dst_addr_s, inet_ntoa(ipv4->dstAddr), min);
             }
 
             // Parse TCP 
@@ -149,6 +154,9 @@ int main(int argc, char **argv)
     const char *key;
     uint32_t reportCntAvg=0, Cnt=0, ReportNum=0;
     float reportCntVar=0.0;
+    printf("=============================================================\n");
+    printf("Non-Sketch version\n");
+    printf("=============================================================\n");
     map_iter_t iter = map_iter(&ipv4_src_addr);
     while ((key = map_next(&ipv4_src_addr, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
@@ -168,7 +176,40 @@ int main(int argc, char **argv)
     while ((key = map_next(&ipv4_src_addr, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
         if(reportCnt > (reportCntAvg/Cnt + 3*sqrt(reportCntVar/Cnt))){
-            printf("%s -> %d\n",  key , reportCnt);
+            //printf("%s -> %d\n",  key , reportCnt);
+            ReportNum++;
+        }
+    }
+    printf("Number of unique Reports: %d\n", ReportNum);
+    printf("=============================================================\n");
+
+    reportCntAvg=0;
+    Cnt=0;
+    ReportNum=0;
+    reportCntVar=0.0;
+    printf("=============================================================\n");
+    printf("Sketch version\n");
+    printf("=============================================================\n");
+    iter = map_iter(&ipv4_src_addr_s);
+    while ((key = map_next(&ipv4_src_addr_s, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_s, key);
+        reportCntAvg += reportCnt;
+        Cnt++;
+    }
+    printf("Mean of report counter (diffcnt): %f\n", reportCntAvg/(float)Cnt);
+    // cal variance
+    iter = map_iter(&ipv4_src_addr_s);
+    while ((key = map_next(&ipv4_src_addr_s, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_s, key);
+        reportCntVar += pow(reportCnt - (reportCntAvg/(float)Cnt), 2);
+    }
+    printf("Variance of report counter (diffcnt): %f\n", sqrt(reportCntVar/Cnt));
+    // find hh 
+    iter = map_iter(&ipv4_src_addr_s);
+    while ((key = map_next(&ipv4_src_addr_s, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_s, key);
+        if(reportCnt > (reportCntAvg/Cnt + 3*sqrt(reportCntVar/Cnt))){
+            //printf("%s -> %d\n",  key , reportCnt);
             ReportNum++;
         }
     }
