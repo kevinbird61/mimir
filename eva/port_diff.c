@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <pcap/pcap.h>
+#include <math.h>
 
 #include "lib/packet_def.h"
 #include "lib/hash.h"
@@ -148,6 +149,19 @@ int main(int argc, char **argv)
         udiff += udp_tb[i].diffcnt;
         thamm += tcp_tb[i].hamming;
         uhamm += udp_tb[i].hamming;
+    }
+
+    printf("Mean TCP diff. count: %.2f\n", (float)tdiff/TABLE_SLOT);
+    printf("Mean UDP diff. count: %.2f\n", (float)udiff/TABLE_SLOT);
+    printf("Mean TCP hamming distance: %.2f\n", (float)thamm/TABLE_SLOT);
+    printf("Mean UDP hamming distance: %.2f\n", (float)uhamm/TABLE_SLOT);
+
+    float tdvar=0.0, udvar=0.0, thvar=0.0, uhvar=0.0;
+    for(int i=0;i<TABLE_SLOT;i++){
+        tdvar += pow(tcp_tb[i].diffcnt - (float)tdiff/TABLE_SLOT, 2);
+        udvar += pow(udp_tb[i].diffcnt - (float)udiff/TABLE_SLOT, 2);
+        thvar += pow(tcp_tb[i].hamming - (float)thamm/TABLE_SLOT, 2);
+        uhvar += pow(udp_tb[i].hamming - (float)uhamm/TABLE_SLOT, 2);
 
         // clear 
         tcp_tb[i].diffcnt = 0;
@@ -156,10 +170,11 @@ int main(int argc, char **argv)
         udp_tb[i].hamming = 0;
     }
 
-    printf("Avg TCP diff. count: %.2f\n", (float)tdiff/TABLE_SLOT);
-    printf("Avg UDP diff. count: %.2f\n", (float)udiff/TABLE_SLOT);
-    printf("Avg TCP hamming distance: %.2f\n", (float)thamm/TABLE_SLOT);
-    printf("Avg UDP hamming distance: %.2f\n", (float)uhamm/TABLE_SLOT);
+    printf("Var TCP diff. count: %.2f\n", sqrt(tdvar/TABLE_SLOT));
+    printf("Var UDP diff. count: %.2f\n", sqrt(udvar/TABLE_SLOT));
+    printf("Var TCP hamming distance: %.2f\n", sqrt(thvar/TABLE_SLOT));
+    printf("Var UDP hamming distance: %.2f\n", sqrt(uhvar/TABLE_SLOT));
+
 
     // Compare with the threshold
     handle = pcap_open_offline(argv[1], errbuf);  // reload 
@@ -204,11 +219,11 @@ int main(int argc, char **argv)
                         tcp_tb[flow_id].port_id = index; // update
                         tcp_tb[flow_id].diffcnt++;
                         // report
-                        if(tcp_tb[flow_id].diffcnt > tdiff/TABLE_SLOT){
+                        if(tcp_tb[flow_id].diffcnt > (tdiff/TABLE_SLOT + 2*sqrt(tdvar/TABLE_SLOT))){
                             map_inc(&ipv4_src_addr, inet_ntoa(ipv4->srcAddr));
                             map_inc(&ipv4_dst_addr, inet_ntoa(ipv4->dstAddr));
                         }
-                        if(tcp_tb[flow_id].hamming > thamm/TABLE_SLOT){
+                        if(tcp_tb[flow_id].hamming > (thamm/TABLE_SLOT + 2*sqrt(thvar/TABLE_SLOT))){
                             map_inc(&ipv4_src_addr_h, inet_ntoa(ipv4->srcAddr));
                             map_inc(&ipv4_dst_addr_h, inet_ntoa(ipv4->dstAddr));
                         }
@@ -230,11 +245,11 @@ int main(int argc, char **argv)
                     udp_tb[flow_id].port_id = index; // update
                     udp_tb[flow_id].diffcnt++;
                     // report
-                    if(udp_tb[flow_id].diffcnt > udiff/TABLE_SLOT){
+                    if(udp_tb[flow_id].diffcnt > (udiff/TABLE_SLOT + 2*sqrt(udvar/TABLE_SLOT))){
                         map_inc(&ipv4_src_addr, inet_ntoa(ipv4->srcAddr));
                         map_inc(&ipv4_dst_addr, inet_ntoa(ipv4->dstAddr));
                     }
-                    if(udp_tb[flow_id].hamming > uhamm/TABLE_SLOT){
+                    if(udp_tb[flow_id].hamming > (uhamm/TABLE_SLOT + 2*sqrt(uhvar/TABLE_SLOT))){
                         map_inc(&ipv4_src_addr_h, inet_ntoa(ipv4->srcAddr));
                         map_inc(&ipv4_dst_addr_h, inet_ntoa(ipv4->dstAddr));
                     }
@@ -249,28 +264,38 @@ int main(int argc, char **argv)
 
     const char *key;
     uint32_t reportCntAvg=0, Cnt=0, ReportNum=0;
+    float reportCntVar=0.0;
     map_iter_t iter = map_iter(&ipv4_src_addr);
     while ((key = map_next(&ipv4_src_addr, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
         reportCntAvg += reportCnt;
         Cnt++;
     }
-    printf("Avg Report Counter (diffcnt): %f\n", reportCntAvg/(float)Cnt);
+    printf("Mean of report counter (diffcnt): %f\n", reportCntAvg/(float)Cnt);
+    // cal variance
     iter = map_iter(&ipv4_src_addr);
     while ((key = map_next(&ipv4_src_addr, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
-        if(*map_get(&ipv4_src_addr, key) > reportCntAvg/Cnt){
+        reportCntVar += pow(reportCnt - (reportCntAvg/(float)Cnt), 2);
+    }
+    printf("Variance of report counter (diffcnt): %f\n", sqrt(reportCntVar/Cnt));
+
+    iter = map_iter(&ipv4_src_addr);
+    /*while ((key = map_next(&ipv4_src_addr, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
+        if(*map_get(&ipv4_src_addr, key) > (reportCntAvg/Cnt + sqrt(reportCntVar/Cnt))){
             printf("%s -> %d\n",  key , reportCnt);
             ReportNum++;
         }
-    }
-    printf("Number of Reports: %d\n", ReportNum);
+    }*/
+    printf("Number of unique Reports: %d\n", Cnt);
     printf("=============================================================\n");
     /*iter = map_iter(&ipv4_dst_addr);
     while ((key = map_next(&ipv4_dst_addr, &iter))) {
         printf("%s -> %d\n",  key , *map_get(&ipv4_dst_addr, key));
     }*/
     reportCntAvg=0;
+    reportCntVar=0.0;
     Cnt=0;
     ReportNum=0;
     iter = map_iter(&ipv4_src_addr_h);
@@ -279,16 +304,23 @@ int main(int argc, char **argv)
         reportCntAvg += reportCnt;
         Cnt++;
     }
-    printf("Avg Report Counter (hamming): %f\n", reportCntAvg/(float)Cnt);
+    printf("Mean of report counter (hamming): %f\n", reportCntAvg/(float)Cnt);
+    // cal variance
     iter = map_iter(&ipv4_src_addr_h);
     while ((key = map_next(&ipv4_src_addr_h, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr_h, key);
-        if(*map_get(&ipv4_src_addr_h, key) > reportCntAvg/Cnt){
+        reportCntVar += pow(reportCnt - (reportCntAvg/(float)Cnt), 2);
+    }
+    printf("Variance of report counter (hamming): %f\n", sqrt(reportCntVar/Cnt));
+    iter = map_iter(&ipv4_src_addr_h);
+    /*while ((key = map_next(&ipv4_src_addr_h, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_h, key);
+        if(*map_get(&ipv4_src_addr_h, key) > (reportCntAvg/Cnt + sqrt(reportCntVar/Cnt))){
             printf("%s -> %d\n",  key , reportCnt);
             ReportNum++;
         }
-    }
-    printf("Number of Reports: %d\n", ReportNum);
+    }*/
+    printf("Number of unique Reports: %d\n", Cnt);
     printf("=============================================================\n");
     return 0;
 }

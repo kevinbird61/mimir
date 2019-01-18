@@ -7,7 +7,16 @@ read_pcap: cmap.o pktstat.o
 hash_pcap: hash.o xxhash.o 
 	gcc -o hash_pcap.out hash.o xxhash.o hash_pcap.c -lpcap -Ithird_party
 port_diff: cmap.o hash.o xxhash.o 
-	gcc -o port_diff.out cmap.o hash.o xxhash.o port_diff.c -lpcap -Ithird_party
+	gcc -o port_diff.out cmap.o hash.o xxhash.o port_diff.c -lm -lpcap -Ithird_party
+
+# plot 
+plot_read_pcap:
+	# IP
+	gnuplot scripts/ip_proto_stat.gp 
+	# TCP 
+	gnuplot scripts/tcp_stat.gp 
+	# UDP
+	gnuplot scripts/udp_stat.gp 
 
 # Object files
 pktstat.o: lib/packet_stat.c 
