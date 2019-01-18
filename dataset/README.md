@@ -60,8 +60,26 @@
 | packet_record_1_9_ncku_csie_dns_3day.pcap | 42432 | 30546 | 52266 | 51765 | 40395 | 64007 | 63938 | 63961 |
 
 
+
+### 額外測資
+
+> 網路上額外找的測資，統一整理於此。
+
+| 測資名稱 | Packet 數量 | Unique Hosts | 備註 | 載點 | 
+| :--- | :--- | :--- | :--- | :--- |
+| LBNL-FTP-PKT (all.tcpdump) | 3264050 | 6152 | 為 benign traffic (FTP server) | [LBNL-FTP-PKT](https://ee.lbl.gov/anonymized-traces.html) | 
+| CTU-13-dataset | 多個 pcap 檔案 | x | 多個 botnet traffic 流量提供，作為 anomaly traffic | [📁 google](https://drive.google.com/file/d/1nWr_Fs_n7gQ0nGx-iMyC0joZC3DqvXFp/view?usp=sharing) |
+
+
+* IP, TCP, UDP 分析
+
+| 測資名稱 | Unique src IP | Unique dst IP | Unique TCP | Unique src TCP port | Unique dst TCP port | Unique UDP | Unique src UDP port | Unique dst UDP port |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| LBNL-FTP-PKT (all.tcpdump) | 6152 | 6152 | 12922 | 12922 | 12922 | 0 | 0 | 0 |
+
 ## 延伸閱讀
 
 * [High Volume of GRE traffic](https://badpackets.net/high-volume-of-protocol-47-gre-traffic-from-hinet-as3462-found/)
 * [Traces available in the Internet Traffic Archive](http://ita.ee.lbl.gov/html/traces.html)
 * [Publicly available PCAP files](https://www.netresec.com/?page=pcapfiles)
+* [Malware Traffic Analysis - source pcap files for traffic analysis exercise](http://malware-traffic-analysis.net/training-exercises.html)
