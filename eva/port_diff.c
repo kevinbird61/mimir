@@ -14,6 +14,8 @@
 
 // hash table size 
 #define TABLE_SLOT 512
+// N-record limitation
+#define LIMIT_NUM 10
 // ethernet 
 #define SIZE_ETHER 14
 
@@ -31,16 +33,37 @@ typedef struct _eva {
     uint32_t hamming;   // hamming distance
 } eva_t;
 
+struct _record_elem {
+    uint32_t port_id;       // current index (the feature we want to monitor. e.g. port id)
+    // bi-direction linked-list
+    struct _record_elem *next;
+    struct _record_elem *prev;  
+};
+
+// data structure of N-records
+typedef struct _n_records {
+    uint8_t num_record;         // number of existed record (linked-list)
+    struct  _record_elem *ptr;   // header pointer of N records
+} record_t;
+
 // report ip (diffcnt)
 map_int_t ipv4_src_addr;
 map_int_t ipv4_dst_addr;
 // report ip (hamming)
 map_int_t ipv4_src_addr_h;
 map_int_t ipv4_dst_addr_h;
+// report ip (N-records)
+map_int_t ipv4_src_addr_n_d;
+map_int_t ipv4_src_addr_n_h;
+
 
 // Key-Value pair 
 eva_t tcp_tb[TABLE_SLOT]={0};
 eva_t udp_tb[TABLE_SLOT]={0};
+
+// N-records table 
+record_t n_tcp_rd[TABLE_SLOT]={0};
+record_t n_udp_rd[TABLE_SLOT]={0};
 
 // map inc 
 void map_inc(map_int_t *m, void *key){
@@ -75,6 +98,9 @@ int main(int argc, char **argv)
     map_init(&ipv4_dst_addr);
     map_init(&ipv4_src_addr_h);
     map_init(&ipv4_dst_addr_h);
+    // n-records
+    map_init(&ipv4_src_addr_n_d);
+    map_init(&ipv4_src_addr_n_h);
 
     // Get each packet from pcap file
     while (packet = pcap_next(handle,&header)) {
@@ -118,6 +144,57 @@ int main(int argc, char **argv)
                         tcp_tb[flow_id].port_id = index; // update
                         tcp_tb[flow_id].diffcnt++;
                     }
+                    /* N-record part */
+                    // push into N-record 
+                    if(n_tcp_rd[flow_id].num_record == 0){
+                        struct _record_elem *new_elem = (struct _record_elem*)malloc(sizeof(struct _record_elem));
+                        new_elem->port_id = index;
+                        new_elem->next = NULL;
+                        new_elem->prev = NULL;
+                        n_tcp_rd[flow_id].ptr = new_elem;
+                        n_tcp_rd[flow_id].num_record=1;
+                    } else {
+                        struct _record_elem *elem_ptr;
+                        elem_ptr = n_tcp_rd[flow_id].ptr;
+                        int recordNum=0;
+                        uint32_t diffCnt=0,hammingW=0;
+                        // float entropyVal_d=0.0, entropyVal_h=0.0;
+                        uint32_t popout;
+                        while(elem_ptr!=NULL){
+                            recordNum++;
+                            // get diff 
+                            if(index != elem_ptr->port_id) diffCnt++;
+                            // get hamming 
+                            hammingW += popcount32_fast_mul(index ^ elem_ptr->port_id);
+                            // popout (push new record into history), replace
+                            popout = elem_ptr->port_id;
+                            elem_ptr->port_id = index;
+                            // shift to next
+                            elem_ptr = elem_ptr->next;
+                        }
+                        // if surpass LIMIT_NUM, then we dont create
+                        // new node for it.
+                        if(recordNum < LIMIT_NUM){
+                            // create new node for it 
+                            struct _record_elem *newnode = (struct _record_elem*)malloc(sizeof(struct _record_elem));
+                            newnode->port_id = popout;
+                            // link to elem_ptr
+                            elem_ptr = newnode;
+                            newnode->next = NULL;
+                            newnode->prev = NULL;
+                            // newnode->prev = elem_ptr;
+                            n_tcp_rd[flow_id].num_record = recordNum+1;
+                        } else {
+                            // just discard popout
+                        }
+                        // calculate entropy
+
+                        // calculate moving stage
+
+                        // assign diff & hamming into target OD pair
+                        map_set(&ipv4_src_addr_n_d, inet_ntoa(ipv4->srcAddr), (float)diffCnt/recordNum);
+                        map_set(&ipv4_src_addr_n_h, inet_ntoa(ipv4->srcAddr), (float)hammingW/recordNum);
+                    }
                 }
             } else if(ipv4->protocol == (u_char)17){
                 udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
@@ -145,6 +222,7 @@ int main(int argc, char **argv)
 
     uint32_t tdiff=0, udiff=0, thamm=0, uhamm=0;
     for(int i=0;i<TABLE_SLOT;i++){
+        // normal way
         tdiff += tcp_tb[i].diffcnt;
         udiff += udp_tb[i].diffcnt;
         thamm += tcp_tb[i].hamming;
@@ -290,7 +368,7 @@ int main(int argc, char **argv)
         }
     }
     printf("Number of unique Reports (> mean + 3*var): %d\n", Cnt);
-    printf("Number of unique Reports which surpass report threshold (> reports' mean + 3*var): %d\n", ReportNum);
+    printf("Number of unique Reports (> reports' mean + 3*var): %d\n", ReportNum);
     printf("=============================================================\n");
     /*iter = map_iter(&ipv4_dst_addr);
     while ((key = map_next(&ipv4_dst_addr, &iter))) {
@@ -323,7 +401,69 @@ int main(int argc, char **argv)
         }
     }
     printf("Number of unique Reports (> mean + 3*var): %d\n", Cnt);
-    printf("Number of unique Reports which surpass report threshold (> reports' mean + 3*var): %d\n", ReportNum);
+    printf("Number of unique Reports (> reports' mean + 3*var): %d\n", ReportNum);
+    printf("=============================================================\n");
+    reportCntAvg=0;
+    reportCntVar=0.0;
+    Cnt=0;
+    ReportNum=0;
+    printf("N-Records (DiffCnt): \n");
+    printf("=============================================================\n");
+    iter = map_iter(&ipv4_src_addr_n_d);
+    while ((key = map_next(&ipv4_src_addr_n_d, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_n_d, key);
+        reportCntAvg += reportCnt;
+        Cnt++;
+    }
+    printf("Mean of diffCnt (N-records): %f\n", reportCntAvg/(float)Cnt);
+    // cal variance
+    iter = map_iter(&ipv4_src_addr_n_d);
+    while ((key = map_next(&ipv4_src_addr_n_d, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_n_d, key);
+        reportCntVar += pow(reportCnt - (reportCntAvg/(float)Cnt), 2);
+    }
+    printf("Variance of diffCnt (N-records): %f\n", sqrt(reportCntVar/Cnt));
+    iter = map_iter(&ipv4_src_addr_n_d);
+    while ((key = map_next(&ipv4_src_addr_n_d, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_n_d, key);
+        if(reportCnt > (reportCntAvg/Cnt + 3*sqrt(reportCntVar/Cnt))){
+            printf("%s -> %d\n",  key , reportCnt);
+            ReportNum++;
+        }
+    }
+    printf("Number of unique Reports (> mean + 3*var): %d\n", Cnt);
+    printf("Number of unique Reports (> reports mean + 3*var): %d\n", ReportNum);
+    printf("=============================================================\n");
+    reportCntAvg=0;
+    reportCntVar=0.0;
+    Cnt=0;
+    ReportNum=0;
+    printf("N-Records (Hamming): \n");
+    printf("=============================================================\n");
+    iter = map_iter(&ipv4_src_addr_n_h);
+    while ((key = map_next(&ipv4_src_addr_n_h, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_n_h, key);
+        reportCntAvg += reportCnt;
+        Cnt++;
+    }
+    printf("Mean of diffCnt (N-records): %f\n", reportCntAvg/(float)Cnt);
+    // cal variance
+    iter = map_iter(&ipv4_src_addr_n_h);
+    while ((key = map_next(&ipv4_src_addr_n_h, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_n_h, key);
+        reportCntVar += pow(reportCnt - (reportCntAvg/(float)Cnt), 2);
+    }
+    printf("Variance of diffCnt (N-records): %f\n", sqrt(reportCntVar/Cnt));
+    iter = map_iter(&ipv4_src_addr_n_h);
+    while ((key = map_next(&ipv4_src_addr_n_h, &iter))) {
+        uint32_t reportCnt = *map_get(&ipv4_src_addr_n_h, key);
+        if(reportCnt > (reportCntAvg/Cnt + 3*sqrt(reportCntVar/Cnt))){
+            printf("%s -> %d\n",  key , reportCnt);
+            ReportNum++;
+        }
+    }
+    printf("Number of unique Reports (> mean + 3*var): %d\n", Cnt);
+    printf("Number of unique Reports (> reports mean + 3*var): %d\n", ReportNum);
     printf("=============================================================\n");
     return 0;
 }
