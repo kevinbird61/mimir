@@ -7,6 +7,7 @@
 
 #include "lib/packet_def.h"
 #include "lib/hash.h"
+#include "lib/hamming.h"
 
 #include "hash/xxhash.h"
 #include "cmap/map.h"
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
                     unsigned int index = crc16(Port, 4) % TABLE_SLOT;
                     // cal 
                     if(tcp_tb[flow_id].port_id != index){
-                        tcp_tb[flow_id].hamming += tcp_tb[flow_id].port_id ^ index; // get hamming 
+                        tcp_tb[flow_id].hamming += popcount32_better(tcp_tb[flow_id].port_id ^ index); // get hamming 
                         tcp_tb[flow_id].port_id = index; // update
                         tcp_tb[flow_id].diffcnt++;
                     }
@@ -130,7 +131,7 @@ int main(int argc, char **argv)
                 unsigned int index = crc16(Port, 4) % TABLE_SLOT;
                 // cal 
                 if(udp_tb[flow_id].port_id != index){
-                    udp_tb[flow_id].hamming += udp_tb[flow_id].port_id ^ index; // get hamming 
+                    udp_tb[flow_id].hamming += popcount32_better(udp_tb[flow_id].port_id ^ index); // get hamming 
                     udp_tb[flow_id].port_id = index; // update
                     udp_tb[flow_id].diffcnt++;
                 }
@@ -214,15 +215,15 @@ int main(int argc, char **argv)
                     unsigned int index = crc16(Port, 4) % TABLE_SLOT;
                     // cal 
                     if(tcp_tb[flow_id].port_id != index){
-                        tcp_tb[flow_id].hamming += tcp_tb[flow_id].port_id ^ index; // get hamming 
+                        tcp_tb[flow_id].hamming += popcount32_better(tcp_tb[flow_id].port_id ^ index); // get hamming 
                         tcp_tb[flow_id].port_id = index; // update
                         tcp_tb[flow_id].diffcnt++;
                         // report
-                        if(tcp_tb[flow_id].diffcnt > (tdiff/TABLE_SLOT + 2*sqrt(tdvar/TABLE_SLOT))){
+                        if(tcp_tb[flow_id].diffcnt > (tdiff/TABLE_SLOT + 3*sqrt(tdvar/TABLE_SLOT))){
                             map_inc(&ipv4_src_addr, inet_ntoa(ipv4->srcAddr));
                             map_inc(&ipv4_dst_addr, inet_ntoa(ipv4->dstAddr));
                         }
-                        if(tcp_tb[flow_id].hamming > (thamm/TABLE_SLOT + 2*sqrt(thvar/TABLE_SLOT))){
+                        if(tcp_tb[flow_id].hamming > (thamm/TABLE_SLOT + 3*sqrt(thvar/TABLE_SLOT))){
                             map_inc(&ipv4_src_addr_h, inet_ntoa(ipv4->srcAddr));
                             map_inc(&ipv4_dst_addr_h, inet_ntoa(ipv4->dstAddr));
                         }
@@ -240,15 +241,15 @@ int main(int argc, char **argv)
                 unsigned int index = crc16(Port, 4) % TABLE_SLOT;
                 // cal 
                 if(udp_tb[flow_id].port_id != index){
-                    udp_tb[flow_id].hamming += udp_tb[flow_id].port_id ^ index; // get hamming 
+                    udp_tb[flow_id].hamming += popcount32_better(udp_tb[flow_id].port_id ^ index); // get hamming 
                     udp_tb[flow_id].port_id = index; // update
                     udp_tb[flow_id].diffcnt++;
                     // report
-                    if(udp_tb[flow_id].diffcnt > (udiff/TABLE_SLOT + 2*sqrt(udvar/TABLE_SLOT))){
+                    if(udp_tb[flow_id].diffcnt > (udiff/TABLE_SLOT + 3*sqrt(udvar/TABLE_SLOT))){
                         map_inc(&ipv4_src_addr, inet_ntoa(ipv4->srcAddr));
                         map_inc(&ipv4_dst_addr, inet_ntoa(ipv4->dstAddr));
                     }
-                    if(udp_tb[flow_id].hamming > (uhamm/TABLE_SLOT + 2*sqrt(uhvar/TABLE_SLOT))){
+                    if(udp_tb[flow_id].hamming > (uhamm/TABLE_SLOT + 3*sqrt(uhvar/TABLE_SLOT))){
                         map_inc(&ipv4_src_addr_h, inet_ntoa(ipv4->srcAddr));
                         map_inc(&ipv4_dst_addr_h, inet_ntoa(ipv4->dstAddr));
                     }
@@ -260,7 +261,8 @@ int main(int argc, char **argv)
         size_existed = 0; // reset
     } 
     pcap_close(handle);
-
+    
+    printf("=============================================================\n");
     const char *key;
     uint32_t reportCntAvg=0, Cnt=0, ReportNum=0;
     float reportCntVar=0.0;
@@ -280,14 +282,15 @@ int main(int argc, char **argv)
     printf("Variance of report counter (diffcnt): %f\n", sqrt(reportCntVar/Cnt));
 
     iter = map_iter(&ipv4_src_addr);
-    /*while ((key = map_next(&ipv4_src_addr, &iter))) {
+    while ((key = map_next(&ipv4_src_addr, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
-        if(*map_get(&ipv4_src_addr, key) > (reportCntAvg/Cnt + sqrt(reportCntVar/Cnt))){
-            printf("%s -> %d\n",  key , reportCnt);
+        if(*map_get(&ipv4_src_addr, key) > (reportCntAvg/Cnt + 3*sqrt(reportCntVar/Cnt))){
+            // printf("%s -> %d\n",  key , reportCnt);
             ReportNum++;
         }
-    }*/
-    printf("Number of unique Reports: %d\n", Cnt);
+    }
+    printf("Number of unique Reports (> mean + 3*var): %d\n", Cnt);
+    printf("Number of unique Reports which surpass report threshold (> reports' mean + 3*var): %d\n", ReportNum);
     printf("=============================================================\n");
     /*iter = map_iter(&ipv4_dst_addr);
     while ((key = map_next(&ipv4_dst_addr, &iter))) {
@@ -312,14 +315,15 @@ int main(int argc, char **argv)
     }
     printf("Variance of report counter (hamming): %f\n", sqrt(reportCntVar/Cnt));
     iter = map_iter(&ipv4_src_addr_h);
-    /*while ((key = map_next(&ipv4_src_addr_h, &iter))) {
+    while ((key = map_next(&ipv4_src_addr_h, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr_h, key);
-        if(*map_get(&ipv4_src_addr_h, key) > (reportCntAvg/Cnt + sqrt(reportCntVar/Cnt))){
+        if(*map_get(&ipv4_src_addr_h, key) > (reportCntAvg/Cnt + 3*sqrt(reportCntVar/Cnt))){
             printf("%s -> %d\n",  key , reportCnt);
             ReportNum++;
         }
-    }*/
-    printf("Number of unique Reports: %d\n", Cnt);
+    }
+    printf("Number of unique Reports (> mean + 3*var): %d\n", Cnt);
+    printf("Number of unique Reports which surpass report threshold (> reports' mean + 3*var): %d\n", ReportNum);
     printf("=============================================================\n");
     return 0;
 }

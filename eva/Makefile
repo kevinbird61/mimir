@@ -8,7 +8,7 @@ read_pcap_w.out: cmap.o pktstat.o read_pcap.c
 	gcc $^ -o $@ -DWRITE -lpcap -Ithird_party
 hash_pcap.out: hash.o xxhash.o hash_pcap.c
 	gcc $^ -o $@ -lpcap -Ithird_party
-port_diff.out: cmap.o hash.o xxhash.o port_diff.c 
+port_diff.out: cmap.o hash.o xxhash.o hamm.o port_diff.c 
 	gcc $^ -o $@ -lm -lpcap -Ithird_party
 heavy_hitter.out: cmap.o hash.o xxhash.o pktstat.o heavy_hitter.c
 	gcc $^ -o $@ -lm -lpcap -Ithird_party
@@ -31,6 +31,9 @@ xxhash.o: third_party/hash/xxhash.c
 	gcc -o xxhash.o -c third_party/hash/xxhash.c 
 hash.o: lib/hash.c 
 	gcc -o hash.o -c lib/hash.c
+hamm.o: lib/hamming.c
+	gcc -o $@ -c lib/hamming.c
+
 
 clean:
 	rm *.o *.out 
