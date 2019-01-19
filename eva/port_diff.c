@@ -150,6 +150,7 @@ int main(int argc, char **argv)
                     }
                     /* N-record part */
                     // push into N-record 
+                    /*
                     if(n_tcp_rd[flow_id].num_record == 0){
                         struct _record_elem *new_elem = (struct _record_elem*)malloc(sizeof(struct _record_elem));
                         new_elem->port_id = index;
@@ -210,7 +211,7 @@ int main(int argc, char **argv)
                         // map_set(&ipv4_src_addr_n_h, inet_ntoa(ipv4->srcAddr), hammingW/recordNum);
                         // map_set(&ipv4_src_addr_n_d, inet_ntoa(ipv4->srcAddr), entropyVal_d);
                         map_set(&ipv4_src_addr_n_h, inet_ntoa(ipv4->srcAddr), entropyVal_h);
-                    }
+                    }*/
                 }
             } else if(ipv4->protocol == (u_char)17){
                 udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
@@ -419,6 +420,7 @@ int main(int argc, char **argv)
     printf("Number of unique Reports (> mean + 3*var): %d\n", Cnt);
     printf("Number of unique Reports (> reports' mean + 2*var): %d\n", ReportNum);
     printf("=============================================================\n");
+    /*
     reportCntAvg=0;
     reportCntVar=0.0;
     Cnt=0;
@@ -481,5 +483,6 @@ int main(int argc, char **argv)
     printf("Number of unique Reports (> mean + 3*var): %d\n", Cnt);
     printf("Number of unique Reports (> reports mean + 3*var): %d\n", ReportNum);
     printf("=============================================================\n");
+    */
     return 0;
 }

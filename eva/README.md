@@ -6,19 +6,30 @@
 
 ## Programs 
 
-* [read_pcap.out](read_pcap.c)
-  * 分析 pcap file 的程式碼。
-  * 呼叫 `make` 即可編譯，產生 `read_pcap.out`
-  * 執行： `./read_pcap.out <your_pcap_file>`
-  * 結果將會存放在 output/ 資料夾底下，分別會有：
-    * `*_raw.txt`: 格式為 <key>-<對應的數量>，用來計算 flow distribution、service distribution、port distribution
-    * `ip_without_counter.txt`: 單純紀錄 IP address 為主，用來做 ip prefix aggregation 程式的輸入。
-* [plot.sh](plot.sh)
-  * 相依於 read_pcap.out 的執行結果 - 於 output/ 底下輸出的 txt 來源檔。
-  * 使用 gnuplot 來做繪製，使用的 gnuplot 腳本放置於 `scripts/`，將繪圖結果放置於 `images` 底下。
+呼叫 `make` 來編譯以下幾隻以 C 為主的程式：
+1. [read_pcap.out](read_pcap.c)
+   * 分析 pcap file 的程式碼。
+   * 執行： `./read_pcap.out <your_pcap_file>`
+   * 若需要將結果輸出，則呼叫 `./read_pcap.out`，結果將會存放在 output/ 資料夾底下，分別會有：
+     * `*_raw.txt`: 格式為 <key>-<對應的數量>，用來計算 flow distribution、service distribution、port distribution
+     * `ip_without_counter.txt`: 單純紀錄 IP address 為主，用來做 ip prefix aggregation 程式的輸入。 
+2. [hash_pcap.out](hash_pcap.c)
+   * 探討 hash collision 的影響
+   * 執行： `./hash_pcap.out <your_pcap_file>`
+   * 顯示目前該 pcap 封包內容對於所選的 *Table size*, *Hash algorithm* 所造成的 collision 數量。
+3. [port_diff.out](port_diff.c)
+   * 探討使用 difference counter 與 hamming distance/weight 的 detection 影響。
+   * 以及探討使用 Moving Average 與 Entropy 對於 detection 的影響。
+   * 執行： `./port_diff.out <your_pcap_file>`
+   * 顯示使用的方法以及對應回報的數量。
+4. [heavy_hitter.out](heavy_hitter.c)
+   * 探討 heavy hitter 與 sketch (`t` x `k`) / non-sketch (`1` x `k`) 之間的差異。 （t 為 distinct hash algorithm 數量，k 為 Table size）
+   * 執行： `./heavy_hitter.out -f <your_pcap_file>`
+
+其他輔助程式：
 * [aggregate.py](aggregate.py)
   * 參考來源：https://adamkuj.net/blog/2014/04/08/a-utility-to-perform-ipv4-ipv6-prefix-aggregation/ 
-  * 使用這支腳本程式，來對 read_pcap.out 輸出的 `ip_without_counter.txt` 做分析。
+  * 使用這支腳本程式，來對 read_pcap.out 輸出的 `ip_without_counter.txt` 做分析。執行： `./aggregate.py -c -f output/ip_without_counter.txt > output/aggregate.txt`
   * 主要功能為 ip prefix aggregation，察看該來源 pcap 的分散程度。（直接比較輸入與輸出的 entries 數量）
 
 ## Repository Layout 
@@ -28,7 +39,9 @@
 ├── images          # Output result of gnuplot under scripts/
 ├── manual          # Some discussions of IDS/algorithms ..., writing in readable files (e.g. Markdown)
 ├── output          # Output statistics of evaluation programs
+├── lib             # Useful libraries
 ├── third_party
+│   ├── hash        # Library of hash algorithms
 │   └── cmap        # Library of map structure in C
 └── scripts         # Plotting scripts of gnuplot
 ```
