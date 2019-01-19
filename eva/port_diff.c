@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <pcap/pcap.h>
 #include <math.h>
 
@@ -81,18 +82,38 @@ void map_inc(map_int_t *m, void *key){
 
 int main(int argc, char **argv) 
 { 
+    char *pcapfile;
+    int ch, fflag=0,dflag=0;
+    while((ch = getopt(argc,argv,"df:"))!=-1){
+        // printf("optind: %d\n", optind);
+        switch(ch){
+            case 'f':
+                // filename = optarg
+                fflag=1;
+                printf("Input PCAP filename: %s\n", optarg);
+                pcapfile=optarg;
+                break;
+            case 'd':
+                dflag=1; // debug flag (print option)
+                break;
+            default:
+                break;
+        }
+    }
+
+    if(!fflag){
+        fprintf(stderr, "Using -f <pcapfile> to specify input pcap file.\n"); 
+        exit(1); 
+    }
+
     unsigned int flow_id;
     struct pcap_pkthdr header; 
     const u_char *packet;
-    if (argc < 2) { 
-        fprintf(stderr, "Usage: %s <pcap>\n", argv[0]); 
-        exit(1); 
-    } 
     pcap_t *handle; 
     char errbuf[PCAP_ERRBUF_SIZE];  
-    handle = pcap_open_offline(argv[1], errbuf); 
+    handle = pcap_open_offline(pcapfile, errbuf); 
     if (handle == NULL) { 
-        fprintf(stderr, "Couldn't open pcap file: %s\n", argv[1]); 
+        fprintf(stderr, "Couldn't open pcap file: %s\n", pcapfile); 
         fprintf(stderr, "%s\n", errbuf);
         return(2); 
     } 
@@ -272,7 +293,7 @@ int main(int argc, char **argv)
 
 
     // Compare with the threshold
-    handle = pcap_open_offline(argv[1], errbuf);  // reload 
+    handle = pcap_open_offline(pcapfile, errbuf);  // reload 
     while (packet = pcap_next(handle,&header)) {
         // printf("%d\n", header.len);
         /* Packet parsing process */
@@ -364,6 +385,10 @@ int main(int argc, char **argv)
     map_iter_t iter = map_iter(&ipv4_src_addr);
     while ((key = map_next(&ipv4_src_addr, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
+if(dflag)
+{
+        printf("%s -> %d\n",  key , reportCnt);
+}
         reportCntAvg += reportCnt;
         Cnt++;
     }
@@ -380,7 +405,10 @@ int main(int argc, char **argv)
     while ((key = map_next(&ipv4_src_addr, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr, key);
         if(*map_get(&ipv4_src_addr, key) > (reportCntAvg/Cnt + 2*sqrt(reportCntVar/Cnt))){
-            printf("%s -> %d\n",  key , reportCnt);
+if(dflag)
+{
+        printf("%s -> %d\n",  key , reportCnt);
+}
             ReportNum++;
         }
     }
@@ -398,6 +426,10 @@ int main(int argc, char **argv)
     iter = map_iter(&ipv4_src_addr_h);
     while ((key = map_next(&ipv4_src_addr_h, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr_h, key);
+if(dflag)
+{
+        printf("%s -> %d\n",  key , reportCnt);
+}
         reportCntAvg += reportCnt;
         Cnt++;
     }
@@ -413,7 +445,10 @@ int main(int argc, char **argv)
     while ((key = map_next(&ipv4_src_addr_h, &iter))) {
         uint32_t reportCnt = *map_get(&ipv4_src_addr_h, key);
         if(*map_get(&ipv4_src_addr_h, key) > (reportCntAvg/Cnt + 2*sqrt(reportCntVar/Cnt))){
-            printf("%s -> %d\n",  key , reportCnt);
+if(dflag)
+{
+        printf("%s -> %d\n",  key , reportCnt);
+}
             ReportNum++;
         }
     }

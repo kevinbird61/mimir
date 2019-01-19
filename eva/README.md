@@ -20,7 +20,8 @@
 3. [port_diff.out](port_diff.c)
    * 探討使用 difference counter 與 hamming distance/weight 的 detection 影響。
    * 以及探討使用 Moving Average 與 Entropy 對於 detection 的影響。
-   * 執行： `./port_diff.out <your_pcap_file>`
+   * 執行： `./port_diff.out -f <your_pcap_file>`
+     * 若有需要將 report 的資訊印出，則需加上 `-d` 的 option。
    * 顯示使用的方法以及對應回報的數量。
 4. [heavy_hitter.out](heavy_hitter.c)
    * 探討 heavy hitter 與 sketch (`t` x `k`) / non-sketch (`1` x `k`) 之間的差異。 （t 為 distinct hash algorithm 數量，k 為 Table size）
