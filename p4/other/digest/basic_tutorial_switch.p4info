@@ -1,0 +1,125 @@
+tables {
+  preamble {
+    id: 33576687
+    name: "basic_tutorial_ingress.ipv4_forwarding.ipv4_lpm"
+    alias: "ipv4_lpm"
+  }
+  match_fields {
+    id: 1
+    name: "hdr.ipv4.dstAddr"
+    bitwidth: 32
+    match_type: LPM
+  }
+  action_refs {
+    id: 16827926
+  }
+  action_refs {
+    id: 16793508
+  }
+  action_refs {
+    id: 16800567
+  }
+  size: 1024
+  idle_timeout_behavior: NO_TIMEOUT
+}
+actions {
+  preamble {
+    id: 16793508
+    name: "drop"
+    alias: "drop"
+  }
+}
+actions {
+  preamble {
+    id: 16800567
+    name: "NoAction"
+    alias: "NoAction"
+  }
+}
+actions {
+  preamble {
+    id: 16827926
+    name: "basic_tutorial_ingress.ipv4_forwarding.ipv4_forward"
+    alias: "ipv4_forward"
+  }
+  params {
+    id: 1
+    name: "dstAddr"
+    bitwidth: 48
+  }
+  params {
+    id: 2
+    name: "port"
+    bitwidth: 9
+  }
+}
+actions {
+  preamble {
+    id: 16792545
+    name: "basic_tutorial_ingress.send_to_controller.send2cpu"
+    alias: "send2cpu"
+  }
+}
+controller_packet_metadata {
+  preamble {
+    id: 67146229
+    name: "packet_in"
+    annotations: "@controller_header(\"packet_in\")"
+  }
+  metadata {
+    id: 1
+    name: "ingress_port"
+    bitwidth: 16
+  }
+}
+controller_packet_metadata {
+  preamble {
+    id: 67121543
+    name: "packet_out"
+    annotations: "@controller_header(\"packet_out\")"
+  }
+  metadata {
+    id: 1
+    name: "egress_port"
+    bitwidth: 16
+  }
+}
+digests {
+  preamble {
+    id: 385927645
+    name: "flowCache_digest_t"
+    alias: "flowCache_digest_t"
+  }
+  type_spec {
+    struct {
+      name: "flowCache_digest_t"
+    }
+  }
+}
+type_info {
+  structs {
+    key: "flowCache_digest_t"
+    value {
+      members {
+        name: "srcAddr"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+      members {
+        name: "dstAddr"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+    }
+  }
+}
