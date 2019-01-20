@@ -12,6 +12,7 @@
 // application
 #include "includes/ipv4_forward.p4"
 #include "includes/portscan.p4"
+#include "includes/digest.p4"
 #include "includes/pct.p4"
 
 //------------------------------------------------------------------------------
@@ -30,6 +31,9 @@ control basic_tutorial_ingress(
 
         // portscan check 
         portscan_v.apply(hdr, metadata, standard_metadata);
+
+        // digest
+        send_to_controller.apply(hdr, metadata, standard_metadata);
     }
 }
 

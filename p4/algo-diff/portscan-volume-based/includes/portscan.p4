@@ -17,7 +17,8 @@ control portscan_v(
     register<bit<32>>(TABLE_SLOT) DiffCnt;
 
     // threshold
-    register<bit<32>>(1)    CntThres;
+    register<bit<32>>(1)    CntThres;           // X.
+    register<bit<32>>(1)    CntThresPow;        // X^2.
     // Report Count
     register<bit<32>>(1)    ReportCnt;
 
@@ -61,18 +62,29 @@ control portscan_v(
 
                 // Check the counter value 
                 bit<32> c_thres;
-                // CntThres.read(c_thres, 0);
-                c_thres = 32w271;
-                if(pre_diffcnt > c_thres && c_thres > 0){
+                CntThres.read(c_thres, 0);
+                c_thres = (c_thres == 0) ? pre_diffcnt : (c_thres + pre_diffcnt)>>1;
+
+                /*
+                bit<32> c_thres_pow;
+                CntThresPow.read(c_thres_pow, 0);
+                c_thres_pow = (c_thres_pow == 0) ? pre_diffcnt*pre_diffcnt : (c_thres_pow + pre_diffcnt*pre_diffcnt)>>1;
+                */
+
+                CntThres.write(0, c_thres);
+                // CntThresPow.write(0, c_thres_pow);
+
+                if(pre_diffcnt > c_thres){
                     // if surpass the threshold, then report_flag=1 
                     // metadata.report_flag = 1w1;
-                    bit<32> rcnt;
-                    ReportCnt.read(rcnt, 0);
-                    ReportCnt.write(0, rcnt+1);
+                    metadata.send_to_cpu=1w1;
+                    // bit<32> rcnt;
+                    // ReportCnt.read(rcnt, 0);
+                    // ReportCnt.write(0, rcnt+1);
                     // FIXME: currently drop the packet 
-                    mark_to_drop();
+                    // mark_to_drop();
                     // reset diffcnt 
-                    pre_diffcnt = 0;
+                    // pre_diffcnt = 0;
                 }
 
                 DiffCnt.write(metadata.flow_id, pre_diffcnt);

@@ -36,6 +36,8 @@ struct metadata_t {
     bit<16>     l4_srcPort;
     bit<16>     l4_dstPort;
 
+    bit<1>      send_to_cpu;
+
     bit<32>     flow_id;
     bit<32>     port_id;
 

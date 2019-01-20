@@ -60,6 +60,13 @@ actions {
     alias: "update_OD_pair_id"
   }
 }
+actions {
+  preamble {
+    id: 16792545
+    name: "basic_tutorial_ingress.send_to_controller.send2cpu"
+    alias: "send2cpu"
+  }
+}
 controller_packet_metadata {
   preamble {
     id: 67146229
@@ -131,6 +138,21 @@ registers {
 }
 registers {
   preamble {
+    id: 369134660
+    name: "basic_tutorial_ingress.portscan_v.CntThresPow"
+    alias: "CntThresPow"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1
+}
+registers {
+  preamble {
     id: 369129245
     name: "basic_tutorial_ingress.portscan_v.ReportCnt"
     alias: "ReportCnt"
@@ -159,5 +181,42 @@ registers {
   }
   size: 1
 }
+digests {
+  preamble {
+    id: 385927645
+    name: "flowCache_digest_t"
+    alias: "flowCache_digest_t"
+  }
+  type_spec {
+    struct {
+      name: "flowCache_digest_t"
+    }
+  }
+}
 type_info {
+  structs {
+    key: "flowCache_digest_t"
+    value {
+      members {
+        name: "srcAddr"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+      members {
+        name: "dstAddr"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+    }
+  }
 }
