@@ -39,6 +39,8 @@ struct metadata_t {
     bit<32>     flow_id;
     bit<32>     port_id;
 
+    bit<1>      send_to_cpu;
+
     // for MA-stage version
     bit<32>     popout;     // popout value
     bit<32>     avail_cnt;  // available count (N)

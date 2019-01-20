@@ -5,7 +5,7 @@
 #include "xxhash.p4"
 #include "hamming_weight.p4"
 
-#define TABLE_SLOT 1024
+#define TABLE_SLOT 32
 
 control portscan_d(
     inout headers_t hdr,
@@ -23,8 +23,8 @@ control portscan_d(
     register<bit<32>>(TABLE_SLOT) DistWeight;  // (Hamming) Distance volume (the amount of changing)
 
     // threshold 
-    register<bit<32>>(1) WeightThres;          // Threshold of distance volume (Using simple_switch_CLI)
-
+    register<bit<32>>(1) WeightThres;          // X. Threshold of distance volume (Using simple_switch_CLI)
+    register<bit<32>>(1) WeightThresPow;       // X^2.
     // report cnt
     register<bit<32>>(1) ReportCnt;
 
@@ -75,18 +75,31 @@ control portscan_d(
 
                 // Check the weight
                 bit<32> c_thres;
-                // WeightThres.read(c_thres, 0); 
-                c_thres = 32w2131;
-                if(pre_weight > c_thres && c_thres > 0){
+                WeightThres.read(c_thres, 0); 
+                c_thres = c_thres==0 ? pre_weight : (c_thres + pre_weight)>>1; // divide by 2
+
+                bit<32> c_thres_pow;
+                WeightThresPow.read(c_thres_pow, 0);
+                c_thres_pow = c_thres_pow==0 ? pre_weight*pre_weight : (c_thres_pow + pre_weight*pre_weight)>>1;
+
+                WeightThresPow.write(0, c_thres_pow);
+                WeightThres.write(0, c_thres);
+
+                // Var[X] = E[X^2] - E[X]^2
+                c_thres_pow = c_thres_pow - c_thres*c_thres;
+
+                // surpass mean+variance
+                if(pre_weight > (c_thres_pow)){
                     // if surpass the threshold, then report_flag=1 
                     // metadata.report_flag = 1w1;
-                    bit<32> rcnt;
-                    ReportCnt.read(rcnt, 0);
-                    ReportCnt.write(0, rcnt+1);
+                    metadata.send_to_cpu = 1w1;
+                    //bit<32> rcnt;
+                    //ReportCnt.read(rcnt, 0);
+                    //ReportCnt.write(0, rcnt+1);
                     // FIXME: currently drop the packet 
-                    mark_to_drop();
+                    // mark_to_drop();
                     // Clean weight 
-                    pre_weight = 0;
+                    // pre_weight = 0;
                 }
                 DistWeight.write(metadata.flow_id, pre_weight);
                 PortDist.write(metadata.flow_id, metadata.port_id); // only record the latest active one

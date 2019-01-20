@@ -55,9 +55,16 @@ actions {
 }
 actions {
   preamble {
-    id: 16823664
-    name: "basic_tutorial_ingress.portscan_ma_stage1.get_OD_pair_id"
+    id: 16789705
+    name: "basic_tutorial_ingress.portscan_d.get_OD_pair_id"
     alias: "get_OD_pair_id"
+  }
+}
+actions {
+  preamble {
+    id: 16792545
+    name: "basic_tutorial_ingress.send_to_controller.send2cpu"
+    alias: "send2cpu"
   }
 }
 controller_packet_metadata {
@@ -86,9 +93,9 @@ controller_packet_metadata {
 }
 registers {
   preamble {
-    id: 369141880
-    name: "basic_tutorial_ingress.portscan_ma_stage1.PortDist"
-    alias: "portscan_ma_stage1.PortDist"
+    id: 369123371
+    name: "basic_tutorial_ingress.portscan_d.PortDist"
+    alias: "PortDist"
   }
   type_spec {
     bitstring {
@@ -97,13 +104,13 @@ registers {
       }
     }
   }
-  size: 128
+  size: 32
 }
 registers {
   preamble {
-    id: 369149365
-    name: "basic_tutorial_ingress.portscan_ma_stage1.DistWeight"
-    alias: "portscan_ma_stage1.DistWeight"
+    id: 369111596
+    name: "basic_tutorial_ingress.portscan_d.DistWeight"
+    alias: "DistWeight"
   }
   type_spec {
     bitstring {
@@ -112,13 +119,13 @@ registers {
       }
     }
   }
-  size: 128
+  size: 32
 }
 registers {
   preamble {
-    id: 369147526
-    name: "basic_tutorial_ingress.portscan_ma_stage2.PortDist"
-    alias: "portscan_ma_stage2.PortDist"
+    id: 369159791
+    name: "basic_tutorial_ingress.portscan_d.WeightThres"
+    alias: "WeightThres"
   }
   type_spec {
     bitstring {
@@ -127,13 +134,13 @@ registers {
       }
     }
   }
-  size: 128
+  size: 1
 }
 registers {
   preamble {
-    id: 369135407
-    name: "basic_tutorial_ingress.portscan_ma_stage_fin.DistWeight"
-    alias: "portscan_ma_stage_fin.DistWeight"
+    id: 369143928
+    name: "basic_tutorial_ingress.portscan_d.WeightThresPow"
+    alias: "WeightThresPow"
   }
   type_spec {
     bitstring {
@@ -142,7 +149,22 @@ registers {
       }
     }
   }
-  size: 128
+  size: 1
+}
+registers {
+  preamble {
+    id: 369103993
+    name: "basic_tutorial_ingress.portscan_d.ReportCnt"
+    alias: "ReportCnt"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 32
+      }
+    }
+  }
+  size: 1
 }
 registers {
   preamble {
@@ -159,5 +181,42 @@ registers {
   }
   size: 1
 }
+digests {
+  preamble {
+    id: 385927645
+    name: "flowCache_digest_t"
+    alias: "flowCache_digest_t"
+  }
+  type_spec {
+    struct {
+      name: "flowCache_digest_t"
+    }
+  }
+}
 type_info {
+  structs {
+    key: "flowCache_digest_t"
+    value {
+      members {
+        name: "srcAddr"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+      members {
+        name: "dstAddr"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+    }
+  }
 }

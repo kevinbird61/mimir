@@ -11,8 +11,9 @@
 
 // application
 #include "includes/ipv4_forward.p4"
-// #include "includes/ps_distance.p4"
-#include "includes/ps_dist_ma.p4"
+#include "includes/ps_distance.p4"
+// #include "includes/ps_dist_ma.p4"
+#include "includes/digest.p4"
 
 #include "includes/pct.p4"
 
@@ -31,12 +32,15 @@ control basic_tutorial_ingress(
         ipv4_forwarding.apply(hdr, metadata, standard_metadata);
 
         // distance-based portscan
-        // portscan_d.apply(hdr, metadata, standard_metadata);
+        portscan_d.apply(hdr, metadata, standard_metadata);
 
         // distance-based + MA multiple stages
-        portscan_ma_stage1.apply(hdr, metadata, standard_metadata);
-        portscan_ma_stage2.apply(hdr, metadata, standard_metadata);
-        portscan_ma_stage_fin.apply(hdr, metadata, standard_metadata);
+        //portscan_ma_stage1.apply(hdr, metadata, standard_metadata);
+        //portscan_ma_stage2.apply(hdr, metadata, standard_metadata);
+        //portscan_ma_stage_fin.apply(hdr, metadata, standard_metadata);
+
+        // report
+        send_to_controller.apply(hdr, metadata, standard_metadata);
     }
 }
 
