@@ -1,4 +1,7 @@
-all: read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out sort.out
+EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
+UTILS:=sort.out entro.out
+
+all: $(EXECS) $(UTILS)
 
 # executable file
 read_pcap.out: cmap.o pktstat.o read_pcap.c 
@@ -16,15 +19,15 @@ heavy_hitter.out: cmap.o hash.o xxhash.o pktstat.o heavy_hitter.c
 # utils
 sort.out: utils/sort.cc 
 	g++ $^ -o $@ -lm 
+entro.out: utils/entropy.cc
+	g++ $^ -o $@ -lm -lpcap -Ilib
 
 # plot 
 plot_read_pcap:
-	# IP
 	gnuplot scripts/ip_proto_stat.gp 
-	# TCP 
 	gnuplot scripts/tcp_stat.gp 
-	# UDP
 	gnuplot scripts/udp_stat.gp 
+	gnuplot scripts/ipv4_stat.gp
 
 # Object files
 pktstat.o: lib/packet_stat.c 

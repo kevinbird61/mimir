@@ -26,7 +26,7 @@
 1. [read_pcap.out](read_pcap.c)
    * 分析 pcap file 的程式碼。
    * 執行： `./read_pcap.out <your_pcap_file>`
-   * 若需要將結果輸出，則呼叫 `./read_pcap.out`，結果將會存放在 output/ 資料夾底下，分別會有：
+   * 若需要將結果輸出，則呼叫 `make read_pcap_w.out && ./read_pcap_pcap.out <your pcap file>`，結果將會存放在 output/ 資料夾底下，分別會有：
      * `*_raw.txt`: 格式為 <key>-<對應的數量>，用來計算 flow distribution、service distribution、port distribution
      * `ip_without_counter.txt`: 單純紀錄 IP address 為主，用來做 ip prefix aggregation 程式（e.g. `aggregate.py`）的輸入。 
 2. [hash_pcap.out](hash_pcap.c)
@@ -42,7 +42,7 @@
 4. [heavy_hitter.out](heavy_hitter.c)
    * 探討 heavy hitter 與 sketch (`t` x `k`) / non-sketch (`1` x `k`) 之間的差異。 （t 為 distinct hash algorithm 數量，k 為 Table size）
    * 執行： `./heavy_hitter.out -f <your_pcap_file>`
-5. [sort.out](utils/sort.cc)
+5. [sort.out (C++)](utils/sort.cc)
    * 用來對 output 底下的測資做排序、抽取。
    * 需要使用 `read_pcap_w.out`（透過 `make read_pcap_w.out` 編譯產生），呼叫模式與 `read_pcap.out` 相同。 
    * 執行： `./sort.out -p -f <raw statistics input file>`
@@ -51,6 +51,14 @@
      * -e <level>: 指定輸出檔案內容（可以選擇欲輸出的量，可用 `-h` 了解更多）
      * -f <file>: 指定輸入檔案（輸出檔案會與輸入放在同一個資料夾下，並加上前綴 `sorted_`）
    * 搭配 `make plot_read_pcap` 來將處理過後測資放到 `images/` 資料夾底下。
+   * 使用範例（展示從 `測資生產` 到 `繪製圖表`）：
+     ```
+     $ make read_pcap_w.out                            # 產生測資 （output/）
+     $ ./read_pcap_w.out <target pcapfile>             # 讀取欲分析的 pcap 檔
+     $ ./sort.out -p -e 2 -f output/tcp_raw.txt        # 將輸出的 raw 資料排序、或是針對值大小做過濾，輸出成另一筆新的分析測資
+     $ ./sort.out -p -e 1 -f output/udp_raw.txt   
+     $ make plot_read_pcap                             # 對過濾過的測資繪製圖表（images/）
+     ```
 
 
 其他輔助程式：

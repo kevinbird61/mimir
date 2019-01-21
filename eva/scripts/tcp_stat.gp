@@ -12,6 +12,7 @@ set auto x
 set style data histogram
 set style fill solid border -1
 
+set xtics rotate by 45 right
 set key right 
 set rmargin 5
 

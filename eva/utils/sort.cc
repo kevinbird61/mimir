@@ -123,6 +123,8 @@ int main(int argc, char **argv){
         // cal E[X] and E[X^2]
         mean = X/(float)Cnt; // mean = E[X]
         sd = sqrt((Xpow/(float)Cnt) - (mean*mean));
+        cout << "E[X]: " << mean << endl;
+        cout << "standard deviation: " << sd << endl;
         // write back 
         std::size_t sep = inputfile.find_last_of("/\\");
         std::string path = inputfile.substr(0, sep);
@@ -138,20 +140,9 @@ int main(int argc, char **argv){
                             case 0:
                                 sorted << *iter << "\n";
                                 break;
-                            case 1:
-                                if(iter->second >= mean)
-                                    sorted << *iter << "\n";
-                                break;
-                            case 2:
-                                if(iter->second >= mean+sd)
-                                    sorted << *iter << "\n";
-                                break;
-                            case 3: 
-                                if(iter->second >= mean+2*sd)
-                                    sorted << *iter << "\n";
-                                break;
-                            case 4:
-                                if(iter->second >= mean+3*sd)
+                            default:
+                                // 1~4
+                                if(iter->second >= mean+(extract-1)*sd)
                                     sorted << *iter << "\n";
                                 break;
                         }
@@ -164,20 +155,9 @@ int main(int argc, char **argv){
                             case 0:
                                 sorted << iter->first << " " << iter->second << "\n";
                                 break;
-                            case 1:
-                                if(iter->second >= mean)
-                                    sorted << iter->first << " " << iter->second << "\n";
-                                break;
-                            case 2:
-                                if(iter->second >= mean+sd)
-                                    sorted << iter->first << " " << iter->second << "\n";
-                                break;
-                            case 3: 
-                                if(iter->second >= mean+2*sd)
-                                    sorted << iter->first << " " << iter->second << "\n";
-                                break;
-                            case 4:
-                                if(iter->second >= mean+3*sd)
+                            default:
+                                // 1~4
+                                if(iter->second >= mean+(extract-1)*sd)
                                     sorted << iter->first << " " << iter->second << "\n";
                                 break;
                         }
