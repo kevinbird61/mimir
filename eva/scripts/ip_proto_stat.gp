@@ -16,4 +16,4 @@ set boxwidth 0.9
 set key right 
 
 # Plot 
-plot "output/proto_raw.txt" u 1:xticlabels(1) lc rgb "#FF0000" title "Proto Dist. from pcap"
+plot "output/proto_raw.txt" u 2:xticlabels(1) lc rgb "#FF0000" title "Proto Dist. from pcap"

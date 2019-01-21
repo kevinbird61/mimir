@@ -1,4 +1,4 @@
-all: read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
+all: read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out sort.out
 
 # executable file
 read_pcap.out: cmap.o pktstat.o read_pcap.c 
@@ -12,6 +12,10 @@ port_diff.out: cmap.o hash.o xxhash.o hamm.o port_diff.c
 	gcc $^ -o $@ -lm -lpcap -Ithird_party
 heavy_hitter.out: cmap.o hash.o xxhash.o pktstat.o heavy_hitter.c
 	gcc $^ -o $@ -lm -lpcap -Ithird_party
+
+# utils
+sort.out: utils/sort.cc 
+	g++ $^ -o $@ -lm 
 
 # plot 
 plot_read_pcap:

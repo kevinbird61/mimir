@@ -16,4 +16,4 @@ set key right
 set rmargin 5
 
 # Plot 
-plot "output/udp_raw.txt" u 1:xticlabels(1) lc rgb "#FF0000" title "UDP Port Dist. from pcap"
+plot "output/sorted_udp_raw.txt" u 2:xticlabels(1) lc rgb "#FF0000" title "UDP Port Dist. from pcap"
