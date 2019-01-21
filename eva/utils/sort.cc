@@ -71,7 +71,8 @@ int main(int argc, char **argv){
     map<int, int> unsorted_list;
     map<string, int> unsorted_ip;
     unsigned int X=0, Xpow=0, Cnt=0;
-    float mean=0.0, sd=0.0;
+    double mean=0.0, var=0.0;
+    double sd=0.0;
     // Open unsorted file
     if(!unsorted.is_open()){
         // print error 
@@ -114,17 +115,27 @@ int main(int argc, char **argv){
             }
         }
         unsorted.close();
-        // print 
-        /*for (map<int, int>::iterator iter = unsorted_list.begin();
-            iter != unsorted_list.end();
-            ++iter) {
-            cout << *iter << endl;
-        }*/
+        // cal var 
+        if(input_type=='p'){
+            for (map<int, int>::iterator iter = unsorted_list.begin();
+                iter != unsorted_list.end();
+                ++iter) {
+                var += (iter->second-(X/Cnt))*(iter->second-(X/Cnt));
+            }
+        } else if(input_type=='i') {
+            for (map<string, int>::iterator iter = unsorted_ip.begin();
+                iter != unsorted_ip.end();
+                ++iter) {
+                var += (iter->second-(X/Cnt))*(iter->second-(X/Cnt));
+            }
+        }
+        
         // cal E[X] and E[X^2]
-        mean = X/(float)Cnt; // mean = E[X]
-        sd = sqrt((Xpow/(float)Cnt) - (mean*mean));
+        mean = X/(double)Cnt; // mean = E[X]
+        sd = sqrtf((var/(double)Cnt));
         cout << "E[X]: " << mean << endl;
-        cout << "standard deviation: " << sd << endl;
+        cout << "Var[X]: " << (var/(double)Cnt) << endl;
+        cout << "SD[X]: " << sd << endl;
         // write back 
         std::size_t sep = inputfile.find_last_of("/\\");
         std::string path = inputfile.substr(0, sep);

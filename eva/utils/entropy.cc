@@ -155,9 +155,9 @@ int main(int argc, char **argv){
     var = Xpow/Cnt - pow(X/Cnt,2);
     std = sqrt(var);
     cout << "===========================================================" << endl;
-    cout << "Entropy Range : 0~" << log2(Cnt) << endl;
-    cout << "===========================================================" << endl;
-    cout << "[Entropy] IPv4 source address: " << (-entropy) << endl;
+    // cout << "Entropy Range : 0~" << log2(Cnt) << endl;
+    // cout << "===========================================================" << endl;
+    cout << "[Entropy] IPv4 source address: " << (-entropy)/log2(Cnt) << endl;
 if(debug){
     cout << "[Mean] IPv4 source address: " << mean << endl;
     cout << "[Var] IPv4 source address: " << var << endl;
@@ -186,9 +186,9 @@ if(debug){
     var = Xpow/Cnt - pow(X/Cnt,2);
     std = sqrt(var);
     cout << "===========================================================" << endl;
-    cout << "Entropy Range : 0~" << log2(Cnt) << endl;
-    cout << "===========================================================" << endl;
-    cout << "[Entropy] IPv4 destination address: " << (-entropy) << endl;
+    //cout << "Entropy Range : 0~" << log2(Cnt) << endl;
+    //cout << "===========================================================" << endl;
+    cout << "[Entropy] IPv4 destination address: " << (-entropy)/log2(Cnt)  << endl;
 if(debug){
     cout << "[Mean] IPv4 destination address: " << mean << endl;
     cout << "[Var] IPv4 destination address: " << var << endl;
@@ -217,9 +217,9 @@ if(debug){
     var = Xpow/Cnt - pow(X/Cnt,2);
     std = sqrt(var);
     cout << "===========================================================" << endl;
-    cout << "Entropy Range : 0~" << log2(Cnt) << endl;
-    cout << "===========================================================" << endl;
-    cout << "[Entropy] TCP source Port: " << (-entropy) << endl;
+    //cout << "Entropy Range : 0~" << log2(Cnt) << endl;
+    //cout << "===========================================================" << endl;
+    cout << "[Entropy] TCP source Port: " << (-entropy)/log2(Cnt)  << endl;
 if(debug){
     cout << "[Mean] TCP source Port: " << mean << endl;
     cout << "[Var] TCP source Port: " << var << endl;
@@ -247,9 +247,9 @@ if(debug){
     var = Xpow/Cnt - pow(X/Cnt,2);
     std = sqrt(var);
     cout << "===========================================================" << endl;
-    cout << "Entropy Range : 0~" << log2(Cnt) << endl;
-    cout << "===========================================================" << endl;
-    cout << "[Entropy] TCP destination Port: " << (-entropy) << endl;
+    //cout << "Entropy Range : 0~" << log2(Cnt) << endl;
+    //cout << "===========================================================" << endl;
+    cout << "[Entropy] TCP destination Port: " << (-entropy)/log2(Cnt) << endl;
 if(debug){
     cout << "[Mean] TCP destination Port: " << mean << endl;
     cout << "[Var] TCP destination Port: " << var << endl;
@@ -278,9 +278,9 @@ if(debug){
     var = Xpow/Cnt - pow(X/Cnt,2);
     std = sqrt(var);
     cout << "===========================================================" << endl;
-    cout << "Entropy Range : 0~" << log2(Cnt) << endl;
-    cout << "===========================================================" << endl;
-    cout << "[Entropy] UDP source Port: " << (-entropy) << endl;
+    //cout << "Entropy Range : 0~" << log2(Cnt) << endl;
+    //cout << "===========================================================" << endl;
+    cout << "[Entropy] UDP source Port: " << (-entropy)/log2(Cnt) << endl;
 if(debug){
     cout << "[Mean] UDP source Port: " << mean << endl;
     cout << "[Var] UDP source Port: " << var << endl;
@@ -308,9 +308,9 @@ if(debug){
     var = Xpow/Cnt - pow(X/Cnt,2);
     std = sqrt(var);
     cout << "===========================================================" << endl;
-    cout << "Entropy Range : 0~" << log2(Cnt) << endl;
-    cout << "===========================================================" << endl;
-    cout << "[Entropy] UDP destination Port: " << (-entropy) << endl;
+    //cout << "Entropy Range : 0~" << log2(Cnt) << endl;
+    //cout << "===========================================================" << endl;
+    cout << "[Entropy] UDP destination Port: " << (-entropy)/log2(Cnt) << endl;
 if(debug){
     cout << "[Mean] UDP destination Port: " << mean << endl;
     cout << "[Var] UDP destination Port: " << var << endl;
