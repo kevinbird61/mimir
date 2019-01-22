@@ -1,5 +1,5 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
-UTILS:=sort.out entro.out
+UTILS:=sort.out entro.out sdiff.out
 
 all: $(EXECS) $(UTILS)
 
@@ -20,6 +20,8 @@ heavy_hitter.out: cmap.o hash.o xxhash.o pktstat.o heavy_hitter.c
 sort.out: utils/sort.cc 
 	g++ $^ -o $@ -lm 
 entro.out: utils/entropy.cc
+	g++ $^ -o $@ -lm -lpcap -Ilib
+sdiff.out: utils/statistical_diff.cc
 	g++ $^ -o $@ -lm -lpcap -Ilib
 
 # plot 

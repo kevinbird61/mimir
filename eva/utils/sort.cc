@@ -1,5 +1,6 @@
 /*
     Utils - sorting the output result
+    (need to run read_pcap_w.out first)
 */
 #include <map>
 #include <cmath>
