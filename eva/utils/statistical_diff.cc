@@ -1,7 +1,12 @@
 /**
  * Statistical Difference
- * - Find out B whether P{A|B} < p = 0.05 or 0.1, then identify B is anomaly or not.
- * - Check out FP/TP rate of this method 
+ * - Property: Find out P{A|B} < p = 0.05 or 0.01, then we can identify A,B belongs to different population
+ *      - A: same part of 2 sets
+ *      - B: different part of 2 sets
+ *      (P{A|B}: When 2 sets are different, the probability of A is < 0.05 or 0.01, 
+ *       then we can say A,B is significant difference)
+ * - [ ] Is this method work?
+ * - [ ] Check out FP/TP rate of this method 
  * 
  */
 #include <map>
@@ -152,7 +157,10 @@ int main(int argc, char **argv){
     for (map<string, int>::iterator iter = ipv4_src.begin();
         iter != ipv4_src.end(); ++iter) 
     {
-        if(iter->second/(float)X > 0.05 || iter->second/(float)X > 0.01){
+        float Pa,Pb;
+        Pa= (X-iter->second)/(float)X; // diff part 
+        Pb= (iter->second)/(float)X;   // same part 
+        if(Pb/Pa > 0.05 || Pb/Pa > 0.01){
             cout << "[Stat Diff - Candidate] IPv4 srcAddr: " << iter->first << endl;
             Cnt++;
         }
