@@ -1,10 +1,18 @@
 /**
  * Statistical Difference
  * - Property: Find out P{A|B} < p = 0.05 or 0.01, then we can identify A,B belongs to different population
- *      - A: same part of 2 sets
- *      - B: different part of 2 sets
- *      (P{A|B}: When 2 sets are different, the probability of A is < 0.05 or 0.01, 
- *       then we can say A,B is significant difference)
+ *      - A: 兩組數據不具備顯著差異
+ *      - B: 實際數據具有顯著差異
+ *      其在 B 的條件下，當 A 的機率小於 0.05 時，稱為兩組數據有 顯著差異；
+ *      而當小於 0.01 時，則稱為有 極顯著差異。
+ *   而概念上， statistical difference 是指兩個數據樣本之間，若之前存在的顯著差異高達 95% 以上，那麼便可稱為顯著差異；
+ *   並且在高達 99% 時，稱其為 極顯著。
+ * 
+ *   就以這個性質來看，在採樣總數除了欲觀察項目外，其餘的數值都是由不同 features 所貢獻。
+ * 
+ *   而我們假設收集樣本母體具有極顯著差異（差異度 > 99%），若計算該觀察項目所佔母體比例，
+ *   當超過 5% 時，便能夠造成顯著差異性消失。而對此針對該目標做回報。
+ *   
  * - [ ] Is this method work?
  * - [ ] Check out FP/TP rate of this method 
  * 
@@ -158,9 +166,12 @@ int main(int argc, char **argv){
         iter != ipv4_src.end(); ++iter) 
     {
         float Pa,Pb;
-        Pa= (X-iter->second)/(float)X; // diff part 
-        Pb= (iter->second)/(float)X;   // same part 
-        if(Pb/Pa > 0.05 || Pb/Pa > 0.01){
+        Pa= (X-iter->second)/(float)X; // same part (population)
+        Pb= (iter->second)/(float)X;   // target  
+        if(Pb/Pa > 0.05){
+            cout << "[Stat Diff - Candidate] IPv4 srcAddr (Extreme): " << iter->first << endl;
+            Cnt++;
+        } else if(Pb/Pa > 0.01){
             cout << "[Stat Diff - Candidate] IPv4 srcAddr: " << iter->first << endl;
             Cnt++;
         }
