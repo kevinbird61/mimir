@@ -59,7 +59,95 @@
      $ ./sort.out -p -e 1 -f output/udp_raw.txt   
      $ make plot_read_pcap                             # 對過濾過的測資繪製圖表（images/）
      ```
-
+6. [entro.out](utils/entropy.cc)
+   * 用來計算某個 pcap file 所擁有的 entropy 值 (並且經過 normalize 過後，其值必定落在 0 到 1 之間)
+   * 愈接近 0，表示變異度（每個 sample 與其他 sample 之間）不大；反之，則變異度愈大。
+   * 執行與結果顯示：
+   ```
+     $ ./entro.out -f ../../CTU-13-Dataset/1/botnet-capture-20110810-neris.pcap 
+     ===========================================================
+     [Entropy] IPv4 source address: 0.19688
+     ===========================================================
+     [Entropy] IPv4 destination address: 0.496343
+     ===========================================================
+     [Entropy] TCP source Port: 0.648968
+     ===========================================================
+     [Entropy] TCP destination Port: 0.406591
+     ===========================================================
+     [Entropy] UDP source Port: 0.404979
+     ===========================================================
+     [Entropy] UDP destination Port: 0.33612
+   ```
+7. [pktlen.out](utils/pktlen.cc)
+   * 用 hamming weight 來對以 ipv4 source address 作為 key 之 packet 所持有的 `packet length`，觀察是否能藉由 packet length 的變化中，偵測出 botnet 資訊。 
+   * 執行與結果顯示：
+   ```
+     $ ./pktlen.out -f ../../CTU-13-Dataset/1/botnet-capture-20110810-neris.pcap 
+     Leverage Hamming distance and Sketching to inspect packet length and find out the botnet.
+     ===========================================================
+     Threshold: MEAN + 3*STD
+     ===========================================================
+     [IP: 147.32.80.9] -> 20772
+     [IP: 147.32.84.165] -> 220955
+     [IP: 184.154.132.106] -> 54169
+     [IP: 213.246.53.125] -> 80789
+     ===========================================================
+     Report ratio: 1.2378e-05
+     ===========================================================
+     ===========================================================
+     Threshold: MEAN + 2*STD
+     ===========================================================
+     [IP: 147.32.80.9] -> 20772
+     [IP: 147.32.84.165] -> 220955
+     [IP: 184.154.132.106] -> 54169
+     [IP: 212.117.171.138] -> 13535
+     [IP: 213.246.53.125] -> 80789
+     ===========================================================
+     Report ratio: 1.54725e-05
+     ===========================================================
+     ===========================================================
+     Threshold: MEAN + STD
+     ===========================================================
+     [IP: 147.32.80.9] -> 20772
+     [IP: 147.32.84.165] -> 220955
+     [IP: 174.133.57.141] -> 5261
+     [IP: 184.154.132.106] -> 54169
+     [IP: 212.117.171.138] -> 13535
+     [IP: 213.246.53.125] -> 80789
+     [IP: 65.55.196.251] -> 5289
+     ===========================================================
+     Report ratio: 2.16615e-05
+     ===========================================================
+   ```
+   > 上述使用的 pcap file 中，botnet 的來源位置為 `147.32.84.165`。
+   > 除了使用 mean 與 STD 來找，也可以嘗試使用 TOP-N 來找。
+8. [sdiff.out](utils/statistical_diff.cc)
+   * 利用顯著性差異的概念來實作。（詳情可以看原始碼開頭的註解）
+   ```
+     $ ./sdiff.out -f ../../CTU-13-Dataset/1/botnet-capture-20110810-neris.pcap
+     [Stat Diff - Candidate] IPv4 srcAddr: 147.32.80.9
+     [Stat Diff - Candidate] IPv4 srcAddr (Extreme): 147.32.84.165
+     [Stat Diff - Candidate] IPv4 srcAddr (Extreme): 184.154.132.106
+     [Stat Diff - Candidate] IPv4 srcAddr: 212.117.171.138
+     [Stat Diff - Candidate] IPv4 srcAddr (Extreme): 213.246.53.125
+     [Stat Diff] IPv4 srcAddr number: 5
+   ```
+9. [birth.out](utils/birthday.cc)
+   * 計算生日悖論的公式。並提供 P（在某個執行次數下，發生碰撞的機率） 與 N（在某個碰撞機率下，發生碰撞所需最小執行次數） 的計算
+   * 計算發生碰撞機率下，最小執行次數：
+   ```
+     $ ./birth.out -n -1 65536 -2 0.5
+     (Collisiton Probability) P: 0.5
+     (Hashing space) d: 65536
+     (Minimal number of execution that can cause collision) N( 0.5 ): 301.417
+   ```
+   * 計算某個執行次數下，發生碰撞機率：
+   ```
+     $ ./birth.out [-p] -1 1024 -2 21 
+     (Number of execution that can cause collision) N: 21
+     (Hashing space) d: 1024
+     (Collisiton Probability) P( 21 ): 0.185416
+   ```
 
 其他輔助程式：
 * [aggregate.py](aggregate.py)
