@@ -68,10 +68,13 @@ int main(int argc, char **argv){
     }
 
     uint16_t pktlen;
+    uint32_t pktcnt=0;
 
     while(packet=pcap_next(handle, &header)){
         // get the pktlen
         pktlen = header.len;
+        // increase 
+        pktcnt++;
 
         // Parsing Ethernet
         ethernet = (struct sniff_ethernet*)(packet);
@@ -184,6 +187,10 @@ int main(int argc, char **argv){
                 "] -> " << iter->second << "\n";
     }
     cout << "===========================================================" << endl;
+    cout << "Report ratio: " << ft3.size()/(float)pktcnt << endl;
+    cout << "===========================================================" << endl;
+
+    cout << "===========================================================" << endl;
     cout << "Threshold: MEAN + 2*STD" << endl;
     cout << "===========================================================" << endl;
     for(map<string, uint32_t>::iterator iter=ft2.begin();
@@ -192,6 +199,10 @@ int main(int argc, char **argv){
             cout << "[IP: " << iter->first << 
                 "] -> " << iter->second << "\n";
     }
+    cout << "===========================================================" << endl;
+    cout << "Report ratio: " << ft2.size()/(float)pktcnt << endl;
+    cout << "===========================================================" << endl;
+
     cout << "===========================================================" << endl;
     cout << "Threshold: MEAN + STD" << endl;
     cout << "===========================================================" << endl;
@@ -202,7 +213,8 @@ int main(int argc, char **argv){
                 "] -> " << iter->second << "\n";
     }
     cout << "===========================================================" << endl;
-
+    cout << "Report ratio: " << ft1.size()/(float)pktcnt << endl;
+    cout << "===========================================================" << endl;
 
     return 0;
 }

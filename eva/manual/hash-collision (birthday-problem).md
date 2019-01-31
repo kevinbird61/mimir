@@ -26,7 +26,7 @@ $$
 
 $$
 d=2^{16} \\
-N(2^{16}) \approx \sqrt{1.1774 \times 2^{16}} \approx 320.84
+N(2^{16}) \approx \sqrt{1.386 \times 2^{16}} \approx 301.38
 $$
 
 推得 `只要嘗試 320 次，就會有高達 50% 的機率會發生碰撞`，稱之為 birthday attack 的情形，也是暴力法的一種。 防止這樣的攻擊，為增加 Hash string 的大小直到確保 N(d) 夠大，能在有限的時間內難以跑到的數目。
@@ -42,7 +42,7 @@ $$
 
 $$
 d=2^{10} \\
-N(2^{10}) \approx \sqrt{1.1774 \times 2^{10}} \approx 34.72
+N(2^{10}) \approx \sqrt{1.386 \times 2^{10}} \approx 37.68
 $$
 
 經過計算，只需要 34 ~ 35 次便會出現 collision 。

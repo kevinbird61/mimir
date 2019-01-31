@@ -1,5 +1,5 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
-UTILS:=sort.out entro.out sdiff.out pktlen.out
+UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out
 CXXFLAGS:= -std=c++11
 
 all: $(EXECS) $(UTILS)
@@ -26,6 +26,8 @@ sdiff.out: utils/statistical_diff.cc
 	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
 pktlen.out: hamm.o utils/pktlen.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
+birth.out: utils/birthday.cc
+	g++ $^ -o $@ -lm $(CXXFLAGS)
 
 # plot 
 plot_read_pcap:
