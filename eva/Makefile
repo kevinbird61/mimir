@@ -29,6 +29,10 @@ pktlen.out: hamm.o utils/pktlen.cc
 birth.out: utils/birthday.cc
 	g++ $^ -o $@ -lm $(CXXFLAGS)
 
+# test
+test: utils/mini_pcap.cc 
+	g++ $^ -o test.out -lm -lpcap -Ilib $(CXXFLAGS)
+
 # plot 
 plot_read_pcap:
 	gnuplot scripts/ip_proto_stat.gp 

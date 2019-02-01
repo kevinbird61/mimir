@@ -5,6 +5,7 @@
 */
 #include <map>
 #include <cmath>
+#include <vector>
 #include <string>
 #include <cstring>
 #include <iostream>
@@ -41,7 +42,7 @@ map<string, pktlen_t> pktlen_tb;
 
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
-    string inputfile("");
+    vector<string> inputfile;
     while((ch=getopt(argc, argv, "df:")) != -1)
     {
         switch(ch)
@@ -50,7 +51,11 @@ int main(int argc, char **argv){
                 debug=1;
                 break;
             case 'f':
-                inputfile = string(optarg);
+                optind--;
+                for( ;optind < argc && *argv[optind] != '-'; optind++){
+                    // push new file
+                    inputfile.push_back(argv[optind]);
+                }
                 break;
         }
     }
@@ -60,90 +65,78 @@ int main(int argc, char **argv){
     pcap_t *handle; 
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    handle = pcap_open_offline(inputfile.c_str(), errbuf); 
-    if (handle == NULL) { 
-        fprintf(stderr, "Couldn't open pcap file: %s\n", inputfile.c_str()); 
-        fprintf(stderr, "%s\n", errbuf);
-        return(2); 
-    }
-
     uint16_t pktlen;
     uint32_t pktcnt=0;
 
-    while(packet=pcap_next(handle, &header)){
-        // get the pktlen
-        pktlen = header.len;
-        // increase 
-        pktcnt++;
+    for(int i=0;i<inputfile.size();i++){
+        cout << "Input file: " << inputfile.at(i) << endl;
 
-        // Parsing Ethernet
-        ethernet = (struct sniff_ethernet*)(packet);
-        size_existed += SIZE_ETHER;
+        handle = pcap_open_offline(inputfile.at(i).c_str(), errbuf); 
+        if (handle == NULL) { 
+            fprintf(stderr, "Couldn't open pcap file: %s\n", inputfile.at(i).c_str()); 
+            fprintf(stderr, "%s\n", errbuf);
+            return(2); 
+        }
 
-        /* ============================================= */
-        /* TODO: do something on ethernet header  */
-        /* ============================================= */
+        while(packet=pcap_next(handle, &header)){
+            // get the pktlen
+            pktlen = header.len;
+            // increase 
+            pktcnt++;
 
-        // Parse IPv4
-        if(ethernet->etherType == (u_short)8){
-            ipv4 = (struct sniff_ipv4*)(packet + SIZE_ETHER);
-            size_ip = IP_HL(ipv4)*4;
-            size_existed += size_ip;
+            // Parsing Ethernet
+            ethernet = (struct sniff_ethernet*)(packet);
+            size_existed += SIZE_ETHER;
 
             /* ============================================= */
-            /* TODO: do something on IPv4 header             */
+            /* TODO: do something on ethernet header  */
             /* ============================================= */
-            if(pktlen_tb.find(string(inet_ntoa(ipv4->srcAddr)))==pktlen_tb.end()){ 
-                // initializing state
-                pktlen_t newnode;
-                newnode.total_dist=0;
-                newnode.total_num=0;
-                newnode.last_pktlen=pktlen;
-                // assign
-                pktlen_tb[string(inet_ntoa(ipv4->srcAddr))]=newnode;
-            } else {
-                // updating state
-                uint16_t prev_pktlen = pktlen_tb[string(inet_ntoa(ipv4->srcAddr))].last_pktlen;
-                // update 
-                pktlen_tb[string(inet_ntoa(ipv4->srcAddr))].total_dist+=popcount32_fast_mul(prev_pktlen^pktlen);
-                pktlen_tb[string(inet_ntoa(ipv4->srcAddr))].total_num++;
-                pktlen_tb[string(inet_ntoa(ipv4->srcAddr))].last_pktlen=pktlen;
-            }
 
+            // Parse IPv4
+            if(ethernet->etherType == (u_short)8){
+                ipv4 = (struct sniff_ipv4*)(packet + SIZE_ETHER);
+                size_ip = IP_HL(ipv4)*4;
+                size_existed += size_ip;
 
-            if(size_ip < 20){
-                printf("Invalid IPv4 header length: %u bytes\n", size_ip);
-            } else {
-                // Parse TCP 
-                if(ipv4->protocol == (u_char)6){
-                    tcp = (struct sniff_tcp*)(packet + SIZE_ETHER + size_ip);
-                    size_tcp = TH_OFF(tcp)*4;
-                    size_existed += size_tcp;
-                    /* ============================================= */
-                    /* TODO: do something on TCP header              */
-                    /* ============================================= */
+                /* ============================================= */
+                /* TODO: do something on IPv4 header             */
+                /* ============================================= */
+                if(pktlen_tb.find(string(inet_ntoa(ipv4->srcAddr)))==pktlen_tb.end()){ 
+                    // initializing state
+                    pktlen_t newnode;
+                    newnode.total_dist=0;
+                    newnode.total_num=0;
+                    newnode.last_pktlen=pktlen;
+                    // assign
+                    pktlen_tb[string(inet_ntoa(ipv4->srcAddr))]=newnode;
+                } else {
+                    // updating state
+                    uint16_t prev_pktlen = pktlen_tb[string(inet_ntoa(ipv4->srcAddr))].last_pktlen;
+                    // update 
+                    pktlen_tb[string(inet_ntoa(ipv4->srcAddr))].total_dist+=popcount32_fast_mul(prev_pktlen^pktlen);
+                    pktlen_tb[string(inet_ntoa(ipv4->srcAddr))].total_num++;
+                    pktlen_tb[string(inet_ntoa(ipv4->srcAddr))].last_pktlen=pktlen;
+                }
 
-                } else if(ipv4->protocol == (u_char)17){
-                    udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
-                    size_udp = 8; // 8 bytes
-                    size_existed += size_udp;
-
-                    /* ============================================= */
-                    /* TODO: do something on UDP header              */
-                    /* ============================================= */
+                if(size_ip < 20){
+                    printf("Invalid IPv4 header length: %u bytes\n", size_ip);
+                } else {
+                    // Parse TCP 
+                    if(ipv4->protocol == (u_char)6){
+                        tcp = (struct sniff_tcp*)(packet + SIZE_ETHER + size_ip);
+                        size_tcp = TH_OFF(tcp)*4;
+                        size_existed += size_tcp;
+                    } else if(ipv4->protocol == (u_char)17){
+                        udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
+                        size_udp = 8; // 8 bytes
+                        size_existed += size_udp;
+                    }
                 }
             }
-
-            /* ============================================= */
-            /* TODO: Other Protocol supported in protocol number.  */
-            /* ============================================= */
+            // Rest part
+            payload = (char*)(packet + size_existed);
+            size_existed = 0; // reset
         }
-        /* ============================================= */
-        /* TODO: Other Protocol supported in etherType.  */
-        /* ============================================= */
-        // Rest part
-        payload = (char*)(packet + size_existed);
-        size_existed = 0; // reset
     }
 
     cout << "Leverage Hamming distance and Sketching to inspect packet length and find out the botnet." << endl;
