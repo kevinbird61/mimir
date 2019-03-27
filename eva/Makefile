@@ -1,8 +1,9 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
-UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out
+UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out
+TESTS:=test_hash.out
 CXXFLAGS:= -std=c++11
 
-all: $(EXECS) $(UTILS)
+all: $(EXECS) $(UTILS) $(TESTS)
 
 # executable file
 read_pcap.out: cmap.o pktstat.o read_pcap.c 
@@ -28,10 +29,14 @@ pktlen.out: hamm.o utils/pktlen.cc
 	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
 birth.out: utils/birthday.cc
 	g++ $^ -o $@ -lm $(CXXFLAGS)
+tcp_flags.out: utils/tcp_flags.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
 
 # test
 test: utils/mini_pcap.cc 
 	g++ $^ -o test.out -lm -lpcap -Ilib $(CXXFLAGS)
+test_hash.out: utils/test_hash.cc xxhash.o hash.o
+	g++ $^ -o $@ -Ithird_party -Ilib $(CXXFLAGS)
 
 # plot 
 plot_read_pcap:
