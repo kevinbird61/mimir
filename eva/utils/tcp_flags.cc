@@ -174,27 +174,39 @@ int main(int argc, char **argv){
         iter!=pkt_stats.end(); ++iter)
     {
         if(iter->second.sent >= (sent_mean + 3*sent_std)){
-            cout << "[Attacker Candidate] IP: " << iter->first << endl;
-            cout << "# of packets sent: " << iter->second.sent << endl;
-            cout << "# of packets recv: " << iter->second.recv << endl;
-            if(iter->second.sent !=0 && iter->second.recv != 0)
-                cout << "Ratio of packets (Sent/Recv): " << (float)iter->second.sent/iter->second.recv << endl;  
-            // Print tcp statistics 
-            cout << "# of SYN: " << iter->second.syn << endl;
-            cout << "# of ACK: " << iter->second.ack << endl;
-            cout << "# of RST: " << iter->second.rst << endl; 
-            cout << "# of FIN: " << iter->second.fin << endl; 
+            
+            if(iter->second.sent !=0 && iter->second.recv != 0){ 
+                if((float)iter->second.sent/iter->second.recv > 2.5){
+                    cout << "Attacker Confirmed." << endl;
+                    cout << "[Attacker Candidate] IP: " << iter->first << endl;
+                    cout << "# of packets sent: " << iter->second.sent << endl;
+                    cout << "# of packets recv: " << iter->second.recv << endl;
+                    cout << "Ratio of packets (Sent/Recv): " << (float)iter->second.sent/iter->second.recv << endl; 
+                    // Print tcp statistics (Suppose to be another filter)
+                    cout << "# of SYN: " << iter->second.syn << endl;
+                    cout << "# of ACK: " << iter->second.ack << endl;
+                    cout << "# of RST: " << iter->second.rst << endl; 
+                    cout << "# of FIN: " << iter->second.fin << endl; 
+                }
+            }
         }
         if(iter->second.recv >= (recv_mean + 3*recv_std)){
-            cout << "[Victim Candidate] IP: " << iter->first << endl;
-            cout << "# of packets sent: " << iter->second.sent << endl;
-            cout << "# of packets recv: " << iter->second.recv << endl;
+            
             // cout << "Ratio of packets (Recv/Sent): " << iter->second.recv/iter->second.sent << endl;
-            // Print tcp statistics
-            cout << "# of SYN: " << iter->second.syn << endl;
-            cout << "# of ACK: " << iter->second.ack << endl;
-            cout << "# of RST: " << iter->second.rst << endl; 
-            cout << "# of FIN: " << iter->second.fin << endl; 
+            if(iter->second.sent !=0 && iter->second.recv != 0){
+                if((float)iter->second.recv/iter->second.sent > 2.5){
+                    cout << "Victim Confirmed." << endl;
+                    cout << "[Victim Candidate] IP: " << iter->first << endl;
+                    cout << "# of packets sent: " << iter->second.sent << endl;
+                    cout << "# of packets recv: " << iter->second.recv << endl;
+                    cout << "Ratio of packets (Recv/Sent): " << (float)iter->second.recv/iter->second.sent << endl;  
+                    // Print tcp statistics (Suppose to be another filter)
+                    cout << "# of SYN: " << iter->second.syn << endl;
+                    cout << "# of ACK: " << iter->second.ack << endl;
+                    cout << "# of RST: " << iter->second.rst << endl; 
+                    cout << "# of FIN: " << iter->second.fin << endl; 
+                }
+            }
         }
     }
 
