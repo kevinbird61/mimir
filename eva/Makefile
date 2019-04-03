@@ -1,5 +1,5 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
-UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out
+UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out ewma_pktlen.out
 CXXFLAGS:= -std=c++11
 
 all: $(EXECS) $(UTILS)
@@ -28,6 +28,8 @@ pktlen.out: hamm.o utils/pktlen.cc
 	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
 birth.out: utils/birthday.cc
 	g++ $^ -o $@ -lm $(CXXFLAGS)
+ewma_pktlen.out: utils/ewma_pktlen.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
 
 # test
 test: utils/mini_pcap.cc 
