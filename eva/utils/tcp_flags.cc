@@ -60,13 +60,17 @@ map<string, pktcnt_t> pkt_stats;
 
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
+    int coef_std=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:")) != -1)
+    while((ch=getopt(argc, argv, "dc:f:")) != -1)
     {
         switch(ch)
         {
             case 'd':
                 debug=1;
+                break;
+            case 'c':
+                coef_std=atoi(optarg);
                 break;
             case 'f':
                 optind--;
@@ -204,11 +208,19 @@ int main(int argc, char **argv){
     recv_l4_mean = recv_l4_mean/cnt;
 
     cout << "Total Pktlen: " << total_pktlen/cnt << endl;
+    cout << "Mean of # of Sent packets: " << sent_mean << endl;
+    cout << "Mean of # of Sent packets (L4): " << sent_l4_mean << endl;
+    cout << "Standard deviation of # of Sent packets: " << sent_std << endl;
+    cout << "Standard deviation of # of Sent packets (L4): " << sent_l4_std << endl;
+    cout << "Mean of # of Recv packets: " << recv_mean << endl;
+    cout << "Mean of # of Recv packets (L4): " << recv_l4_mean << endl;
+    cout << "Standard deviation of # of Recv packets: " << recv_std << endl;
+    cout << "Standard deviation of # of Recv packets (L4): " << recv_l4_std << endl;
 
     for(map<string, pktcnt_t>::iterator iter=pkt_stats.begin();
         iter!=pkt_stats.end(); ++iter)
     {
-        //if(iter->second.sent >= (sent_mean + 3*sent_std)){
+        /*if(iter->second.sent >= (sent_mean + 0*sent_std)){
             if(iter->second.sent !=0 && iter->second.recv != 0){ 
                 if((float)iter->second.sent/iter->second.recv > 2.5){
                     cout << "Attacker Confirmed." << endl;
@@ -229,8 +241,8 @@ int main(int argc, char **argv){
                     cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
                 }
             }
-        //}
-        //if(iter->second.sent_l4 >= (sent_l4_mean + 3*sent_l4_std)){
+        }*/
+        if(iter->second.sent_l4 >= (sent_l4_mean + coef_std*sent_l4_std)){
             if(iter->second.sent_l4 !=0 && iter->second.recv_l4 != 0){ 
                 if((float)iter->second.sent_l4/iter->second.recv_l4 > 2.5){
                     cout << "[L4]Attacker Confirmed." << endl;
@@ -249,10 +261,34 @@ int main(int argc, char **argv){
                         avg_pktlen+=iter->second.pktlen_queue.at(i);
                     }
                     cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
+                } else {
+                    // Only have the high volume feature
+                    cout << "[High Volume]Attacker Confirmed." << endl;
+                    cout << "[Attacker Candidate] IP: " << iter->first << endl;
+                    cout << "# of packets sent: " << iter->second.sent_l4 << endl;
+                    cout << "# of packets recv: " << iter->second.recv_l4 << endl;
+                    cout << "Ratio of packets (Sent/Recv): " << (float)iter->second.sent_l4/iter->second.recv_l4 << endl; 
+                    float avg_pktlen=0.0;
+                    for(int i=0;i<iter->second.pktlen_queue.size();i++){
+                        avg_pktlen+=iter->second.pktlen_queue.at(i);
+                    }
+                    cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
                 }
+            } else {
+                // Only have the high volume feature
+                cout << "[High Volume]Attacker Confirmed." << endl;
+                cout << "[Attacker Candidate] IP: " << iter->first << endl;
+                cout << "# of packets sent: " << iter->second.sent_l4 << endl;
+                cout << "# of packets recv: " << iter->second.recv_l4 << endl;
+                cout << "Ratio of packets (Sent/Recv): " << (float)iter->second.sent_l4/iter->second.recv_l4 << endl; 
+                float avg_pktlen=0.0;
+                for(int i=0;i<iter->second.pktlen_queue.size();i++){
+                    avg_pktlen+=iter->second.pktlen_queue.at(i);
+                }
+                cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
             }
-        //}
-        //if(iter->second.recv >= (recv_mean + 3*recv_std)){
+        }
+        /*if(iter->second.recv >= (recv_mean + 0*recv_std)){
             // cout << "Ratio of packets (Recv/Sent): " << iter->second.recv/iter->second.sent << endl;
             if(iter->second.sent !=0 && iter->second.recv != 0){
                 if((float)iter->second.recv/iter->second.sent > 2.5){
@@ -274,8 +310,8 @@ int main(int argc, char **argv){
                     cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
                 }
             }
-        //}
-        //if(iter->second.recv_l4 >= (recv_l4_mean + 3*recv_l4_std)){
+        }*/
+        if(iter->second.recv_l4 >= (recv_l4_mean + coef_std*recv_l4_std)){
             // cout << "Ratio of packets (Recv/Sent): " << iter->second.recv/iter->second.sent << endl;
             if(iter->second.sent_l4 !=0 && iter->second.recv_l4 != 0){
                 if((float)iter->second.recv_l4/iter->second.sent_l4 > 2.5){
@@ -295,9 +331,33 @@ int main(int argc, char **argv){
                         avg_pktlen+=iter->second.pktlen_queue.at(i);
                     }
                     cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
+                } else {
+                    // Only have the high volume feature
+                    cout << "[High Volume] Victim Confirmed." << endl;
+                    cout << "[Victim Candidate] IP: " << iter->first << endl;
+                    cout << "# of packets sent: " << iter->second.sent_l4 << endl;
+                    cout << "# of packets recv: " << iter->second.recv_l4 << endl;
+                    cout << "Ratio of packets (Recv/Sent): " << (float)iter->second.recv_l4/iter->second.sent_l4 << endl;  
+                    float avg_pktlen=0.0;
+                    for(int i=0;i<iter->second.pktlen_queue.size();i++){
+                        avg_pktlen+=iter->second.pktlen_queue.at(i);
+                    }
+                    cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
                 }
+            } else {
+                // Only have the high volume feature
+                cout << "[High Volume] Victim Confirmed." << endl;
+                cout << "[Victim Candidate] IP: " << iter->first << endl;
+                cout << "# of packets sent: " << iter->second.sent_l4 << endl;
+                cout << "# of packets recv: " << iter->second.recv_l4 << endl;
+                cout << "Ratio of packets (Recv/Sent): " << (float)iter->second.recv_l4/iter->second.sent_l4 << endl;  
+                float avg_pktlen=0.0;
+                for(int i=0;i<iter->second.pktlen_queue.size();i++){
+                    avg_pktlen+=iter->second.pktlen_queue.at(i);
+                }
+                cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
             }
-        //}
+        }
     }
 
     return 0;

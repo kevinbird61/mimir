@@ -1,5 +1,5 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
-UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out
+UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out
 TESTS:=test_hash.out
 CXXFLAGS:= -std=c++11
 
@@ -32,6 +32,8 @@ birth.out: utils/birthday.cc
 ewma_pktlen.out: utils/ewma_pktlen.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
 tcp_flags.out: utils/tcp_flags.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
+flowlet.out: utils/flowlet.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib $(CXXFLAGS)
 
 # test
