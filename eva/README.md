@@ -20,6 +20,17 @@
 └── scripts         # Plotting scripts of gnuplot
 ```
 
+## Build 
+
+* dependencies
+```sh
+sudo apt install libpcap-dev
+```
+* build all executable files
+```sh
+make
+```
+
 ## Programs 
 
 呼叫 `make` 來編譯以下幾隻以 C 為主的程式：

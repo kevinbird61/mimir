@@ -77,6 +77,9 @@
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | LBNL-FTP-PKT (all.tcpdump) | 6152 | 6152 | 12922 | 12922 | 12922 | 0 | 0 | 0 |
 
+* [Botnet 相關測資下載: https://www.unb.ca/cic/datasets/index.html](https://www.unb.ca/cic/datasets/index.html)
+    * 其測資有標示哪些為 anomalies，可依據給予的指示作為 ground truth 來判斷執行結果的正確性。
+
 ## 延伸閱讀
 
 * [High Volume of GRE traffic](https://badpackets.net/high-volume-of-protocol-47-gre-traffic-from-hinet-as3462-found/)

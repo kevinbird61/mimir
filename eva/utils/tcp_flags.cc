@@ -49,6 +49,11 @@ typedef struct __pktcnt {
     // # of packets
     int sent;
     int recv;
+    // count only if belong to L4
+    int sent_l4;
+    int recv_l4;
+    // queue of pktlen
+    vector<int> pktlen_queue;
 } pktcnt_t;
 
 map<string, pktcnt_t> pkt_stats;
@@ -102,6 +107,10 @@ int main(int argc, char **argv){
                 pkt_stats[string(inet_ntoa(ipv4->srcAddr))].sent++;
                 pkt_stats[string(inet_ntoa(ipv4->dstAddr))].recv++;
 
+                // record it
+                pkt_stats[string(inet_ntoa(ipv4->srcAddr))].pktlen_queue.push_back(header.len);
+                pkt_stats[string(inet_ntoa(ipv4->dstAddr))].pktlen_queue.push_back(header.len);
+
                 if(size_ip < 20){
                     printf("Invalid IPv4 header length: %u bytes\n", size_ip);
                 } else {
@@ -113,7 +122,9 @@ int main(int argc, char **argv){
                         /* ============================================= */
                         /* TODO: do something on TCP header              */
                         /* ============================================= */
-
+                        // pkt_stats (L4)
+                        pkt_stats[string(inet_ntoa(ipv4->srcAddr))].sent_l4++;
+                        pkt_stats[string(inet_ntoa(ipv4->dstAddr))].recv_l4++;
                         // Compute score
                         if(tcp->flags > 0){
                             if(((tcp->flags&TH_SYN))){
@@ -133,6 +144,14 @@ int main(int argc, char **argv){
                                 pkt_stats[string(inet_ntoa(ipv4->srcAddr))].fin+=1;
                             }
                         }
+                    } else if(ipv4->protocol == (u_char)17){
+                        // UDP
+                        udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
+                        size_udp = 8; // 8 bytes
+                        size_existed += size_udp;
+                        // pkt_stats (L4)
+                        pkt_stats[string(inet_ntoa(ipv4->srcAddr))].sent_l4++;
+                        pkt_stats[string(inet_ntoa(ipv4->dstAddr))].recv_l4++;
                     } 
                 }
 
@@ -147,7 +166,8 @@ int main(int argc, char **argv){
     // statistical variables
     // mean, standard deviation
     float sent_mean=0.0, sent_std=0.0, recv_mean=0.0, recv_std=0.0, cnt=0.0;
-
+    float sent_l4_mean=0.0, sent_l4_std=0.0, recv_l4_mean=0.0, recv_l4_std=0.0;
+    float total_pktlen=0.0;
     // Print out statistics
     for(map<string, pktcnt_t>::iterator iter=pkt_stats.begin();
         iter!=pkt_stats.end(); ++iter)
@@ -159,22 +179,36 @@ int main(int argc, char **argv){
         // sum
         sent_mean+=iter->second.sent;
         recv_mean+=iter->second.recv;
+        sent_l4_mean+=iter->second.sent_l4;
+        recv_l4_mean+=iter->second.recv_l4;
         sent_std+=pow(iter->second.sent, 2);
         recv_std+=pow(iter->second.recv, 2);
+        sent_l4_std+=pow(iter->second.sent_l4, 2);
+        recv_l4_std+=pow(iter->second.recv_l4, 2);
+        float temp_pktlen=0.0;
+        for(int i=0;i<iter->second.pktlen_queue.size();i++){
+            temp_pktlen+=iter->second.pktlen_queue.at(i);
+        }
+        total_pktlen+=(temp_pktlen/iter->second.pktlen_queue.size());
         cnt++;
     }
 
     // cal
     sent_std = sqrt(sent_std/cnt - pow(sent_mean/cnt, 2));
     sent_mean = sent_mean/cnt;
+    sent_l4_std = sqrt(sent_l4_std/cnt - pow(sent_l4_mean/cnt, 2));
+    sent_l4_mean = sent_l4_mean/cnt;
     recv_std = sqrt(recv_std/cnt - pow(recv_mean/cnt, 2));
     recv_mean = recv_mean/cnt;
+    recv_l4_std = sqrt(recv_l4_std/cnt - pow(recv_l4_mean/cnt, 2));
+    recv_l4_mean = recv_l4_mean/cnt;
+
+    cout << "Total Pktlen: " << total_pktlen/cnt << endl;
 
     for(map<string, pktcnt_t>::iterator iter=pkt_stats.begin();
         iter!=pkt_stats.end(); ++iter)
     {
-        if(iter->second.sent >= (sent_mean + 3*sent_std)){
-            
+        //if(iter->second.sent >= (sent_mean + 3*sent_std)){
             if(iter->second.sent !=0 && iter->second.recv != 0){ 
                 if((float)iter->second.sent/iter->second.recv > 2.5){
                     cout << "Attacker Confirmed." << endl;
@@ -187,11 +221,38 @@ int main(int argc, char **argv){
                     cout << "# of ACK: " << iter->second.ack << endl;
                     cout << "# of RST: " << iter->second.rst << endl; 
                     cout << "# of FIN: " << iter->second.fin << endl; 
+                    // Calculate the avg pktlen
+                    float avg_pktlen=0.0;
+                    for(int i=0;i<iter->second.pktlen_queue.size();i++){
+                        avg_pktlen+=iter->second.pktlen_queue.at(i);
+                    }
+                    cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
                 }
             }
-        }
-        if(iter->second.recv >= (recv_mean + 3*recv_std)){
-            
+        //}
+        //if(iter->second.sent_l4 >= (sent_l4_mean + 3*sent_l4_std)){
+            if(iter->second.sent_l4 !=0 && iter->second.recv_l4 != 0){ 
+                if((float)iter->second.sent_l4/iter->second.recv_l4 > 2.5){
+                    cout << "[L4]Attacker Confirmed." << endl;
+                    cout << "[Attacker Candidate] IP: " << iter->first << endl;
+                    cout << "# of packets sent: " << iter->second.sent_l4 << endl;
+                    cout << "# of packets recv: " << iter->second.recv_l4 << endl;
+                    cout << "Ratio of packets (Sent/Recv): " << (float)iter->second.sent_l4/iter->second.recv_l4 << endl; 
+                    // Print tcp statistics (Suppose to be another filter)
+                    //cout << "# of SYN: " << iter->second.syn << endl;
+                    //cout << "# of ACK: " << iter->second.ack << endl;
+                    //cout << "# of RST: " << iter->second.rst << endl; 
+                    //cout << "# of FIN: " << iter->second.fin << endl; 
+                    // Calculate the avg pktlen
+                    float avg_pktlen=0.0;
+                    for(int i=0;i<iter->second.pktlen_queue.size();i++){
+                        avg_pktlen+=iter->second.pktlen_queue.at(i);
+                    }
+                    cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
+                }
+            }
+        //}
+        //if(iter->second.recv >= (recv_mean + 3*recv_std)){
             // cout << "Ratio of packets (Recv/Sent): " << iter->second.recv/iter->second.sent << endl;
             if(iter->second.sent !=0 && iter->second.recv != 0){
                 if((float)iter->second.recv/iter->second.sent > 2.5){
@@ -205,9 +266,38 @@ int main(int argc, char **argv){
                     cout << "# of ACK: " << iter->second.ack << endl;
                     cout << "# of RST: " << iter->second.rst << endl; 
                     cout << "# of FIN: " << iter->second.fin << endl; 
+                    // Calculate the avg pktlen
+                    float avg_pktlen=0.0;
+                    for(int i=0;i<iter->second.pktlen_queue.size();i++){
+                        avg_pktlen+=iter->second.pktlen_queue.at(i);
+                    }
+                    cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
                 }
             }
-        }
+        //}
+        //if(iter->second.recv_l4 >= (recv_l4_mean + 3*recv_l4_std)){
+            // cout << "Ratio of packets (Recv/Sent): " << iter->second.recv/iter->second.sent << endl;
+            if(iter->second.sent_l4 !=0 && iter->second.recv_l4 != 0){
+                if((float)iter->second.recv_l4/iter->second.sent_l4 > 2.5){
+                    cout << "[L4] Victim Confirmed." << endl;
+                    cout << "[Victim Candidate] IP: " << iter->first << endl;
+                    cout << "# of packets sent: " << iter->second.sent_l4 << endl;
+                    cout << "# of packets recv: " << iter->second.recv_l4 << endl;
+                    cout << "Ratio of packets (Recv/Sent): " << (float)iter->second.recv_l4/iter->second.sent_l4 << endl;  
+                    // Print tcp statistics (Suppose to be another filter)
+                    //cout << "# of SYN: " << iter->second.syn << endl;
+                    //cout << "# of ACK: " << iter->second.ack << endl;
+                    //cout << "# of RST: " << iter->second.rst << endl; 
+                    //cout << "# of FIN: " << iter->second.fin << endl; 
+                    // Calculate the avg pktlen
+                    float avg_pktlen=0.0;
+                    for(int i=0;i<iter->second.pktlen_queue.size();i++){
+                        avg_pktlen+=iter->second.pktlen_queue.at(i);
+                    }
+                    cout << "Avg. packet length: " << avg_pktlen/iter->second.pktlen_queue.size() << endl;
+                }
+            }
+        //}
     }
 
     return 0;
