@@ -24,8 +24,13 @@ u_int size_ip, size_tcp, size_udp, size_existed=0;
 
 using namespace std;
 
+typedef struct _bi_t {
+    int sent;
+    int recv;
+} bi_t; // bidirection
+
 typedef struct _flow_t {
-    map<int, int> port_record;  // | port number | counter value |
+    map<int, bi_t> port_record;  // | port number | counter value |
     int recv_pktcnt;
     int sent_pktcnt;
 } flow_t;
@@ -97,10 +102,10 @@ int main(int argc, char **argv){
                         /* TODO: do something on TCP header              */
                         /* ============================================= */
                         // dst
-                        pktstat[string(inet_ntoa(ipv4->dstAddr))].port_record[tcp->dport]++;
+                        pktstat[string(inet_ntoa(ipv4->dstAddr))].port_record[tcp->dport].recv++;
                         pktstat[string(inet_ntoa(ipv4->dstAddr))].recv_pktcnt++;
                         // src
-                        pktstat[string(inet_ntoa(ipv4->srcAddr))].port_record[tcp->sport]++;
+                        pktstat[string(inet_ntoa(ipv4->srcAddr))].port_record[tcp->sport].sent++;
                         pktstat[string(inet_ntoa(ipv4->srcAddr))].sent_pktcnt++;
 
                     } else if(ipv4->protocol == (u_char)17){
@@ -134,13 +139,15 @@ int main(int argc, char **argv){
     {
         int uniq_port_per_flow=0;
         //cout << "IP: " << iter->first << endl;
-        for(map<int, int>::iterator i=iter->second.port_record.begin();
+        uniq_port_per_flow=iter->second.port_record.size();
+        /*for(map<int, bi_t>::iterator i=iter->second.port_record.begin();
             i!=iter->second.port_record.end(); ++i)
         {
             // i->first: port number
             // i->second: counter value
-            uniq_port_per_flow+=i->second;
-        }
+            uniq_port_per_flow+=i->second.sent;
+            uniq_port_per_flow+=i->second.recv;
+        }*/
         //cout << "Unique ports: " << uniq_port_per_flow << endl;
         // increment
         total_uniq_port_cnt+=uniq_port_per_flow;
@@ -159,17 +166,24 @@ int main(int argc, char **argv){
         iter!=pktstat.end(); ++iter)
     {
         int uniq_port_per_flow=0;
-        
-        for(map<int, int>::iterator i=iter->second.port_record.begin();
+        int uniq_s=0, uniq_r=0;
+        /*for(map<int, bi_t>::iterator i=iter->second.port_record.begin();
             i!=iter->second.port_record.end(); ++i)
         {
             // i->first: port number
             // i->second: counter value
-            uniq_port_per_flow+=i->second;
-        }
+            uniq_s+=i->second.sent;
+            uniq_r+=i->second.recv;
+        }*/
+        uniq_port_per_flow=iter->second.port_record.size();
         if(uniq_port_per_flow > mean_uniq_port_cnt+std_uniq_port_cnt){
+            cout << "================================================" << endl;
             cout << "IP: " << iter->first << endl;
             cout << "Unique ports: " << uniq_port_per_flow << endl;
+            // cout << "Unique ports (used by sent packets): " << uniq_s << endl;
+            // cout << "Unique ports (used by recv packets): " << uniq_r << endl;
+            cout << "# of Sent packets: " << iter->second.sent_pktcnt << endl;
+            cout << "# of Recv packets: " << iter->second.recv_pktcnt << endl;
         }
     }
 
