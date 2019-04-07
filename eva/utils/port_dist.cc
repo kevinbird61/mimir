@@ -26,6 +26,8 @@ using namespace std;
 
 typedef struct _flow_t {
     map<int, int> port_record;  // | port number | counter value |
+    int recv_pktcnt;
+    int sent_pktcnt;
 } flow_t;
 
 map<string, flow_t> pktstat;
@@ -96,8 +98,10 @@ int main(int argc, char **argv){
                         /* ============================================= */
                         // dst
                         pktstat[string(inet_ntoa(ipv4->dstAddr))].port_record[tcp->dport]++;
+                        pktstat[string(inet_ntoa(ipv4->dstAddr))].recv_pktcnt++;
                         // src
                         pktstat[string(inet_ntoa(ipv4->srcAddr))].port_record[tcp->sport]++;
+                        pktstat[string(inet_ntoa(ipv4->srcAddr))].sent_pktcnt++;
 
                     } else if(ipv4->protocol == (u_char)17){
                         udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
@@ -123,11 +127,13 @@ int main(int argc, char **argv){
         }
     }
 
+    double total_uniq_port_cnt=0.0, std_uniq_port_cnt=0.0, mean_uniq_port_cnt=0.0;
+    int cnt=0;
     for(map<string, flow_t>::iterator iter=pktstat.begin();
         iter!=pktstat.end(); ++iter)
     {
         int uniq_port_per_flow=0;
-        cout << "IP: " << iter->first << endl;
+        //cout << "IP: " << iter->first << endl;
         for(map<int, int>::iterator i=iter->second.port_record.begin();
             i!=iter->second.port_record.end(); ++i)
         {
@@ -135,7 +141,36 @@ int main(int argc, char **argv){
             // i->second: counter value
             uniq_port_per_flow+=i->second;
         }
-        cout << "Unique ports: " << uniq_port_per_flow << endl;
+        //cout << "Unique ports: " << uniq_port_per_flow << endl;
+        // increment
+        total_uniq_port_cnt+=uniq_port_per_flow;
+        std_uniq_port_cnt+=pow(uniq_port_per_flow, 2);
+        cnt++;
+    }
+
+    // Avg
+    cout << "Avg. uniq port per flow: " << total_uniq_port_cnt/cnt << endl;
+    mean_uniq_port_cnt = total_uniq_port_cnt/cnt;
+    // Std
+    cout << "Std. uniq port per flow: " << sqrt(std_uniq_port_cnt/cnt - pow(total_uniq_port_cnt/cnt, 2)) << endl;
+    std_uniq_port_cnt = sqrt(std_uniq_port_cnt/cnt - pow(total_uniq_port_cnt/cnt, 2));
+
+    for(map<string, flow_t>::iterator iter=pktstat.begin();
+        iter!=pktstat.end(); ++iter)
+    {
+        int uniq_port_per_flow=0;
+        
+        for(map<int, int>::iterator i=iter->second.port_record.begin();
+            i!=iter->second.port_record.end(); ++i)
+        {
+            // i->first: port number
+            // i->second: counter value
+            uniq_port_per_flow+=i->second;
+        }
+        if(uniq_port_per_flow > mean_uniq_port_cnt+std_uniq_port_cnt){
+            cout << "IP: " << iter->first << endl;
+            cout << "Unique ports: " << uniq_port_per_flow << endl;
+        }
     }
 
     return 0;
