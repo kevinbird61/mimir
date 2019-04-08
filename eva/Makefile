@@ -1,4 +1,4 @@
-EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out
+EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out srr.out
 UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out
 TESTS:=test_hash.out
 CXXFLAGS:= -std=c++11
@@ -17,6 +17,8 @@ port_diff.out: cmap.o hash.o xxhash.o hamm.o port_diff.c
 	gcc $^ -o $@ -lm -lpcap -Ithird_party
 heavy_hitter.out: cmap.o hash.o xxhash.o pktstat.o heavy_hitter.c
 	gcc $^ -o $@ -lm -lpcap -Ithird_party
+srr.out: hash.o xxhash.o sent_recv_ratio.cc
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 
 # utils
 sort.out: utils/sort.cc 
