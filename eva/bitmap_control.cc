@@ -45,12 +45,16 @@ using namespace std;
 
  value of bitmap represent the number of modules
 */
+#define FLOWLET_TIMEOUT 0.1
+
 map<unsigned int, int> exec_bitmap;  // execute bitmap
 map<unsigned int, int> repo_bitmap;  // report bitmap
 map<unsigned int, double> lastSeen;  // last seen of flow (timestamp)
 map<unsigned int, int> mod1;      // module 1 - frequency and amount of packets
 map<unsigned int, int> mod2;      // module 2 - sent/recv ratio
 map<unsigned int, int> mod3;      // module 3 - TCP control flags
+
+vector<int> amount_count;
 
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
@@ -130,24 +134,31 @@ int main(int argc, char **argv){
                     lastseen_ts = lastSeen[flowIndex];
                 }
                 interval = (header.ts.tv_sec + header.ts.tv_usec/1000.0) - lastseen_ts;
+                
                 // if lastseen_ts==0, then no need to do the detection, just update the module
 
-                // get amount/frequency of packets
-                if((exec_bitmap_val&0x1)==0x1){
+                // Mod1: get amount/frequency of packets
+                if((exec_bitmap_val&0x1)){
                     // if interval > 100ms (flowlet), detect
-                    if(interval > 0.1){
+                    if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
                         // read from mod1
-                        int pktcnt=mod1[flowIndex];
+                        int pktcnt=mod1[flowIndex]+1;
                         // compare to threshold (configurable)
                         if(pktcnt>100){
+                            // debug: print out the src,dst IP pair
+                            //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl;
+                            
                             // report to repo_bitmap
                             if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
                                 repo_bitmap[flowIndex]=0x1;
                             } else {
                                 repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 0x1);
                             }
+                            
                             // FIXME: decide to update exec_bitmap or not (adaptive/optional)
+                            exec_bitmap[flowIndex]|=0x2;
                         }
+                        amount_count.push_back(pktcnt);
                         // reset the state 
                         mod1[flowIndex]=0;
                     } else {
@@ -158,6 +169,37 @@ int main(int argc, char **argv){
                             mod1[flowIndex]++;
                         }
                     }
+                }
+
+                // Mod2: unbalanced sent/recv packets
+                if((exec_bitmap_val&0x2)){
+                    // if interval > 100ms, detect
+                    if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
+                        // get the reverse flow id
+                        string rev_flowID; 
+                        rev_flowID = string(inet_ntoa(ipv4->dstAddr)) + string(inet_ntoa(ipv4->srcAddr));
+                        unsigned int rev_flowIndex = crc32((unsigned char *)rev_flowID.c_str());
+                        // get the sent and recv pkt ratio
+                        int sent=mod2[flowIndex];
+                        int recv=mod2[rev_flowIndex];
+                        // calculate sent/recv ratio
+                        if((sent/(float)recv) < (2/9.0)){
+                            cout << "Sent/Recv ratio: " << sent/(float)recv << endl;
+                            cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
+                        } 
+                        // FIXME: report to repo_bitmap
+
+                        // FIXME: reset the state
+
+                    } else {
+                        // update mod2 (only need to update one direction - sent)
+                        if(mod2.find(flowIndex)==mod2.end()){
+                            mod2[flowIndex]=1;
+                        } else {
+                            mod2[flowIndex]++;
+                        }
+                    }
+
                 }
 
                 if(size_ip < 20){
@@ -186,15 +228,29 @@ int main(int argc, char **argv){
                 /* ============================================= */
                 /* Others (L3)  */
                 /* ============================================= */
+
+                // update lastseen (Need to wait until all module has been finished)
+                lastSeen[flowIndex]=(header.ts.tv_sec + header.ts.tv_usec/1000.0);
             }
             /* ============================================= */
             /* Others (L2)  */
             /* ============================================= */
+
 
             payload = (char*)(packet + size_existed);
             size_existed = 0; // reset
         }
     }
 
+    cout << "Total flowlet ("<< FLOWLET_TIMEOUT <<" sec) report: " << amount_count.size() << endl;
+    double total_amount_avg=0.0, total_amount_std=0.0, max=0;
+    for(int i=0;i<amount_count.size();i++){
+        total_amount_avg+=amount_count.at(i);
+        total_amount_std+=pow(amount_count.at(i),2);
+        if(amount_count.at(i)>max) max=amount_count.at(i);
+    }
+    cout << "Avg. amount per flowlet: " << total_amount_avg/amount_count.size() << endl;
+    cout << "Std. amount per flowlet: " << sqrt(total_amount_std/amount_count.size() - pow(total_amount_avg/amount_count.size(), 2)) << endl;
+    cout << "Max. per flowlet: " << max << endl;
     return 0;
 }
