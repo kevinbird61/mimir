@@ -180,8 +180,8 @@ int main(int argc, char **argv){
                         rev_flowID = string(inet_ntoa(ipv4->dstAddr)) + string(inet_ntoa(ipv4->srcAddr));
                         unsigned int rev_flowIndex = crc32((unsigned char *)rev_flowID.c_str());
                         // get the sent and recv pkt ratio
-                        int sent=mod2[flowIndex];
-                        int recv=mod2[rev_flowIndex];
+                        int sent=mod2[flowIndex]+1;
+                        int recv=mod2[rev_flowIndex]+1;
                         // calculate sent/recv ratio
                         if((sent/(float)recv) < (2/9.0)){
                             cout << "Sent/Recv ratio: " << sent/(float)recv << endl;
@@ -190,7 +190,8 @@ int main(int argc, char **argv){
                         // FIXME: report to repo_bitmap
 
                         // FIXME: reset the state
-
+                        mod2[flowIndex]=0;
+                        mod2[rev_flowIndex]=0;
                     } else {
                         // update mod2 (only need to update one direction - sent)
                         if(mod2.find(flowIndex)==mod2.end()){
