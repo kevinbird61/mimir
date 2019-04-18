@@ -52,7 +52,7 @@ map<unsigned int, int> repo_bitmap;  // report bitmap
 map<unsigned int, double> lastSeen;  // last seen of flow (timestamp)
 map<unsigned int, int> mod1;      // module 1 - frequency and amount of packets
 map<unsigned int, int> mod2;      // module 2 - sent/recv ratio
-map<unsigned int, int> mod3;      // module 3 - TCP control flags
+map<unsigned int, int> mod3;      // module 3 - TCP control flags (SYN vs ACK)
 
 vector<int> amount_count;
 
@@ -146,6 +146,7 @@ int main(int argc, char **argv){
                         // compare to threshold (configurable)
                         if(pktcnt>100){
                             // debug: print out the src,dst IP pair
+                            //cout << "Amount and Frequency surpass!" << endl;
                             //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl;
                             
                             // report to repo_bitmap
@@ -184,14 +185,52 @@ int main(int argc, char **argv){
                         int recv=mod2[rev_flowIndex]+1;
                         // calculate sent/recv ratio
                         if((sent/(float)recv) < (2/9.0)){
-                            cout << "Sent/Recv ratio: " << sent/(float)recv << endl;
-                            cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
-                        } 
-                        // FIXME: report to repo_bitmap
+                            // victim 
+                            //cout << "[Victim] Sent/Recv ratio: " << sent/(float)recv << endl;
+                            //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
+                            // report to repo_bitmap
+                            // direct
+                            if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[flowIndex]=0x2;
+                            } else {
+                                repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 0x2);
+                            }
+                            // reverse
+                            if(repo_bitmap.find(rev_flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[rev_flowIndex]=0x2;
+                            } else {
+                                repo_bitmap[rev_flowIndex]=(repo_bitmap[rev_flowIndex] | 0x2);
+                            }
 
-                        // FIXME: reset the state
-                        mod2[flowIndex]=0;
-                        mod2[rev_flowIndex]=0;
+                            // update execute bitmap (if victim, then go to 0x4)
+                            exec_bitmap[flowIndex]|=0x4;
+                        } 
+                        if((sent/(float)recv) > (9.0/2.0)){
+                            // attacker 
+                            //cout << "[Attacker] Sent/Recv ratio: " << sent/(float)recv << endl;
+                            //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
+                            // report to repo_bitmap 
+                            // FIXME: need different bit to represent "victim" or "attacker"?
+                            // direct 
+                            if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[flowIndex]=0x2;
+                            } else {
+                                repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 0x2);
+                            } 
+                            // reverse
+                            if(repo_bitmap.find(rev_flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[rev_flowIndex]=0x2;
+                            } else {
+                                repo_bitmap[rev_flowIndex]=(repo_bitmap[rev_flowIndex] | 0x2);
+                            }
+
+                            // update execute bitmap (if attacker, then go to 0x8)
+                            exec_bitmap[flowIndex]|=0x8;
+                        }
+
+                        // reset the state
+                        //mod2[flowIndex]=0;
+                        //mod2[rev_flowIndex]=0;
                     } else {
                         // update mod2 (only need to update one direction - sent)
                         if(mod2.find(flowIndex)==mod2.end()){
@@ -201,6 +240,11 @@ int main(int argc, char **argv){
                         }
                     }
 
+                }
+
+                // check report_bitmap value
+                if(repo_bitmap[flowIndex]>=0x1){
+                    cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
                 }
 
                 if(size_ip < 20){
