@@ -54,6 +54,7 @@ map<unsigned int, double> lastSeen;  // last seen of flow (timestamp)
 map<unsigned int, int> mod1;      // module 1 - frequency and amount of packets
 map<unsigned int, int> mod2;      // module 2 - sent/recv ratio
 map<unsigned int, int> mod3;      // module 3 - TCP control flags (SYN vs ACK)
+map<unsigned int, int> mod4;      // module 4 - ICMP error control 
 
 vector<int> amount_count;
 
@@ -320,6 +321,52 @@ int main(int argc, char **argv){
                         // e.g. If there existed UDP flood attack, there will have lots of ICMP message,
                         // which has code represent "Unreachable".
 
+                        // debug (execute directly)
+                        if((exec_bitmap_val&0x8)||1){
+                            // if interval > 100ms , detect
+                            if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
+                                int flowval=0;
+                                // category: target unreachable
+                                if(icmp->type==3||icmp->type==11||icmp->type==12){
+                                    flowval=mod4[flowIndex]+1;
+                                } else {
+                                    // FIXME: 
+                                    // simply set the other flags as nothing 
+                                    flowval=mod4[flowIndex]-1;
+                                }
+
+                                // detect with threshold
+                                if(flowval>=5){
+                                    // sequential ICMP target unreachable
+
+                                    // report
+                                    if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
+                                        repo_bitmap[flowIndex]=0x8;
+                                    } else {
+                                        repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 0x8);
+                                    }
+                                }
+
+                                // reset 
+                                mod4[flowIndex]=0;
+
+                            } else {
+                                // update 
+                                if(mod4.find(flowIndex)==mod4.end()){
+                                    if(icmp->type==3||icmp->type==11||icmp->type==12){
+                                        mod4[flowIndex]=1;
+                                    } else {
+                                        mod4[flowIndex]=0;
+                                    }
+                                } else {
+                                    if(icmp->type==3||icmp->type==11||icmp->type==12){
+                                        mod4[flowIndex]++;
+                                    } else {
+                                        mod4[flowIndex]--;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -331,6 +378,8 @@ int main(int argc, char **argv){
                 if(repo_bitmap[flowIndex]>=0x1){
                     if(repo_bitmap[flowIndex]&0x4){
                         cout << "TCP: SYN > ACK!" << endl;
+                    } else if(repo_bitmap[flowIndex]&0x8){
+                        cout << "ICMP target Unreachable!" << endl;
                     }
                     cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
                 }
