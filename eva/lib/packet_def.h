@@ -73,4 +73,13 @@ struct sniff_udp {
     u_short checksum;
 };
 
+/* ICMP */
+struct sniff_icmp {
+    u_char type;
+    u_char code;
+    u_short checksum;
+    u_short id;
+    u_short seq;
+};
+
 #endif 

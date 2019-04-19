@@ -34,8 +34,9 @@ const struct sniff_ethernet *ethernet; // ethernet header
 const struct sniff_ipv4 *ipv4; // IPv4 header
 const struct sniff_tcp *tcp;   // TCP header
 const struct sniff_udp *udp;   // UDP header
+const struct sniff_icmp *icmp; // ICMP header
 const char *payload; // packet payload
-u_int size_ip, size_tcp, size_udp, size_existed=0;
+u_int size_ip, size_tcp, size_udp, size_icmp, size_existed=0;
 
 using namespace std;
 
@@ -173,13 +174,13 @@ int main(int argc, char **argv){
                 }
 
                 // Mod2: unbalanced sent/recv packets
+                // get the reverse flow id
+                string rev_flowID; 
+                rev_flowID = string(inet_ntoa(ipv4->dstAddr)) + string(inet_ntoa(ipv4->srcAddr));
+                unsigned int rev_flowIndex = crc32((unsigned char *)rev_flowID.c_str());
                 if((exec_bitmap_val&0x2)){
                     // if interval > 100ms, detect
                     if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
-                        // get the reverse flow id
-                        string rev_flowID; 
-                        rev_flowID = string(inet_ntoa(ipv4->dstAddr)) + string(inet_ntoa(ipv4->srcAddr));
-                        unsigned int rev_flowIndex = crc32((unsigned char *)rev_flowID.c_str());
                         // get the sent and recv pkt ratio
                         int sent=mod2[flowIndex]+1;
                         int recv=mod2[rev_flowIndex]+1;
@@ -239,12 +240,6 @@ int main(int argc, char **argv){
                             mod2[flowIndex]++;
                         }
                     }
-
-                }
-
-                // check report_bitmap value
-                if(repo_bitmap[flowIndex]>=0x1){
-                    cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
                 }
 
                 if(size_ip < 20){
@@ -259,6 +254,51 @@ int main(int argc, char **argv){
                         /* TCP              */
                         /* ============================================= */
 
+                        // Mod3: TCP stats, SYN > ACK 
+                        // Mechanism: SYN++, ACK--
+                        // debug=> ||1 => must enter this 
+                        if((exec_bitmap_val&0x4)||1){
+                            // if interval > 100ms, detect
+                            if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
+                                int flowval=0;
+                                if(tcp->flags&TH_SYN){
+                                    flowval=mod3[flowIndex]+1;
+                                } else if(tcp->flags&TH_ACK){
+                                    flowval=mod3[flowIndex]--;
+                                }
+                                
+                                // compare threshold
+                                if(flowval > 100){
+                                    // SYN > 100 (Lots of SYN)
+                                    // represent (Attacker to Victim)
+                                    if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
+                                        repo_bitmap[flowIndex]=0x4;
+                                    } else {
+                                        repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 0x4);
+                                    }
+                                } 
+
+                                // reset
+                                mod3[flowIndex]=0;
+
+                            } else {
+                                // update
+                                if(mod3.find(flowIndex)==mod3.end()){
+                                    if(tcp->flags&TH_SYN){
+                                        mod3[flowIndex]=1;
+                                    } else if(tcp->flags&TH_ACK){
+                                        mod3[flowIndex]=-1;
+                                    }
+                                } else {
+                                    if(tcp->flags&TH_SYN){
+                                        mod3[flowIndex]++;
+                                    } else if(tcp->flags&TH_ACK){
+                                        mod3[flowIndex]--;
+                                    }
+                                }
+                            }
+                        }
+
                     } else if(ipv4->protocol == (u_char)17){
                         udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
                         size_udp = 8; // 8 bytes
@@ -267,12 +307,33 @@ int main(int argc, char **argv){
                         /* ============================================= */
                         /* UDP              */
                         /* ============================================= */
+                    } else if(ipv4->protocol == (u_char)1){
+                        /* ============================================= */
+                        /* ICMP              */
+                        /* ============================================= */
+                        icmp = (struct sniff_icmp*)(packet + SIZE_ETHER + size_ip);
+                        size_icmp = 4; // 4 bytes
+                        size_existed += size_icmp;
+
+                        // TODO:
+                        // Extra module: check for icmp code number
+                        // e.g. If there existed UDP flood attack, there will have lots of ICMP message,
+                        // which has code represent "Unreachable".
+
                     }
                 }
 
                 /* ============================================= */
                 /* Others (L3)  */
                 /* ============================================= */
+
+                // check report_bitmap value
+                if(repo_bitmap[flowIndex]>=0x1){
+                    if(repo_bitmap[flowIndex]&0x4){
+                        cout << "TCP: SYN > ACK!" << endl;
+                    }
+                    cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
+                }
 
                 // update lastseen (Need to wait until all module has been finished)
                 lastSeen[flowIndex]=(header.ts.tv_sec + header.ts.tv_usec/1000.0);
