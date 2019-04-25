@@ -1,9 +1,14 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out srr.out bitmap_control.out 
 UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out
 TESTS:=test_hash.out
+BITMAP:=bitmap_control_mod1.out
 CXXFLAGS:= -std=c++11
 
-all: $(EXECS) $(UTILS) $(TESTS)
+all: $(EXECS) $(UTILS) $(TESTS) $(BITMAP)
+
+# bitmap control
+bitmap_control_mod1.out: hash.o xxhash.o bitmap_control_mod1.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 
 # executable file
 read_pcap.out: cmap.o pktstat.o read_pcap.c 
