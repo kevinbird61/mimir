@@ -46,6 +46,8 @@ map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
 map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
 
 vector<int> amount_count;
+// threshold 
+int pktcnt_threshold=50;
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -53,10 +55,13 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:")) != -1)
+    while((ch=getopt(argc, argv, "df:p:")) != -1)
     {
         switch(ch)
         {
+            case 'p':
+                pktcnt_threshold=atoi(optarg);
+                break;
             case 'd':
                 debug=1;
                 break;
@@ -163,7 +168,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 int pktcnt=mod1[srcIP][dstIP]+1;
                 int rev_pktcnt=mod1[dstIP][srcIP]+1;
                 // compare to threshold (configurable)
-                if(pktcnt>50){
+                if(pktcnt>pktcnt_threshold){
                     // debug: print out the src,dst IP pair
                     //cout << "Amount and Frequency surpass!" << endl;
                     //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl;
@@ -173,7 +178,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     repo_bitmap_val|=1;
                     // FIXME: decide to update exec_bitmap or not (adaptive/optional)
                     exec_bitmap[srcIP][dstIP]|=2;
-                } else if(rev_pktcnt>50){
+                } else if(rev_pktcnt>pktcnt_threshold){
                     // repo_bitmap[dstIP][srcIP]|=1;
                     repo_bitmap_val|=1;
                     exec_bitmap[dstIP][srcIP]|=2;
