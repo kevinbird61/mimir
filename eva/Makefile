@@ -1,15 +1,21 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out srr.out bitmap_control.out 
 UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out
 TESTS:=test_hash.out
-BITMAP:=bitmap_control_mod1.out bitmap_control_mod2.out
+BITMAP:=bcm1.out bcm2.out bcm3.out bcm4.out bcm5.out
 CXXFLAGS:= -std=c++11
 
 all: $(EXECS) $(UTILS) $(TESTS) $(BITMAP)
 
 # bitmap control
-bitmap_control_mod1.out: hash.o xxhash.o bitmap_control_mod1.cc 
+bcm1.out: hash.o xxhash.o bitmap_control_mod1.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bitmap_control_mod2.out: hash.o xxhash.o bitmap_control_mod2.cc 
+bcm2.out: hash.o xxhash.o bitmap_control_mod2.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm3.out: hash.o xxhash.o bitmap_control_mod3.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm4.out: hamm.o hash.o xxhash.o bitmap_control_mod4.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm5.out: hash.o xxhash.o bitmap_control_mod5.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 
 # executable file
