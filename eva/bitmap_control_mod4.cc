@@ -48,7 +48,11 @@ map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
 typedef struct _mod4_t {
     int prev_sport;
     int prev_dport;
-    int aoc_port; // amount of change
+    int cnt;
+    int src_aoc_port; // amount of change
+    int dst_aoc_port; 
+    map<u_short, int> src_uniq;
+    map<u_short, int> dst_uniq;
 } mod4_t;
 
 map<string, map<string, mod4_t>> mod4;             // module 4 - flowlevel unique port (by calculating hamming distance/ or directly take the difference between sequential packets)
@@ -56,7 +60,7 @@ map<string, map<string, mod4_t>> mod4;             // module 4 - flowlevel uniqu
 vector<int> amount_count;
 // threshold 
 int mode = 0; // 0: directly take the difference, 1: take the hamming distance
-int diff_threshold=1000;
+int diff_threshold=5;
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -175,6 +179,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // port 
         u_short srcPort=0, dstPort=0;
+        int src_diff,dst_diff;
 
         if(size_ip < 20){
             printf("Invalid IPv4 header length: %u bytes\n", size_ip);
@@ -189,7 +194,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 /* ============================================= */
                 srcPort=tcp->sport;
                 dstPort=tcp->dport;
-
+                // mod4[srcIP][dstIP].cnt++;
+                
             } else if(ipv4->protocol == (u_char)17){
                 udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
                 u_int size_udp = 8; // 8 bytes
@@ -200,7 +206,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 /* ============================================= */
                 srcPort=udp->sport;
                 dstPort=udp->dport;
-
+                // mod4[srcIP][dstIP].cnt++;
+                
             } else if(ipv4->protocol == (u_char)1){
                 /* ============================================= */
                 /* ICMP              */
@@ -212,38 +219,46 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
             // Mod4 - calculate the number of unique port
             if((exec_bitmap_val&1)){
-                int diff=0;
+                mod4[srcIP][dstIP].src_uniq[srcPort]++;
+                mod4[srcIP][dstIP].dst_uniq[dstPort]++;
+                /*int src_diff=mod4[srcIP][dstIP].src_aoc_port;
+                int dst_diff=mod4[srcIP][dstIP].dst_aoc_port;
                 int prev_sport = mod4[srcIP][dstIP].prev_sport;
-                int prev_dport = mod4[srcIP][dstIP].prev_dport;
+                int prev_dport = mod4[srcIP][dstIP].prev_dport;*/
                 // calculate hamming 
-                if(mode!=0){
+                /*if(mode!=0){
                     // take hamming 
-                    diff = popcount32_better(srcPort ^ prev_sport) + popcount32_better(dstPort ^ prev_dport);
+                    src_diff += popcount32_better(srcPort ^ prev_sport);
+                    dst_diff += popcount32_better(dstPort ^ prev_dport);
                 } else {
                     // directly take diff
-                    diff = abs(srcPort - prev_sport) + abs(dstPort - prev_dport);
-                }
+                    src_diff += abs(srcPort - prev_sport);
+                    dst_diff += abs(dstPort - prev_dport);
+                }*/
 
                 if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
-                    if(diff > diff_threshold){
+                    // both cnt and ratio
+                    // if( ( abs(src_diff - dst_diff) >= diff_threshold ) && mod4[srcIP][dstIP].cnt >= 50){
+                    int diff = std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
+                    if( diff >= diff_threshold){
                         // report
                         repo_bitmap_val |= 1;
                         // update exec_bitmap value
                         exec_bitmap[srcIP][dstIP] |= 2;
                     }
-
+                    // reset
                     // reset aoc
-                    mod4[srcIP][dstIP].aoc_port=0;
-                    
+                    mod4[srcIP][dstIP].src_uniq.clear();
+                    mod4[srcIP][dstIP].dst_uniq.clear();
+                    // mod4[srcIP][dstIP].src_aoc_port=0;
+                    // mod4[srcIP][dstIP].dst_aoc_port=0;
+                    // mod4[srcIP][dstIP].cnt=0;
                 } else {
                     // update mod4 
-                    if(mod4[srcIP].find(dstIP)==mod4[srcIP].end()){
-                        mod4[srcIP][dstIP].aoc_port=diff;
-                    } else {
-                        mod4[srcIP][dstIP].aoc_port+=diff;
-                    }
-                    mod4[srcIP][dstIP].prev_sport=srcPort;
-                    mod4[srcIP][dstIP].prev_dport=dstPort;
+                    // mod4[srcIP][dstIP].src_aoc_port=src_diff;
+                    // mod4[srcIP][dstIP].dst_aoc_port=dst_diff;
+                    // mod4[srcIP][dstIP].prev_sport=srcPort;
+                    // mod4[srcIP][dstIP].prev_dport=dstPort;
                 }
             }
 
@@ -259,6 +274,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 // no need to report 
             } else {
                 // report, and record 
+                // cout << srcIP << "->" << dstIP << ", src_uniq: " << mod4[srcIP][dstIP].src_uniq.size() << ", dst_uniq: " << mod4[srcIP][dstIP].dst_uniq.size() << ", abs: " << std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() ) << endl;
                 cout << srcIP << "->" << dstIP << endl;
                 repo_bitmap[srcIP][dstIP]=repo_bitmap_val;
             }
