@@ -245,11 +245,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                         repo_bitmap_val |= 1;
                         // update exec_bitmap value
                         exec_bitmap[srcIP][dstIP] |= 2;
+                        // reset
+                        mod4[srcIP][dstIP].src_aoc_port=0;
+                        mod4[srcIP][dstIP].dst_aoc_port=0;
+                        mod4[srcIP][dstIP].cnt=0;
                     }
-                    // reset
-                    mod4[srcIP][dstIP].src_aoc_port=0;
-                    mod4[srcIP][dstIP].dst_aoc_port=0;
-                    mod4[srcIP][dstIP].cnt=0;
+                    
                 } else {
                     // update mod4 
                     mod4[srcIP][dstIP].src_aoc_port=src_diff;
