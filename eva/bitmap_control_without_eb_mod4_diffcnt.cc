@@ -43,6 +43,7 @@ vector<int> amount_count;
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
 map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
+map<string, map<string, int>> mod2;             // module 2 - sent/recv ratio
 map<string, map<string, int>> mod3;             // module 3 - counter of ICMP type 3 (for UDP flood)
 typedef struct _mod4_t {
     int prev_sport;
@@ -58,6 +59,7 @@ map<string, map<string, int>> flow_mod5;        // module 5 - Amount of (SYN-ACK
 
 // threshold 
 int threshold_1 = 50;
+int threshold_2 = 1000;
 int threshold_3 = 50;
 int threshold_4 = 10000;
 int threshold_5 = 50;
@@ -68,12 +70,15 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:1:3:4:5:")) != -1)
+    while((ch=getopt(argc, argv, "df:1:2:3:4:5:")) != -1)
     {
         switch(ch)
         {
             case '1':
                 threshold_1=atoi(optarg);
+                break;
+            case '2':
+                threshold_2=atoi(optarg);
                 break;
             case '3':
                 threshold_3=atoi(optarg);
@@ -124,7 +129,7 @@ int main(int argc, char **argv){
 
     cout << "Threshold: " << endl;
     cout << "Module 1: " << threshold_1 << endl;
-    // cout << "Module 2: " << threshold_2 << endl;
+    cout << "Module 2: " << threshold_2 << endl;
     cout << "Module 3: " << threshold_3 << endl;
     cout << "Module 4: " << threshold_4 << endl;
     cout << "Module 5: " << threshold_5 << endl;
@@ -237,6 +242,16 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     flow_mod5[dstIP][srcIP] = (flow_mod5[dstIP][srcIP] >= threshold_5) ? flow_mod5[dstIP][srcIP]/2 : flow_mod5[dstIP][srcIP];
                 } 
 
+                // goto mod2
+                int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
+                if(sr_diff > threshold_2){
+                    repo_bitmap_val |= 2;
+                    // reset
+                    mod2[srcIP][dstIP]=0;
+                    mod2[dstIP][srcIP]=0;
+                }
+
+
                 // goto mod4
                 // int diff =  std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
                 if(mod4[srcIP][dstIP].dst_aoc_port >= threshold_4){
@@ -256,6 +271,16 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     mod3[srcIP][dstIP]=0;
                 } 
 
+                // goto mod2
+                int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
+                if(sr_diff > threshold_2){
+                    repo_bitmap_val |= 2;
+                    // reset
+                    mod2[srcIP][dstIP]=0;
+                    mod2[dstIP][srcIP]=0;
+                }
+
+
                 // goto mod4
                 // int diff =  std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
                 if(mod4[srcIP][dstIP].dst_aoc_port >= threshold_4){
@@ -271,6 +296,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         } else {
             // update mod1
             mod1[srcIP][dstIP]++;
+            // update mod2
+            mod2[srcIP][dstIP]++;
             // update mod3
             if(icmp!=NULL){
                 if(icmp->type == (u_char)3 || icmp->type == (u_char)11 || icmp->type == (u_char)12){
