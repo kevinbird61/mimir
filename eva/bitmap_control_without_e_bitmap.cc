@@ -239,8 +239,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // report
                     repo_bitmap_val |= 16;
                     // decrease
-                    flow_mod5[srcIP][dstIP] = (flow_mod5[srcIP][dstIP] >= threshold_5) ? flow_mod5[srcIP][dstIP]/2 : flow_mod5[srcIP][dstIP];
-                    flow_mod5[dstIP][srcIP] = (flow_mod5[dstIP][srcIP] >= threshold_5) ? flow_mod5[dstIP][srcIP]/2 : flow_mod5[dstIP][srcIP];
+                    flow_mod5[srcIP][dstIP] = 0;//flow_mod5[srcIP][dstIP]/2;
+                    flow_mod5[dstIP][srcIP] = 0;//flow_mod5[dstIP][srcIP]/2;
                 }
 
                 // goto mod2
@@ -272,13 +272,13 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 } 
 
                 // goto mod2
-                int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
+                /*int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
                 if(sr_diff > threshold_2){
                     repo_bitmap_val |= 2;
 
                     mod2[srcIP][dstIP]=0;
                     mod2[dstIP][srcIP]=0;
-                }
+                }*/
 
                 /*float sr_ratio=0.0;
                 if(mod2[srcIP][dstIP] > mod2[dstIP][srcIP]){

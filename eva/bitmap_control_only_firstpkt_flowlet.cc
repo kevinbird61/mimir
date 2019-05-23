@@ -238,8 +238,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // report
                     repo_bitmap_val |= 16;
                     // decrease
-                    flow_mod5[srcIP][dstIP] = (flow_mod5[srcIP][dstIP] >= threshold_5) ? flow_mod5[srcIP][dstIP]/2 : flow_mod5[srcIP][dstIP];
-                    flow_mod5[dstIP][srcIP] = (flow_mod5[dstIP][srcIP] >= threshold_5) ? flow_mod5[dstIP][srcIP]/2 : flow_mod5[dstIP][srcIP];
+                    flow_mod5[srcIP][dstIP] = 0;//(flow_mod5[srcIP][dstIP] >= threshold_5) ? flow_mod5[srcIP][dstIP]/2 : flow_mod5[srcIP][dstIP];
+                    flow_mod5[dstIP][srcIP] = 0;//(flow_mod5[dstIP][srcIP] >= threshold_5) ? flow_mod5[dstIP][srcIP]/2 : flow_mod5[dstIP][srcIP];
                 } 
 
                 // goto mod2
