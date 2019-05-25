@@ -1,7 +1,7 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out srr.out bitmap_control.out 
-UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out
+UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out sampled.out
 TESTS:=test_hash.out
-BITMAP:=bcm1.out bcm2.out bcm3.out bcm4.out bcm4_nomap.out bcm5.out bcm7.out bcm_all_without_eb.out bcm_only_update_first.out bcm_without_eb_mod4_diffcnt.out
+BITMAP:=bcm1.out bcm2.out bcm3.out bcm4.out bcm4_nomap.out bcm5.out bcm7.out bcmpktlen.out bcm_all_without_eb.out bcm_only_update_first.out bcm_without_eb_mod4_diffcnt.out
 CXXFLAGS:= -std=c++11
 
 all: $(EXECS) $(UTILS) $(TESTS) $(BITMAP)
@@ -20,6 +20,8 @@ bcm4_nomap.out: hamm.o hash.o xxhash.o bitmap_control_mod4_nonmap.cc
 bcm5.out: hash.o xxhash.o bitmap_control_mod5.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 bcm7.out: hash.o xxhash.o bitmap_control_mod7.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcmpktlen.out: hash.o xxhash.o bitmap_control_pktlen.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 bcm_all_without_eb.out: hash.o xxhash.o bitmap_control_without_e_bitmap.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
@@ -46,6 +48,8 @@ bitmap_control.out: hash.o xxhash.o bitmap_control.cc
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 
 # utils
+sampled.out: sampled.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 sort.out: utils/sort.cc 
 	g++ $^ -o $@ -lm $(CXXFLAGS)
 entro.out: utils/entropy.cc

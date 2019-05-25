@@ -239,17 +239,17 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // report
                     repo_bitmap_val |= 16;
                     // decrease
-                    flow_mod5[srcIP][dstIP] = 0;//flow_mod5[srcIP][dstIP]/2;
-                    flow_mod5[dstIP][srcIP] = 0;//flow_mod5[dstIP][srcIP]/2;
+                    //flow_mod5[srcIP][dstIP] = 0;//flow_mod5[srcIP][dstIP]/2;
+                    //flow_mod5[dstIP][srcIP] = 0;//flow_mod5[dstIP][srcIP]/2;
                 }
 
                 // goto mod2
-                int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
+                /*int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
                 if(sr_diff > threshold_2){
                     repo_bitmap_val |= 2;
-                    mod2[srcIP][dstIP]=0;
-                    mod2[dstIP][srcIP]=0;
-                }
+                    //mod2[srcIP][dstIP]=0;
+                    //mod2[dstIP][srcIP]=0;
+                }*/
 
                 // goto mod4
                 int diff =  std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
@@ -257,8 +257,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // report
                     repo_bitmap_val |= 8;
                     // reset aoc
-                    mod4[srcIP][dstIP].src_uniq.clear();
-                    mod4[srcIP][dstIP].dst_uniq.clear();
+                    //mod4[srcIP][dstIP].src_uniq.clear();
+                    // mod4[srcIP][dstIP].dst_uniq.clear();
                 }
 
             } else {
@@ -268,7 +268,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // set report_bitmap
                     repo_bitmap_val|=4;
                     // reset
-                    mod3[srcIP][dstIP]=0;
+                    // mod3[srcIP][dstIP]=0;
                 } 
 
                 // goto mod2
@@ -299,8 +299,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // report
                     repo_bitmap_val |= 8;
                     // reset aoc
-                    mod4[srcIP][dstIP].src_uniq.clear();
-                    mod4[srcIP][dstIP].dst_uniq.clear();
+                    // mod4[srcIP][dstIP].src_uniq.clear();
+                    // mod4[srcIP][dstIP].dst_uniq.clear();
                 }
             }
             amount_count.push_back(mod1[srcIP][dstIP]);
@@ -332,12 +332,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // check report_bitmap value
         if(repo_bitmap_val>1){
-            if(repo_bitmap_val==repo_bitmap[srcIP][dstIP]){
+            if((repo_bitmap_val|repo_bitmap[srcIP][dstIP])==repo_bitmap[srcIP][dstIP]){
                 // no need to report 
             } else {
                 // report, and record 
                 cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << endl;
-                repo_bitmap[srcIP][dstIP]=repo_bitmap_val;
+                repo_bitmap[srcIP][dstIP]|=repo_bitmap_val;
             }
         }
 
