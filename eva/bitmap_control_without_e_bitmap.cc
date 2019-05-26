@@ -6,6 +6,8 @@
 
 #include <map>
 #include <cmath>
+#include <chrono>
+#include <ctime>  
 #include <vector>
 #include <iostream>
 
@@ -45,6 +47,8 @@ map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
 map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
 map<string, map<string, int>> mod2;             // module 2 - sent/recv ratio
 map<string, map<string, int>> mod3;             // module 3 - counter of ICMP type 3 (for UDP flood)
+map<string, map<string, int>> nopayload;        // number of packet without payload
+map<string, map<string, int>> request;          // number of requests
 typedef struct _mod4_t {
     int prev_sport;
     int prev_dport;
@@ -56,6 +60,8 @@ typedef struct _mod4_t {
 } mod4_t;
 map<string, map<string, mod4_t>> mod4;          // module 4 - flowlevel unique port (by calculating hamming distance/ or directly take the difference between sequential packets)
 map<string, map<string, int>> flow_mod5;        // module 5 - Amount of (SYN-ACK)
+
+chrono::time_point<std::chrono::system_clock> t_start, t_end;
 
 // threshold 
 int threshold_1 = 50;
@@ -69,6 +75,7 @@ int threshold_5 = 50;
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 
 int main(int argc, char **argv){
+    t_start = chrono::system_clock::now();
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
     while((ch=getopt(argc, argv, "df:1:2:3:4:5:")) != -1)
@@ -126,6 +133,15 @@ int main(int argc, char **argv){
         // close
         pcap_close(handle);
     }
+
+    t_end = chrono::system_clock::now();
+    chrono::duration<double> elapsed_seconds = t_end-t_start;
+    time_t end_time = chrono::system_clock::to_time_t(t_end);
+
+    cout << "=====================================================" << endl;
+    cout << "Finished at " << ctime(&end_time)
+              << "Elapsed time: " << elapsed_seconds.count() << " (sec)\n";
+    cout << "=====================================================" << endl;
 
 
     cout << "Threshold: " << endl;
@@ -264,12 +280,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             } else {
                 // low frequency
                 // goto mod3
-                if(mod3[srcIP][dstIP] > threshold_3){
+                /*if(mod3[srcIP][dstIP] > threshold_3){
                     // set report_bitmap
                     repo_bitmap_val|=4;
                     // reset
                     // mod3[srcIP][dstIP]=0;
-                } 
+                }*/
 
                 // goto mod2
                 /*int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
@@ -303,6 +319,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // mod4[srcIP][dstIP].dst_uniq.clear();
                 }
             }
+
+            // pktlen 
+            /*if((nopayload[srcIP][dstIP]*nopayload[srcIP][dstIP])/(request[srcIP][dstIP]+1) >= 2500 ){
+                repo_bitmap_val |= 4;
+            }*/
+
             amount_count.push_back(mod1[srcIP][dstIP]);
             // reset the state 
             mod1[srcIP][dstIP]=1;
@@ -310,15 +332,22 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             // update mod1
             mod1[srcIP][dstIP]++;
             // update mod2
-            mod2[srcIP][dstIP]++;
+            // mod2[srcIP][dstIP]++;
             // update mod3
-            if(icmp!=NULL){
+            /*if(icmp!=NULL){
                 if(icmp->type == (u_char)3 || icmp->type == (u_char)11 || icmp->type == (u_char)12){
                     mod3[srcIP][dstIP]++;
                 }
+            }*/
+            if(header->len > 1500){
+                // pktlen[srcIP][dstIP]--;
+            } else if(header->len < 100){
+                nopayload[srcIP][dstIP]++;
             }
+            // increase mod1 
+            request[srcIP][dstIP]++;
             // update mod4
-            mod4[srcIP][dstIP].src_uniq[srcPort]++;
+            // mod4[srcIP][dstIP].src_uniq[srcPort]++;
             mod4[srcIP][dstIP].dst_uniq[dstPort]++;
             // update mod5
             if(tcp!=NULL){

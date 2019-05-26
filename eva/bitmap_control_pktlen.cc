@@ -48,7 +48,7 @@ map<string, map<string, int>> report;
 
 vector<int> amount_count;
 // threshold 
-int pktcnt_threshold=50;
+int cusum_threshold=2500;
 
 int all,sampled;
 
@@ -63,7 +63,7 @@ int main(int argc, char **argv){
         switch(ch)
         {
             case 'p':
-                pktcnt_threshold=atoi(optarg);
+                cusum_threshold=atoi(optarg);
                 break;
             case 'd':
                 debug=1;
@@ -175,7 +175,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             // mod1[srcIP][dstIP]++;
 
             // report
-            if((pktlen[srcIP][dstIP]*pktlen[srcIP][dstIP])/(mod1[srcIP][dstIP]+1) >= 2500 ){
+            if((pktlen[srcIP][dstIP]*pktlen[srcIP][dstIP])/(mod1[srcIP][dstIP]+1) >= cusum_threshold ){
                 report[srcIP][dstIP]++;
             }
 
