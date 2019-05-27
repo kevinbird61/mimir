@@ -3,8 +3,7 @@
 
 /* detect whether current flow is high/low frequency */
 
-#include "headers.p4"
-#include "actions.p4"
+#include "../headers.p4"
 
 #define FREQ_THRESHOLD 16w50
 

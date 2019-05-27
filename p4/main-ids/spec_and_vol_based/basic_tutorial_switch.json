@@ -477,8 +477,8 @@
       "name" : "basic_tutorial_ingress.ids.mod1.pktcnt",
       "id" : 0,
       "source_info" : {
-        "filename" : "includes/frequency.p4",
-        "line" : 17,
+        "filename" : "includes/modules/frequency.p4",
+        "line" : 16,
         "column" : 28,
         "source_fragment" : "pktcnt"
       },
@@ -489,7 +489,7 @@
       "name" : "basic_tutorial_ingress.ids.mod4.prev_dport",
       "id" : 1,
       "source_info" : {
-        "filename" : "includes/unique_dport.p4",
+        "filename" : "includes/modules/unique_dport.p4",
         "line" : 16,
         "column" : 28,
         "source_fragment" : "prev_dport"
@@ -501,7 +501,7 @@
       "name" : "basic_tutorial_ingress.ids.mod4.dport",
       "id" : 2,
       "source_info" : {
-        "filename" : "includes/unique_dport.p4",
+        "filename" : "includes/modules/unique_dport.p4",
         "line" : 19,
         "column" : 28,
         "source_fragment" : "dport"
@@ -513,7 +513,7 @@
       "name" : "basic_tutorial_ingress.ids.mod5.rst",
       "id" : 3,
       "source_info" : {
-        "filename" : "includes/amount_rst.p4",
+        "filename" : "includes/modules/amount_rst.p4",
         "line" : 16,
         "column" : 28,
         "source_fragment" : "rst"
@@ -935,8 +935,8 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 34,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 33,
             "column" : 16,
             "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 1"
           }
@@ -958,8 +958,8 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 36,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 35,
             "column" : 16,
             "source_fragment" : "pktcnt.write(metadata.flow_id, 1)"
           }
@@ -1040,8 +1040,8 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 31,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 30,
             "column" : 12,
             "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id)"
           }
@@ -1079,7 +1079,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/amount_rst.p4",
+            "filename" : "includes/modules/amount_rst.p4",
             "line" : 31,
             "column" : 16,
             "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 16"
@@ -1161,7 +1161,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/amount_rst.p4",
+            "filename" : "includes/modules/amount_rst.p4",
             "line" : 28,
             "column" : 12,
             "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
@@ -1200,7 +1200,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 42,
             "column" : 16,
             "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 8"
@@ -1295,7 +1295,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 39,
             "column" : 12,
             "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
@@ -1354,7 +1354,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 42,
             "column" : 16,
             "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 8"
@@ -1436,7 +1436,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 39,
             "column" : 12,
             "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
@@ -1525,7 +1525,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 31,
             "column" : 16,
             "source_fragment" : "dport_cnt = dport_cnt + 1"
@@ -1548,7 +1548,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 32,
             "column" : 16,
             "source_fragment" : "dport.write(metadata.flow_id, dport_cnt)"
@@ -1630,8 +1630,8 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 24,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 23,
             "column" : 12,
             "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id)"
           }
@@ -1672,8 +1672,8 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 26,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 25,
             "column" : 43,
             "source_fragment" : "prev_pktcnt+1"
           }
@@ -1695,8 +1695,8 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 26,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 25,
             "column" : 12,
             "source_fragment" : "pktcnt.write(metadata.flow_id, prev_pktcnt+1)"
           }
@@ -1783,7 +1783,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/amount_rst.p4",
+            "filename" : "includes/modules/amount_rst.p4",
             "line" : 23,
             "column" : 12,
             "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
@@ -1806,7 +1806,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/amount_rst.p4",
+            "filename" : "includes/modules/amount_rst.p4",
             "line" : 24,
             "column" : 12,
             "source_fragment" : "rst.write(metadata.flow_id, prev_rst)"
@@ -1894,7 +1894,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 27,
             "column" : 12,
             "source_fragment" : "prev_dport.read(prev_dport_val, metadata.flow_id)"
@@ -1917,7 +1917,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 28,
             "column" : 12,
             "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
@@ -1947,7 +1947,7 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 35,
             "column" : 12,
             "source_fragment" : "prev_dport.write(metadata.flow_id, metadata.l4_dstPort)"
@@ -2222,8 +2222,8 @@
           "name" : "tbl_act_2",
           "id" : 4,
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 31,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 30,
             "column" : 12,
             "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id)"
           },
@@ -2251,8 +2251,8 @@
           "name" : "tbl_act_3",
           "id" : 5,
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 34,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 33,
             "column" : 39,
             "source_fragment" : "= metadata.report_bitmap | 1; ..."
           },
@@ -2303,7 +2303,7 @@
           "name" : "tbl_act_5",
           "id" : 7,
           "source_info" : {
-            "filename" : "includes/amount_rst.p4",
+            "filename" : "includes/modules/amount_rst.p4",
             "line" : 28,
             "column" : 12,
             "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
@@ -2332,7 +2332,7 @@
           "name" : "tbl_act_6",
           "id" : 8,
           "source_info" : {
-            "filename" : "includes/amount_rst.p4",
+            "filename" : "includes/modules/amount_rst.p4",
             "line" : 31,
             "column" : 39,
             "source_fragment" : "="
@@ -2361,7 +2361,7 @@
           "name" : "tbl_act_7",
           "id" : 9,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 39,
             "column" : 12,
             "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
@@ -2390,7 +2390,7 @@
           "name" : "tbl_act_8",
           "id" : 10,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 42,
             "column" : 39,
             "source_fragment" : "="
@@ -2442,7 +2442,7 @@
           "name" : "tbl_act_10",
           "id" : 12,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 39,
             "column" : 12,
             "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
@@ -2471,7 +2471,7 @@
           "name" : "tbl_act_11",
           "id" : 13,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 42,
             "column" : 39,
             "source_fragment" : "="
@@ -2523,8 +2523,8 @@
           "name" : "tbl_act_13",
           "id" : 15,
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 24,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 23,
             "column" : 12,
             "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id); ..."
           },
@@ -2552,7 +2552,7 @@
           "name" : "tbl_act_14",
           "id" : 16,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 31,
             "column" : 26,
             "source_fragment" : "= dport_cnt + 1; ..."
@@ -2581,7 +2581,7 @@
           "name" : "tbl_act_15",
           "id" : 17,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 35,
             "column" : 12,
             "source_fragment" : "prev_dport.write(metadata.flow_id, metadata.l4_dstPort)"
@@ -2723,7 +2723,7 @@
             "filename" : "includes/ids.p4",
             "line" : 50,
             "column" : 11,
-            "source_fragment" : "interval > 100"
+            "source_fragment" : "interval > 48w100"
           },
           "expression" : {
             "type" : "expression",
@@ -2746,8 +2746,8 @@
           "name" : "node_10",
           "id" : 3,
           "source_info" : {
-            "filename" : "includes/frequency.p4",
-            "line" : 33,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 32,
             "column" : 15,
             "source_fragment" : "prev_pktcnt > 16w50"
           },
@@ -2808,7 +2808,7 @@
           "name" : "node_15",
           "id" : 5,
           "source_info" : {
-            "filename" : "includes/amount_rst.p4",
+            "filename" : "includes/modules/amount_rst.p4",
             "line" : 30,
             "column" : 15,
             "source_fragment" : "prev_rst > 16w50"
@@ -2834,7 +2834,7 @@
           "name" : "node_18",
           "id" : 6,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 41,
             "column" : 15,
             "source_fragment" : "dport_cnt > 32w10000"
@@ -2860,7 +2860,7 @@
           "name" : "node_22",
           "id" : 7,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 41,
             "column" : 15,
             "source_fragment" : "dport_cnt > 32w10000"
@@ -2886,7 +2886,7 @@
           "name" : "node_26",
           "id" : 8,
           "source_info" : {
-            "filename" : "includes/unique_dport.p4",
+            "filename" : "includes/modules/unique_dport.p4",
             "line" : 30,
             "column" : 15,
             "source_fragment" : "metadata.l4_dstPort != prev_dport_val"

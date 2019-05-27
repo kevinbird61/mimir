@@ -4,13 +4,13 @@
 #include "headers.p4"
 
 // detection module
-#include "frequency.p4"
-#include "unique_dport.p4"
-#include "amount_rst.p4"
+#include "modules/frequency.p4"
+#include "modules/unique_dport.p4"
+#include "modules/amount_rst.p4"
 // report (digest)
 #include "report.p4"
 
-#define TIMEOUT 100         // represent 0.1 sec 
+#define TIMEOUT 48w100         // represent 0.1 sec 
 
 control ids(
     inout headers_t hdr, 
