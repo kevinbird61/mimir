@@ -133,6 +133,21 @@ registers {
 }
 registers {
   preamble {
+    id: 369125532
+    name: "basic_tutorial_ingress.ids.mod_report.report_bitmap"
+    alias: "report_bitmap"
+  }
+  type_spec {
+    bitstring {
+      bit {
+        bitwidth: 5
+      }
+    }
+  }
+  size: 1024
+}
+registers {
+  preamble {
     id: 369102289
     name: "basic_tutorial_ingress.ids.lastSeen"
     alias: "lastSeen"
@@ -146,5 +161,52 @@ registers {
   }
   size: 1024
 }
+digests {
+  preamble {
+    id: 385915277
+    name: "report_digest_t"
+    alias: "report_digest_t"
+  }
+  type_spec {
+    struct {
+      name: "report_digest_t"
+    }
+  }
+}
 type_info {
+  structs {
+    key: "report_digest_t"
+    value {
+      members {
+        name: "srcIP"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+      members {
+        name: "dstIP"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 32
+            }
+          }
+        }
+      }
+      members {
+        name: "report_bitmap"
+        type_spec {
+          bitstring {
+            bit {
+              bitwidth: 5
+            }
+          }
+        }
+      }
+    }
+  }
 }

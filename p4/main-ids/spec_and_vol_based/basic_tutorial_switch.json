@@ -5,6 +5,9 @@
       "id" : 0,
       "fields" : [
         ["tmp", 16, false],
+        ["tmp_0", 32, false],
+        ["tmp_1", 32, false],
+        ["tmp_2", 5, false],
         ["ids_prev_ts", 48, false],
         ["ids_tmp", 48, false],
         ["ids_mod1_prev_pktcnt", 16, false],
@@ -14,11 +17,12 @@
         ["ids_mod4_dport_cnt_0", 32, false],
         ["ids_mod5_prev_rst", 16, false],
         ["ids_mod5_prev_rst_0", 16, false],
+        ["ids_mod_report_prev_report_val", 5, false],
         ["metadata_t.l4_srcPort", 16, false],
         ["metadata_t.l4_dstPort", 16, false],
         ["metadata_t.flow_id", 32, false],
         ["metadata_t.report_bitmap", 5, false],
-        ["_padding_3", 3, false]
+        ["_padding_3", 1, false]
       ]
     },
     {
@@ -518,11 +522,23 @@
       "bitwidth" : 16
     },
     {
-      "name" : "basic_tutorial_ingress.ids.lastSeen",
+      "name" : "basic_tutorial_ingress.ids.mod_report.report_bitmap",
       "id" : 4,
       "source_info" : {
+        "filename" : "includes/report.p4",
+        "line" : 20,
+        "column" : 27,
+        "source_fragment" : "report_bitmap"
+      },
+      "size" : 1024,
+      "bitwidth" : 5
+    },
+    {
+      "name" : "basic_tutorial_ingress.ids.lastSeen",
+      "id" : 5,
+      "source_info" : {
         "filename" : "includes/ids.p4",
-        "line" : 24,
+        "line" : 28,
         "column" : 28,
         "source_fragment" : "lastSeen"
       },
@@ -608,7 +624,32 @@
       ]
     }
   ],
-  "learn_lists" : [],
+  "learn_lists" : [
+    {
+      "id" : 1,
+      "name" : "report_digest_t",
+      "source_info" : {
+        "filename" : "includes/report.p4",
+        "line" : 38,
+        "column" : 20,
+        "source_fragment" : "{ ..."
+      },
+      "elements" : [
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_0"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_1"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_2"]
+        }
+      ]
+    }
+  ],
   "actions" : [
     {
       "name" : "NoAction",
@@ -750,7 +791,7 @@
           ],
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 44,
+            "line" : 48,
             "column" : 17,
             "source_fragment" : "(prev_ts== 48w0)?48w0:(standard_metadata.ingress_global_timestamp - prev_ts)"
           }
@@ -799,7 +840,7 @@
           ],
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 44,
+            "line" : 48,
             "column" : 17,
             "source_fragment" : "(prev_ts== 48w0)?48w0:(standard_metadata.ingress_global_timestamp - prev_ts)"
           }
@@ -833,7 +874,7 @@
           ],
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 28,
+            "line" : 32,
             "column" : 8,
             "source_fragment" : "hash( ..."
           }
@@ -856,7 +897,7 @@
           ],
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 42,
+            "line" : 46,
             "column" : 8,
             "source_fragment" : "lastSeen.read(prev_ts, metadata.flow_id)"
           }
@@ -898,6 +939,29 @@
             "line" : 34,
             "column" : 16,
             "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod1.pktcnt"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0001"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/frequency.p4",
+            "line" : 36,
+            "column" : 16,
+            "source_fragment" : "pktcnt.write(metadata.flow_id, 1)"
           }
         }
       ]
@@ -1903,6 +1967,119 @@
           ]
         }
       ]
+    },
+    {
+      "name" : "act_16",
+      "id" : 19,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_0"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "srcAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 39,
+            "column" : 24,
+            "source_fragment" : "hdr.ipv4.srcAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_1"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "dstAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 40,
+            "column" : 24,
+            "source_fragment" : "hdr.ipv4.dstAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_2"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 41,
+            "column" : 24,
+            "source_fragment" : "metadata.report_bitmap"
+          }
+        },
+        {
+          "op" : "generate_digest",
+          "parameters" : [
+            {
+              "type" : "hexstr",
+              "value" : "0x00000400"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x1"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 36,
+            "column" : 16,
+            "source_fragment" : "digest<report_digest_t>( ..."
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_17",
+      "id" : 20,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod_report_prev_report_val"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod_report.report_bitmap"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 26,
+            "column" : 8,
+            "source_fragment" : "report_bitmap.read(prev_report_val, metadata.flow_id)"
+          }
+        }
+      ]
     }
   ],
   "pipelines" : [
@@ -1959,7 +2136,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 28,
+            "line" : 32,
             "column" : 8,
             "source_fragment" : "hash( ..."
           },
@@ -1988,7 +2165,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 44,
+            "line" : 48,
             "column" : 17,
             "source_fragment" : "(prev_ts== 48w0)?48w0:(standard_metadata.ingress_global_timestamp - prev_ts)"
           },
@@ -2017,7 +2194,7 @@
           "id" : 3,
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 44,
+            "line" : 48,
             "column" : 17,
             "source_fragment" : "(prev_ts== 48w0)?48w0:(standard_metadata.ingress_global_timestamp - prev_ts)"
           },
@@ -2077,7 +2254,7 @@
             "filename" : "includes/frequency.p4",
             "line" : 34,
             "column" : 39,
-            "source_fragment" : "="
+            "source_fragment" : "= metadata.report_bitmap | 1; ..."
           },
           "key" : [],
           "match_type" : "exact",
@@ -2250,9 +2427,9 @@
           "direct_meters" : null,
           "action_ids" : [11],
           "actions" : ["act_8"],
-          "base_default_next" : null,
+          "base_default_next" : "tbl_act_16",
           "next_tables" : {
-            "act_8" : null
+            "act_8" : "tbl_act_16"
           },
           "default_entry" : {
             "action_id" : 11,
@@ -2331,9 +2508,9 @@
           "direct_meters" : null,
           "action_ids" : [14],
           "actions" : ["act_11"],
-          "base_default_next" : null,
+          "base_default_next" : "tbl_act_16",
           "next_tables" : {
-            "act_11" : null
+            "act_11" : "tbl_act_16"
           },
           "default_entry" : {
             "action_id" : 14,
@@ -2418,12 +2595,70 @@
           "direct_meters" : null,
           "action_ids" : [18],
           "actions" : ["act_15"],
-          "base_default_next" : null,
+          "base_default_next" : "tbl_act_16",
           "next_tables" : {
-            "act_15" : null
+            "act_15" : "tbl_act_16"
           },
           "default_entry" : {
             "action_id" : 18,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_16",
+          "id" : 18,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 26,
+            "column" : 8,
+            "source_fragment" : "report_bitmap.read(prev_report_val, metadata.flow_id)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [20],
+          "actions" : ["act_17"],
+          "base_default_next" : "node_30",
+          "next_tables" : {
+            "act_17" : "node_30"
+          },
+          "default_entry" : {
+            "action_id" : 20,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_17",
+          "id" : 19,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 36,
+            "column" : 16,
+            "source_fragment" : "digest<report_digest_t>( ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [19],
+          "actions" : ["act_16"],
+          "base_default_next" : null,
+          "next_tables" : {
+            "act_16" : null
+          },
+          "default_entry" : {
+            "action_id" : 19,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -2460,7 +2695,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 44,
+            "line" : 48,
             "column" : 18,
             "source_fragment" : "prev_ts== 48w0"
           },
@@ -2486,7 +2721,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 46,
+            "line" : 50,
             "column" : 11,
             "source_fragment" : "interval > 100"
           },
@@ -2538,7 +2773,7 @@
           "id" : 4,
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 51,
+            "line" : 55,
             "column" : 15,
             "source_fragment" : "(metadata.report_bitmap | 5w1)==5w1"
           },
@@ -2672,6 +2907,58 @@
           },
           "true_next" : "tbl_act_14",
           "false_next" : "tbl_act_15"
+        },
+        {
+          "name" : "node_30",
+          "id" : 9,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 28,
+            "column" : 11,
+            "source_fragment" : "metadata.report_bitmap>1"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "metadata_t.report_bitmap"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x01"
+              }
+            }
+          },
+          "false_next" : null,
+          "true_next" : "node_31"
+        },
+        {
+          "name" : "node_31",
+          "id" : 10,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 29,
+            "column" : 15,
+            "source_fragment" : "prev_report_val==metadata.report_bitmap"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod_report_prev_report_val"]
+              },
+              "right" : {
+                "type" : "field",
+                "value" : ["scalars", "metadata_t.report_bitmap"]
+              }
+            }
+          },
+          "true_next" : null,
+          "false_next" : "tbl_act_17"
         }
       ]
     },

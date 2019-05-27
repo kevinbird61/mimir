@@ -7,6 +7,8 @@
 #include "frequency.p4"
 #include "unique_dport.p4"
 #include "amount_rst.p4"
+// report (digest)
+#include "report.p4"
 
 #define TIMEOUT 100         // represent 0.1 sec 
 
@@ -19,6 +21,8 @@ control ids(
     frequency()     mod1;
     unique_dport()  mod4;
     amount_rst()    mod5;
+    // report instance
+    report()        mod_report;
 
     // lastseen timestamp (flow)
     register<bit<48>>(TABLE_SLOT) lastSeen;
@@ -72,6 +76,9 @@ control ids(
             // update unique_dport
             mod4.apply(1w0, hdr, metadata, standard_metadata);
         }
+
+        // report (base on report_bitmap)
+        mod_report.apply(hdr, metadata, standard_metadata);
     }
 }
 

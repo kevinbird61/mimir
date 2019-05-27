@@ -32,6 +32,8 @@ control frequency(
             // check
             if(prev_pktcnt > FREQ_THRESHOLD){
                 metadata.report_bitmap = metadata.report_bitmap | 1;
+                // reset
+                pktcnt.write(metadata.flow_id, 1);
             } 
         }
     }
