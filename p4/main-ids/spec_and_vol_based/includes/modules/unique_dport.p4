@@ -5,7 +5,7 @@
 
 #include "../headers.p4"
 
-#define DPORT_THRESHOLD 200
+#define DPORT_THRESHOLD 1000
 
 control unique_dport(
     in bit<1>                   ctrl,

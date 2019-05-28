@@ -5,7 +5,7 @@
 
 #include "../headers.p4"
 
-#define RST_THRESHOLD 10
+#define RST_THRESHOLD 50
 
 control amount_rst(
     in bit<1>                   ctrl,
@@ -21,7 +21,9 @@ control amount_rst(
             // 0: update
             bit<16> prev_rst;
             rst.read(prev_rst, metadata.flow_id);
+            // if TCP 
             if(hdr.tcp.isValid()){
+                // RST: 0x04
                 if(hdr.tcp.flags & 4 > 0){
                     rst.write(metadata.flow_id, prev_rst+1);
                 }

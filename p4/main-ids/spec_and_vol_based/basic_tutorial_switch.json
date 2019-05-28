@@ -11,6 +11,7 @@
         ["tmp_3", 32, false],
         ["tmp_4", 5, false],
         ["ids_prev_ts", 48, false],
+        ["ids_tmp", 48, false],
         ["ids_mod1_prev_pktcnt", 16, false],
         ["ids_mod1_prev_pktcnt_0", 16, false],
         ["ids_mod4_prev_dport_val", 16, false],
@@ -790,54 +791,18 @@
           "parameters" : [
             {
               "type" : "field",
-              "value" : ["ids_metadata", "report_bitmap"]
-            },
-            {
-              "type" : "expression",
-              "value" : {
-                "type" : "expression",
-                "value" : {
-                  "op" : "|",
-                  "left" : {
-                    "type" : "field",
-                    "value" : ["scalars", "metadata_t.report_bitmap"]
-                  },
-                  "right" : {
-                    "type" : "hexstr",
-                    "value" : "0x01"
-                  }
-                }
-              }
-            }
-          ],
-          "source_info" : {
-            "filename" : "includes/modules/frequency.p4",
-            "line" : 33,
-            "column" : 16,
-            "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 1"
-          }
-        },
-        {
-          "op" : "register_write",
-          "parameters" : [
-            {
-              "type" : "register_array",
-              "value" : "basic_tutorial_ingress.ids.mod1.pktcnt"
-            },
-            {
-              "type" : "field",
-              "value" : ["scalars", "metadata_t.flow_id"]
+              "value" : ["scalars", "ids_tmp"]
             },
             {
               "type" : "hexstr",
-              "value" : "0x0001"
+              "value" : "0x000000000000"
             }
           ],
           "source_info" : {
-            "filename" : "includes/modules/frequency.p4",
-            "line" : 35,
-            "column" : 16,
-            "source_fragment" : "pktcnt.write(metadata.flow_id, 1)"
+            "filename" : "includes/ids.p4",
+            "line" : 48,
+            "column" : 17,
+            "source_fragment" : "(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts)"
           }
         }
       ]
@@ -845,6 +810,55 @@
     {
       "name" : "act_0",
       "id" : 3,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "-",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["standard_metadata", "ingress_global_timestamp"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "ids_prev_ts"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 48,
+            "column" : 17,
+            "source_fragment" : "(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_1",
+      "id" : 4,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -896,7 +910,53 @@
             "column" : 8,
             "source_fragment" : "lastSeen.read(prev_ts, metadata.flow_id)"
           }
-        },
+        }
+      ]
+    },
+    {
+      "name" : "act_2",
+      "id" : 5,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["scalars", "metadata_t.report_bitmap"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x01"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 33,
+            "column" : 16,
+            "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 1"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_3",
+      "id" : 6,
+      "runtime_data" : [],
+      "primitives" : [
         {
           "op" : "assign",
           "parameters" : [
@@ -975,8 +1035,8 @@
       ]
     },
     {
-      "name" : "act_1",
-      "id" : 4,
+      "name" : "act_4",
+      "id" : 7,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1006,7 +1066,7 @@
           ],
           "source_info" : {
             "filename" : "includes/modules/amount_rst.p4",
-            "line" : 35,
+            "line" : 37,
             "column" : 16,
             "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 16"
           }
@@ -1014,8 +1074,8 @@
       ]
     },
     {
-      "name" : "act_2",
-      "id" : 5,
+      "name" : "act_5",
+      "id" : 8,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1101,7 +1161,7 @@
           ],
           "source_info" : {
             "filename" : "includes/modules/amount_rst.p4",
-            "line" : 32,
+            "line" : 34,
             "column" : 12,
             "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
           }
@@ -1109,8 +1169,8 @@
       ]
     },
     {
-      "name" : "act_3",
-      "id" : 6,
+      "name" : "act_6",
+      "id" : 9,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1148,8 +1208,8 @@
       ]
     },
     {
-      "name" : "act_4",
-      "id" : 7,
+      "name" : "act_7",
+      "id" : 10,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1256,8 +1316,8 @@
       ]
     },
     {
-      "name" : "act_5",
-      "id" : 8,
+      "name" : "act_8",
+      "id" : 11,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1289,8 +1349,8 @@
       ]
     },
     {
-      "name" : "act_6",
-      "id" : 9,
+      "name" : "act_9",
+      "id" : 12,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1328,8 +1388,8 @@
       ]
     },
     {
-      "name" : "act_7",
-      "id" : 10,
+      "name" : "act_10",
+      "id" : 13,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1410,8 +1470,8 @@
       ]
     },
     {
-      "name" : "act_8",
-      "id" : 11,
+      "name" : "act_11",
+      "id" : 14,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1430,10 +1490,33 @@
       ]
     },
     {
-      "name" : "act_9",
-      "id" : 12,
+      "name" : "act_12",
+      "id" : 15,
       "runtime_data" : [],
       "primitives" : [
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod1.pktcnt"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0001"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 36,
+            "column" : 12,
+            "source_fragment" : "pktcnt.write(metadata.flow_id, 1)"
+          }
+        },
         {
           "op" : "assign",
           "parameters" : [
@@ -1450,8 +1533,8 @@
       ]
     },
     {
-      "name" : "act_10",
-      "id" : 13,
+      "name" : "act_13",
+      "id" : 16,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1491,7 +1574,7 @@
           ],
           "source_info" : {
             "filename" : "includes/modules/amount_rst.p4",
-            "line" : 26,
+            "line" : 28,
             "column" : 48,
             "source_fragment" : "prev_rst+1"
           }
@@ -1514,7 +1597,7 @@
           ],
           "source_info" : {
             "filename" : "includes/modules/amount_rst.p4",
-            "line" : 26,
+            "line" : 28,
             "column" : 20,
             "source_fragment" : "rst.write(metadata.flow_id, prev_rst+1)"
           }
@@ -1522,8 +1605,8 @@
       ]
     },
     {
-      "name" : "act_11",
-      "id" : 14,
+      "name" : "act_14",
+      "id" : 17,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1770,8 +1853,8 @@
       ]
     },
     {
-      "name" : "act_12",
-      "id" : 15,
+      "name" : "act_15",
+      "id" : 18,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1842,8 +1925,8 @@
       ]
     },
     {
-      "name" : "act_13",
-      "id" : 16,
+      "name" : "act_16",
+      "id" : 19,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -1973,108 +2056,8 @@
       ]
     },
     {
-      "name" : "act_14",
-      "id" : 17,
-      "runtime_data" : [],
-      "primitives" : [
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "tmp_2"]
-            },
-            {
-              "type" : "field",
-              "value" : ["ipv4", "srcAddr"]
-            }
-          ],
-          "source_info" : {
-            "filename" : "includes/report.p4",
-            "line" : 39,
-            "column" : 24,
-            "source_fragment" : "hdr.ipv4.srcAddr"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "tmp_3"]
-            },
-            {
-              "type" : "field",
-              "value" : ["ipv4", "dstAddr"]
-            }
-          ],
-          "source_info" : {
-            "filename" : "includes/report.p4",
-            "line" : 40,
-            "column" : 24,
-            "source_fragment" : "hdr.ipv4.dstAddr"
-          }
-        },
-        {
-          "op" : "assign",
-          "parameters" : [
-            {
-              "type" : "field",
-              "value" : ["scalars", "tmp_4"]
-            },
-            {
-              "type" : "field",
-              "value" : ["ids_metadata_0", "report_bitmap"]
-            }
-          ]
-        },
-        {
-          "op" : "generate_digest",
-          "parameters" : [
-            {
-              "type" : "hexstr",
-              "value" : "0x00000400"
-            },
-            {
-              "type" : "hexstr",
-              "value" : "0x1"
-            }
-          ],
-          "source_info" : {
-            "filename" : "includes/report.p4",
-            "line" : 36,
-            "column" : 16,
-            "source_fragment" : "digest<report_digest_t>( ..."
-          }
-        },
-        {
-          "op" : "register_write",
-          "parameters" : [
-            {
-              "type" : "register_array",
-              "value" : "basic_tutorial_ingress.ids.mod_report.report_bitmap"
-            },
-            {
-              "type" : "field",
-              "value" : ["scalars", "metadata_t.flow_id"]
-            },
-            {
-              "type" : "field",
-              "value" : ["ids_metadata_0", "report_bitmap"]
-            }
-          ],
-          "source_info" : {
-            "filename" : "includes/report.p4",
-            "line" : 48,
-            "column" : 16,
-            "source_fragment" : "report_bitmap.write(metadata.flow_id, metadata.report_bitmap)"
-          }
-        }
-      ]
-    },
-    {
-      "name" : "act_15",
-      "id" : 18,
+      "name" : "act_17",
+      "id" : 20,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -2125,7 +2108,120 @@
               "value" : ["ids_metadata_0", "report_bitmap"]
             }
           ]
+        }
+      ]
+    },
+    {
+      "name" : "act_18",
+      "id" : 21,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_2"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "srcAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 39,
+            "column" : 24,
+            "source_fragment" : "hdr.ipv4.srcAddr"
+          }
         },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_3"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "dstAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 40,
+            "column" : 24,
+            "source_fragment" : "hdr.ipv4.dstAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_4"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 41,
+            "column" : 24,
+            "source_fragment" : "metadata.report_bitmap"
+          }
+        },
+        {
+          "op" : "generate_digest",
+          "parameters" : [
+            {
+              "type" : "hexstr",
+              "value" : "0x00000400"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x1"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 36,
+            "column" : 16,
+            "source_fragment" : "digest<report_digest_t>( ..."
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod_report.report_bitmap"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 48,
+            "column" : 16,
+            "source_fragment" : "report_bitmap.write(metadata.flow_id, metadata.report_bitmap)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_19",
+      "id" : 22,
+      "runtime_data" : [],
+      "primitives" : [
         {
           "op" : "register_read",
           "parameters" : [
@@ -2152,8 +2248,8 @@
       ]
     },
     {
-      "name" : "act_16",
-      "id" : 19,
+      "name" : "act_20",
+      "id" : 23,
       "runtime_data" : [],
       "primitives" : [
         {
@@ -2235,10 +2331,10 @@
           "name" : "tbl_act",
           "id" : 1,
           "source_info" : {
-            "filename" : "includes/modules/frequency.p4",
-            "line" : 30,
-            "column" : 12,
-            "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id); ..."
+            "filename" : "includes/ids.p4",
+            "line" : 32,
+            "column" : 8,
+            "source_fragment" : "hash( ..."
           },
           "key" : [],
           "match_type" : "exact",
@@ -2247,14 +2343,14 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [3],
-          "actions" : ["act_0"],
+          "action_ids" : [4],
+          "actions" : ["act_1"],
           "base_default_next" : "node_5",
           "next_tables" : {
-            "act_0" : "node_5"
+            "act_1" : "node_5"
           },
           "default_entry" : {
-            "action_id" : 3,
+            "action_id" : 4,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -2264,10 +2360,10 @@
           "name" : "tbl_act_0",
           "id" : 2,
           "source_info" : {
-            "filename" : "includes/modules/frequency.p4",
-            "line" : 33,
-            "column" : 39,
-            "source_fragment" : "= metadata.report_bitmap | 1; ..."
+            "filename" : "includes/ids.p4",
+            "line" : 48,
+            "column" : 17,
+            "source_fragment" : "(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts)"
           },
           "key" : [],
           "match_type" : "exact",
@@ -2278,9 +2374,9 @@
           "direct_meters" : null,
           "action_ids" : [2],
           "actions" : ["act"],
-          "base_default_next" : "tbl_act_1",
+          "base_default_next" : "node_8",
           "next_tables" : {
-            "act" : "tbl_act_1"
+            "act" : "node_8"
           },
           "default_entry" : {
             "action_id" : 2,
@@ -2292,6 +2388,12 @@
         {
           "name" : "tbl_act_1",
           "id" : 3,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 48,
+            "column" : 17,
+            "source_fragment" : "(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts)"
+          },
           "key" : [],
           "match_type" : "exact",
           "type" : "simple",
@@ -2299,14 +2401,14 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [12],
-          "actions" : ["act_9"],
+          "action_ids" : [3],
+          "actions" : ["act_0"],
           "base_default_next" : "node_8",
           "next_tables" : {
-            "act_9" : "node_8"
+            "act_0" : "node_8"
           },
           "default_entry" : {
-            "action_id" : 12,
+            "action_id" : 3,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -2316,97 +2418,10 @@
           "name" : "tbl_act_2",
           "id" : 4,
           "source_info" : {
-            "filename" : "includes/modules/amount_rst.p4",
-            "line" : 32,
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 30,
             "column" : 12,
-            "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
-          },
-          "key" : [],
-          "match_type" : "exact",
-          "type" : "simple",
-          "max_size" : 1024,
-          "with_counters" : false,
-          "support_timeout" : false,
-          "direct_meters" : null,
-          "action_ids" : [5],
-          "actions" : ["act_2"],
-          "base_default_next" : "node_10",
-          "next_tables" : {
-            "act_2" : "node_10"
-          },
-          "default_entry" : {
-            "action_id" : 5,
-            "action_const" : true,
-            "action_data" : [],
-            "action_entry_const" : true
-          }
-        },
-        {
-          "name" : "tbl_act_3",
-          "id" : 5,
-          "source_info" : {
-            "filename" : "includes/modules/amount_rst.p4",
-            "line" : 35,
-            "column" : 39,
-            "source_fragment" : "="
-          },
-          "key" : [],
-          "match_type" : "exact",
-          "type" : "simple",
-          "max_size" : 1024,
-          "with_counters" : false,
-          "support_timeout" : false,
-          "direct_meters" : null,
-          "action_ids" : [4],
-          "actions" : ["act_1"],
-          "base_default_next" : "tbl_act_4",
-          "next_tables" : {
-            "act_1" : "tbl_act_4"
-          },
-          "default_entry" : {
-            "action_id" : 4,
-            "action_const" : true,
-            "action_data" : [],
-            "action_entry_const" : true
-          }
-        },
-        {
-          "name" : "tbl_act_4",
-          "id" : 6,
-          "source_info" : {
-            "filename" : "includes/modules/unique_dport.p4",
-            "line" : 38,
-            "column" : 12,
-            "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
-          },
-          "key" : [],
-          "match_type" : "exact",
-          "type" : "simple",
-          "max_size" : 1024,
-          "with_counters" : false,
-          "support_timeout" : false,
-          "direct_meters" : null,
-          "action_ids" : [7],
-          "actions" : ["act_4"],
-          "base_default_next" : "node_13",
-          "next_tables" : {
-            "act_4" : "node_13"
-          },
-          "default_entry" : {
-            "action_id" : 7,
-            "action_const" : true,
-            "action_data" : [],
-            "action_entry_const" : true
-          }
-        },
-        {
-          "name" : "tbl_act_5",
-          "id" : 7,
-          "source_info" : {
-            "filename" : "includes/modules/unique_dport.p4",
-            "line" : 41,
-            "column" : 39,
-            "source_fragment" : "="
+            "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id)"
           },
           "key" : [],
           "match_type" : "exact",
@@ -2417,9 +2432,9 @@
           "direct_meters" : null,
           "action_ids" : [6],
           "actions" : ["act_3"],
-          "base_default_next" : "tbl_act_6",
+          "base_default_next" : "node_10",
           "next_tables" : {
-            "act_3" : "tbl_act_6"
+            "act_3" : "node_10"
           },
           "default_entry" : {
             "action_id" : 6,
@@ -2429,8 +2444,72 @@
           }
         },
         {
-          "name" : "tbl_act_6",
-          "id" : 8,
+          "name" : "tbl_act_3",
+          "id" : 5,
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 33,
+            "column" : 39,
+            "source_fragment" : "="
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [5],
+          "actions" : ["act_2"],
+          "base_default_next" : "tbl_act_4",
+          "next_tables" : {
+            "act_2" : "tbl_act_4"
+          },
+          "default_entry" : {
+            "action_id" : 5,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_4",
+          "id" : 6,
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 36,
+            "column" : 12,
+            "source_fragment" : "pktcnt.write(metadata.flow_id, 1)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [15],
+          "actions" : ["act_12"],
+          "base_default_next" : "node_13",
+          "next_tables" : {
+            "act_12" : "node_13"
+          },
+          "default_entry" : {
+            "action_id" : 15,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_5",
+          "id" : 7,
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 34,
+            "column" : 12,
+            "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
+          },
           "key" : [],
           "match_type" : "exact",
           "type" : "simple",
@@ -2440,12 +2519,41 @@
           "direct_meters" : null,
           "action_ids" : [8],
           "actions" : ["act_5"],
-          "base_default_next" : "tbl_act_10",
+          "base_default_next" : "node_15",
           "next_tables" : {
-            "act_5" : "tbl_act_10"
+            "act_5" : "node_15"
           },
           "default_entry" : {
             "action_id" : 8,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_6",
+          "id" : 8,
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 37,
+            "column" : 39,
+            "source_fragment" : "="
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [7],
+          "actions" : ["act_4"],
+          "base_default_next" : "tbl_act_7",
+          "next_tables" : {
+            "act_4" : "tbl_act_7"
+          },
+          "default_entry" : {
+            "action_id" : 7,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -2469,9 +2577,9 @@
           "direct_meters" : null,
           "action_ids" : [10],
           "actions" : ["act_7"],
-          "base_default_next" : "node_17",
+          "base_default_next" : "node_18",
           "next_tables" : {
-            "act_7" : "node_17"
+            "act_7" : "node_18"
           },
           "default_entry" : {
             "action_id" : 10,
@@ -2521,9 +2629,9 @@
           "direct_meters" : null,
           "action_ids" : [11],
           "actions" : ["act_8"],
-          "base_default_next" : "tbl_act_10",
+          "base_default_next" : "tbl_act_18",
           "next_tables" : {
-            "act_8" : "tbl_act_10"
+            "act_8" : "tbl_act_18"
           },
           "default_entry" : {
             "action_id" : 11,
@@ -2535,6 +2643,87 @@
         {
           "name" : "tbl_act_10",
           "id" : 12,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 38,
+            "column" : 12,
+            "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [13],
+          "actions" : ["act_10"],
+          "base_default_next" : "node_22",
+          "next_tables" : {
+            "act_10" : "node_22"
+          },
+          "default_entry" : {
+            "action_id" : 13,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_11",
+          "id" : 13,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 41,
+            "column" : 39,
+            "source_fragment" : "="
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [12],
+          "actions" : ["act_9"],
+          "base_default_next" : "tbl_act_12",
+          "next_tables" : {
+            "act_9" : "tbl_act_12"
+          },
+          "default_entry" : {
+            "action_id" : 12,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_12",
+          "id" : 14,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [14],
+          "actions" : ["act_11"],
+          "base_default_next" : "tbl_act_18",
+          "next_tables" : {
+            "act_11" : "tbl_act_18"
+          },
+          "default_entry" : {
+            "action_id" : 14,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_13",
+          "id" : 15,
           "source_info" : {
             "filename" : "includes/modules/frequency.p4",
             "line" : 23,
@@ -2548,25 +2737,25 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [14],
-          "actions" : ["act_11"],
-          "base_default_next" : "node_21",
+          "action_ids" : [17],
+          "actions" : ["act_14"],
+          "base_default_next" : "node_26",
           "next_tables" : {
-            "act_11" : "node_21"
+            "act_14" : "node_26"
           },
           "default_entry" : {
-            "action_id" : 14,
+            "action_id" : 17,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
           }
         },
         {
-          "name" : "tbl_act_11",
-          "id" : 13,
+          "name" : "tbl_act_14",
+          "id" : 16,
           "source_info" : {
             "filename" : "includes/modules/amount_rst.p4",
-            "line" : 26,
+            "line" : 28,
             "column" : 20,
             "source_fragment" : "rst.write(metadata.flow_id, prev_rst+1)"
           },
@@ -2577,22 +2766,22 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [13],
-          "actions" : ["act_10"],
-          "base_default_next" : "tbl_act_12",
+          "action_ids" : [16],
+          "actions" : ["act_13"],
+          "base_default_next" : "tbl_act_15",
           "next_tables" : {
-            "act_10" : "tbl_act_12"
+            "act_13" : "tbl_act_15"
           },
           "default_entry" : {
-            "action_id" : 13,
+            "action_id" : 16,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
           }
         },
         {
-          "name" : "tbl_act_12",
-          "id" : 14,
+          "name" : "tbl_act_15",
+          "id" : 17,
           "source_info" : {
             "filename" : "includes/modules/unique_dport.p4",
             "line" : 27,
@@ -2606,22 +2795,22 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [16],
-          "actions" : ["act_13"],
-          "base_default_next" : "node_25",
+          "action_ids" : [19],
+          "actions" : ["act_16"],
+          "base_default_next" : "node_30",
           "next_tables" : {
-            "act_13" : "node_25"
+            "act_16" : "node_30"
           },
           "default_entry" : {
-            "action_id" : 16,
+            "action_id" : 19,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
           }
         },
         {
-          "name" : "tbl_act_13",
-          "id" : 15,
+          "name" : "tbl_act_16",
+          "id" : 18,
           "source_info" : {
             "filename" : "includes/modules/unique_dport.p4",
             "line" : 31,
@@ -2635,40 +2824,11 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [15],
-          "actions" : ["act_12"],
-          "base_default_next" : "tbl_act_14",
-          "next_tables" : {
-            "act_12" : "tbl_act_14"
-          },
-          "default_entry" : {
-            "action_id" : 15,
-            "action_const" : true,
-            "action_data" : [],
-            "action_entry_const" : true
-          }
-        },
-        {
-          "name" : "tbl_act_14",
-          "id" : 16,
-          "source_info" : {
-            "filename" : "includes/modules/unique_dport.p4",
-            "line" : 34,
-            "column" : 12,
-            "source_fragment" : "prev_dport.write(metadata.flow_id, metadata.l4_dstPort); ..."
-          },
-          "key" : [],
-          "match_type" : "exact",
-          "type" : "simple",
-          "max_size" : 1024,
-          "with_counters" : false,
-          "support_timeout" : false,
-          "direct_meters" : null,
           "action_ids" : [18],
           "actions" : ["act_15"],
-          "base_default_next" : "node_28",
+          "base_default_next" : "tbl_act_17",
           "next_tables" : {
-            "act_15" : "node_28"
+            "act_15" : "tbl_act_17"
           },
           "default_entry" : {
             "action_id" : 18,
@@ -2678,8 +2838,66 @@
           }
         },
         {
-          "name" : "tbl_act_15",
-          "id" : 17,
+          "name" : "tbl_act_17",
+          "id" : 19,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 34,
+            "column" : 12,
+            "source_fragment" : "prev_dport.write(metadata.flow_id, metadata.l4_dstPort)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [20],
+          "actions" : ["act_17"],
+          "base_default_next" : "tbl_act_18",
+          "next_tables" : {
+            "act_17" : "tbl_act_18"
+          },
+          "default_entry" : {
+            "action_id" : 20,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_18",
+          "id" : 20,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 26,
+            "column" : 8,
+            "source_fragment" : "report_bitmap.read(prev_report_val, metadata.flow_id)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [22],
+          "actions" : ["act_19"],
+          "base_default_next" : "node_34",
+          "next_tables" : {
+            "act_19" : "node_34"
+          },
+          "default_entry" : {
+            "action_id" : 22,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_19",
+          "id" : 21,
           "source_info" : {
             "filename" : "includes/report.p4",
             "line" : 36,
@@ -2693,22 +2911,22 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [17],
-          "actions" : ["act_14"],
-          "base_default_next" : "tbl_act_16",
+          "action_ids" : [21],
+          "actions" : ["act_18"],
+          "base_default_next" : "tbl_act_20",
           "next_tables" : {
-            "act_14" : "tbl_act_16"
+            "act_18" : "tbl_act_20"
           },
           "default_entry" : {
-            "action_id" : 17,
+            "action_id" : 21,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
           }
         },
         {
-          "name" : "tbl_act_16",
-          "id" : 18,
+          "name" : "tbl_act_20",
+          "id" : 22,
           "source_info" : {
             "filename" : "includes/ids.p4",
             "line" : 84,
@@ -2722,14 +2940,14 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [19],
-          "actions" : ["act_16"],
+          "action_ids" : [23],
+          "actions" : ["act_20"],
           "base_default_next" : null,
           "next_tables" : {
-            "act_16" : null
+            "act_20" : null
           },
           "default_entry" : {
-            "action_id" : 19,
+            "action_id" : 23,
             "action_const" : true,
             "action_data" : [],
             "action_entry_const" : true
@@ -2765,10 +2983,62 @@
           "name" : "node_5",
           "id" : 1,
           "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 48,
+            "column" : 18,
+            "source_fragment" : "prev_ts== 0"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_prev_ts"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x000000000000"
+              }
+            }
+          },
+          "true_next" : "tbl_act_0",
+          "false_next" : "tbl_act_1"
+        },
+        {
+          "name" : "node_8",
+          "id" : 2,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 50,
+            "column" : 11,
+            "source_fragment" : "interval > 5000"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_tmp"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x000000001388"
+              }
+            }
+          },
+          "true_next" : "tbl_act_2",
+          "false_next" : "tbl_act_13"
+        },
+        {
+          "name" : "node_10",
+          "id" : 3,
+          "source_info" : {
             "filename" : "includes/modules/frequency.p4",
             "line" : 32,
             "column" : 15,
-            "source_fragment" : "prev_pktcnt > 100"
+            "source_fragment" : "prev_pktcnt > 10"
           },
           "expression" : {
             "type" : "expression",
@@ -2780,16 +3050,16 @@
               },
               "right" : {
                 "type" : "hexstr",
-                "value" : "0x0064"
+                "value" : "0x000a"
               }
             }
           },
-          "true_next" : "tbl_act_0",
-          "false_next" : "tbl_act_1"
+          "true_next" : "tbl_act_3",
+          "false_next" : "tbl_act_4"
         },
         {
-          "name" : "node_8",
-          "id" : 2,
+          "name" : "node_13",
+          "id" : 4,
           "source_info" : {
             "filename" : "includes/ids.p4",
             "line" : 55,
@@ -2820,17 +3090,17 @@
               }
             }
           },
-          "true_next" : "tbl_act_2",
-          "false_next" : "tbl_act_7"
+          "true_next" : "tbl_act_5",
+          "false_next" : "tbl_act_10"
         },
         {
-          "name" : "node_10",
-          "id" : 3,
+          "name" : "node_15",
+          "id" : 5,
           "source_info" : {
             "filename" : "includes/modules/amount_rst.p4",
-            "line" : 34,
+            "line" : 36,
             "column" : 15,
-            "source_fragment" : "prev_rst > 10"
+            "source_fragment" : "prev_rst > 50"
           },
           "expression" : {
             "type" : "expression",
@@ -2842,21 +3112,21 @@
               },
               "right" : {
                 "type" : "hexstr",
-                "value" : "0x000a"
+                "value" : "0x0032"
               }
             }
           },
-          "true_next" : "tbl_act_3",
-          "false_next" : "tbl_act_4"
+          "true_next" : "tbl_act_6",
+          "false_next" : "tbl_act_7"
         },
         {
-          "name" : "node_13",
-          "id" : 4,
+          "name" : "node_18",
+          "id" : 6,
           "source_info" : {
             "filename" : "includes/modules/unique_dport.p4",
             "line" : 40,
             "column" : 15,
-            "source_fragment" : "dport_cnt > 200"
+            "source_fragment" : "dport_cnt > 1000"
           },
           "expression" : {
             "type" : "expression",
@@ -2868,33 +3138,7 @@
               },
               "right" : {
                 "type" : "hexstr",
-                "value" : "0x000000c8"
-              }
-            }
-          },
-          "true_next" : "tbl_act_5",
-          "false_next" : "tbl_act_6"
-        },
-        {
-          "name" : "node_17",
-          "id" : 5,
-          "source_info" : {
-            "filename" : "includes/modules/unique_dport.p4",
-            "line" : 40,
-            "column" : 15,
-            "source_fragment" : "dport_cnt > 200"
-          },
-          "expression" : {
-            "type" : "expression",
-            "value" : {
-              "op" : ">",
-              "left" : {
-                "type" : "field",
-                "value" : ["scalars", "ids_mod4_dport_cnt_0"]
-              },
-              "right" : {
-                "type" : "hexstr",
-                "value" : "0x000000c8"
+                "value" : "0x000003e8"
               }
             }
           },
@@ -2902,11 +3146,37 @@
           "false_next" : "tbl_act_9"
         },
         {
-          "name" : "node_21",
-          "id" : 6,
+          "name" : "node_22",
+          "id" : 7,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 40,
+            "column" : 15,
+            "source_fragment" : "dport_cnt > 1000"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod4_dport_cnt_0"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x000003e8"
+              }
+            }
+          },
+          "true_next" : "tbl_act_11",
+          "false_next" : "tbl_act_12"
+        },
+        {
+          "name" : "node_26",
+          "id" : 8,
           "source_info" : {
             "filename" : "includes/modules/amount_rst.p4",
-            "line" : 24,
+            "line" : 25,
             "column" : 15,
             "source_fragment" : "hdr.tcp.isValid()"
           },
@@ -2921,15 +3191,15 @@
               }
             }
           },
-          "true_next" : "node_22",
-          "false_next" : "tbl_act_12"
+          "true_next" : "node_27",
+          "false_next" : "tbl_act_15"
         },
         {
-          "name" : "node_22",
-          "id" : 7,
+          "name" : "node_27",
+          "id" : 9,
           "source_info" : {
             "filename" : "includes/modules/amount_rst.p4",
-            "line" : 25,
+            "line" : 27,
             "column" : 19,
             "source_fragment" : "hdr.tcp.flags & 4 > 0"
           },
@@ -2957,12 +3227,12 @@
               }
             }
           },
-          "true_next" : "tbl_act_11",
-          "false_next" : "tbl_act_12"
+          "true_next" : "tbl_act_14",
+          "false_next" : "tbl_act_15"
         },
         {
-          "name" : "node_25",
-          "id" : 8,
+          "name" : "node_30",
+          "id" : 10,
           "source_info" : {
             "filename" : "includes/modules/unique_dport.p4",
             "line" : 30,
@@ -2983,12 +3253,12 @@
               }
             }
           },
-          "true_next" : "tbl_act_13",
-          "false_next" : "tbl_act_14"
+          "true_next" : "tbl_act_16",
+          "false_next" : "tbl_act_17"
         },
         {
-          "name" : "node_28",
-          "id" : 9,
+          "name" : "node_34",
+          "id" : 11,
           "source_info" : {
             "filename" : "includes/report.p4",
             "line" : 28,
@@ -3001,7 +3271,7 @@
               "op" : ">",
               "left" : {
                 "type" : "field",
-                "value" : ["ids_metadata_0", "report_bitmap"]
+                "value" : ["scalars", "metadata_t.report_bitmap"]
               },
               "right" : {
                 "type" : "hexstr",
@@ -3009,12 +3279,12 @@
               }
             }
           },
-          "true_next" : "node_29",
-          "false_next" : "tbl_act_16"
+          "true_next" : "node_35",
+          "false_next" : "tbl_act_20"
         },
         {
-          "name" : "node_29",
-          "id" : 10,
+          "name" : "node_35",
+          "id" : 12,
           "source_info" : {
             "filename" : "includes/report.p4",
             "line" : 29,
@@ -3031,12 +3301,12 @@
               },
               "right" : {
                 "type" : "field",
-                "value" : ["ids_metadata_0", "report_bitmap"]
+                "value" : ["scalars", "metadata_t.report_bitmap"]
               }
             }
           },
-          "false_next" : "tbl_act_15",
-          "true_next" : "tbl_act_16"
+          "false_next" : "tbl_act_19",
+          "true_next" : "tbl_act_20"
         }
       ]
     },

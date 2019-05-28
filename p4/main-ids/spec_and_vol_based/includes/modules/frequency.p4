@@ -5,7 +5,7 @@
 
 #include "../headers.p4"
 
-#define FREQ_THRESHOLD 100
+#define FREQ_THRESHOLD 10
 
 control frequency(
     in bit<1>                   ctrl,
@@ -31,9 +31,9 @@ control frequency(
             // check
             if(prev_pktcnt > FREQ_THRESHOLD){
                 metadata.report_bitmap = metadata.report_bitmap | 1;
-                // reset
-                pktcnt.write(metadata.flow_id, 1);
             } 
+            // reset
+            pktcnt.write(metadata.flow_id, 1);
         }
     }
 }

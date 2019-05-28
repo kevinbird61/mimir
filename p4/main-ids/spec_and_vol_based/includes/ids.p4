@@ -47,7 +47,7 @@ control ids(
         // using ingress_global_timestamp as current_timestamp
         interval=(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts);
         // checking 
-        // if(interval > TIMEOUT){
+        if(interval > TIMEOUT){
             // timeout event (detection phase)
             // goto frequency module  
             mod1.apply(1w1, hdr, metadata, standard_metadata);
@@ -63,7 +63,7 @@ control ids(
                 // goto unique_dport module
                 mod4.apply(1, hdr, metadata, standard_metadata);
             }
-        //} else {
+        } else {
             // normal (sampled phase)
             // update each module (call same module, with different control flag)
             // - 0: update status
@@ -75,7 +75,7 @@ control ids(
             mod5.apply(0, hdr, metadata, standard_metadata);
             // update unique_dport
             mod4.apply(0, hdr, metadata, standard_metadata);
-        //}
+        }
 
         // report (base on report_bitmap)
         mod_report.apply(hdr, metadata, standard_metadata);
