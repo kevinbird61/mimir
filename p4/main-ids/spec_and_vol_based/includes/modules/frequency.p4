@@ -5,7 +5,7 @@
 
 #include "../headers.p4"
 
-#define FREQ_THRESHOLD 16w50
+#define FREQ_THRESHOLD 100
 
 control frequency(
     in bit<1>                   ctrl,
@@ -17,7 +17,7 @@ control frequency(
 
     apply {
         // control flag
-        if(ctrl==1w0){
+        if(ctrl==0){
             // 0: update
             bit<16> prev_pktcnt;
             pktcnt.read(prev_pktcnt, metadata.flow_id);

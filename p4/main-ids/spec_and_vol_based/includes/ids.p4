@@ -10,7 +10,7 @@
 // report (digest)
 #include "report.p4"
 
-#define TIMEOUT 48w100         // represent 0.1 sec 
+#define TIMEOUT 5000         // represent 0.1 sec 
 
 control ids(
     inout headers_t hdr, 
@@ -45,40 +45,43 @@ control ids(
         bit<48> prev_ts;
         lastSeen.read(prev_ts, metadata.flow_id);
         // using ingress_global_timestamp as current_timestamp
-        interval=(prev_ts== 48w0)?48w0:(standard_metadata.ingress_global_timestamp - prev_ts);
+        interval=(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts);
         // checking 
-        if(interval > TIMEOUT){
+        // if(interval > TIMEOUT){
             // timeout event (detection phase)
             // goto frequency module  
             mod1.apply(1w1, hdr, metadata, standard_metadata);
             // check report
-            if((metadata.report_bitmap | 5w1)==5w1){
+            if((metadata.report_bitmap | 1)==1){
                 // high frequency confirm
                 // goto amount_rst module 
-                mod5.apply(1w1, hdr, metadata, standard_metadata);
+                mod5.apply(1, hdr, metadata, standard_metadata);
                 // goto unique_dport module
-                mod4.apply(1w1, hdr, metadata, standard_metadata);
+                mod4.apply(1, hdr, metadata, standard_metadata);
             } else {
                 // low frequency confirm 
                 // goto unique_dport module
-                mod4.apply(1w1, hdr, metadata, standard_metadata);
+                mod4.apply(1, hdr, metadata, standard_metadata);
             }
-        } else {
+        //} else {
             // normal (sampled phase)
             // update each module (call same module, with different control flag)
             // - 0: update status
             // - 1: detection
 
             // update frequency 
-            mod1.apply(1w0, hdr, metadata, standard_metadata);
+            mod1.apply(0, hdr, metadata, standard_metadata);
             // update rst
-            mod5.apply(1w0, hdr, metadata, standard_metadata);
+            mod5.apply(0, hdr, metadata, standard_metadata);
             // update unique_dport
-            mod4.apply(1w0, hdr, metadata, standard_metadata);
-        }
+            mod4.apply(0, hdr, metadata, standard_metadata);
+        //}
 
         // report (base on report_bitmap)
         mod_report.apply(hdr, metadata, standard_metadata);
+        
+        // update lastseen
+        lastSeen.write(metadata.flow_id, standard_metadata.ingress_global_timestamp);
     }
 }
 

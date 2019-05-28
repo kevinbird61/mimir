@@ -84,7 +84,7 @@ registers {
       }
     }
   }
-  size: 1024
+  size: 128
 }
 registers {
   preamble {
@@ -99,7 +99,7 @@ registers {
       }
     }
   }
-  size: 1024
+  size: 128
 }
 registers {
   preamble {
@@ -114,7 +114,7 @@ registers {
       }
     }
   }
-  size: 1024
+  size: 128
 }
 registers {
   preamble {
@@ -129,7 +129,7 @@ registers {
       }
     }
   }
-  size: 1024
+  size: 128
 }
 registers {
   preamble {
@@ -144,7 +144,7 @@ registers {
       }
     }
   }
-  size: 1024
+  size: 128
 }
 registers {
   preamble {
@@ -159,7 +159,7 @@ registers {
       }
     }
   }
-  size: 1024
+  size: 128
 }
 digests {
   preamble {

@@ -5,7 +5,7 @@
 
 #include "../headers.p4"
 
-#define RST_THRESHOLD 16w50
+#define RST_THRESHOLD 10
 
 control amount_rst(
     in bit<1>                   ctrl,
@@ -17,11 +17,15 @@ control amount_rst(
 
     apply {
         // control flag
-        if(ctrl==1w0){
+        if(ctrl==0){
             // 0: update
             bit<16> prev_rst;
             rst.read(prev_rst, metadata.flow_id);
-            rst.write(metadata.flow_id, prev_rst);
+            if(hdr.tcp.isValid()){
+                if(hdr.tcp.flags & 4 > 0){
+                    rst.write(metadata.flow_id, prev_rst+1);
+                }
+            }
         } else {
             // 1: detect
             bit<16> prev_rst;

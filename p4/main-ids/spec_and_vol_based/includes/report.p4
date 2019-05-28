@@ -43,6 +43,9 @@ control report(
                 
                 // TODO: solution#2 - rate limiting
                 // TODO: solution#3 - drop
+
+                // write back into report_bitmap
+                report_bitmap.write(metadata.flow_id, metadata.report_bitmap);
             }
         }
     }

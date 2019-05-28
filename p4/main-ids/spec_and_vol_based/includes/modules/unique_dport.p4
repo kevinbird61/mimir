@@ -5,7 +5,7 @@
 
 #include "../headers.p4"
 
-#define DPORT_THRESHOLD 32w10000
+#define DPORT_THRESHOLD 200
 
 control unique_dport(
     in bit<1>                   ctrl,
@@ -20,7 +20,7 @@ control unique_dport(
 
     apply{
         // control flag
-        if(ctrl==1w0){
+        if(ctrl== 0){
             // 0: update
             bit<16> prev_dport_val;
             bit<32> dport_cnt;
@@ -28,8 +28,7 @@ control unique_dport(
             dport.read(dport_cnt, metadata.flow_id);
             // compare with current dst port
             if(metadata.l4_dstPort != prev_dport_val){
-                dport_cnt = dport_cnt + 1;
-                dport.write(metadata.flow_id, dport_cnt);
+                dport.write(metadata.flow_id, dport_cnt+1);
             }
             // update prev port
             prev_dport.write(metadata.flow_id, metadata.l4_dstPort);

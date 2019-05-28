@@ -58,8 +58,16 @@ def byte_pbyte(data):
 def prettify(mac_string):
     return ':'.join('%02x' % ord(b) for b in mac_string)
 
+def IPv4_prettify(ipv4):
+    return ':'.join('%d' % ord(b) for b in ipv4)
+
+def Var_prettify(var):
+    return ord(var)
+
 def main(p4info_file_path, bmv2_file_path):
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info_file_path)
+    # global
+    report_list = {}
 
     try:
         s1 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
@@ -78,7 +86,7 @@ def main(p4info_file_path, bmv2_file_path):
          - max_timeout_ns=1000000000 (1s)
          - ack_timeout_ns=1000000000 (1s)
         """
-        SendDigestEntry(p4info_helper, sw=s1, max_timeout_ns=1000000000, max_list_size=5, ack_timeout_ns=1000000000, digest_name="report_digest_t")
+        SendDigestEntry(p4info_helper, sw=s1, max_timeout_ns=0, max_list_size=1, ack_timeout_ns=0, digest_name="report_digest_t")
 
         # Monitoring (receive DigestMessage from s1)
         while True: 
@@ -99,14 +107,36 @@ def main(p4info_file_path, bmv2_file_path):
                 # print "[Raw]Digest msg: ", digest.data 
                 digest_message_list = digest.data   
                 for members in digest_message_list:
-                    print members
-                    #if members.WhichOneof('data')=='struct':
+                    #print members
+                    if members.WhichOneof('data')=='struct':
+                        # ipv4 srcAddr
+                        #if members.struct.members[0].WhichOneof('data') == 'bitstring':
+                        #    print members.struct.members[0].bitstring
+                        # ipv4 dstAddr
+                        #if members.struct.members[1].WhichOneof('data') == 'bitstring':
+                        #    print members.struct.members[1].bitstring
+                        # report val
+                        #if members.struct.members[2].WhichOneof('data') == 'bitstring':
+                        #    print members.struct.members[2].bitstring
+                        # create one entry for it
+                        print Var_prettify(members.struct.members[2].bitstring)
+                        flowpair=IPv4_prettify(members.struct.members[0].bitstring),"->",IPv4_prettify(members.struct.members[1].bitstring)
+                        print flowpair
+                        if flowpair in report_list:
+                            report_list[flowpair]=report_list[flowpair]+1
+                        else:
+                            report_list[flowpair]=1
 
     except KeyboardInterrupt:
         # using ctrl + c to exit
         print "Shutting down."
     except grpc.RpcError as e:
         printGrpcError(e)
+
+    # print summary
+    for elem in report_list:
+        print (elem,": ",report_list[elem])
+
 
     # Then close all the connections
     ShutdownAllSwitchConnections()
