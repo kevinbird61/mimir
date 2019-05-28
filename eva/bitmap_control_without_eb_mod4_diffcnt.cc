@@ -6,6 +6,8 @@
 
 #include <map>
 #include <cmath>
+#include <chrono>
+#include <ctime>  
 #include <vector>
 #include <iostream>
 
@@ -45,6 +47,8 @@ map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
 map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
 map<string, map<string, int>> mod2;             // module 2 - sent/recv ratio
 map<string, map<string, int>> mod3;             // module 3 - counter of ICMP type 3 (for UDP flood)
+map<string, map<string, int>> nopayload;        // number of packet without payload
+map<string, map<string, int>> request;          // number of requests
 typedef struct _mod4_t {
     int prev_sport;
     int prev_dport;
@@ -55,10 +59,15 @@ typedef struct _mod4_t {
     map<u_short, int> dst_uniq;
 } mod4_t;
 map<string, map<string, mod4_t>> mod4;          // module 4 - flowlevel unique port (by calculating hamming distance/ or directly take the difference between sequential packets)
+map<string, map<string, u_short>> prev_dport;
+map<string, map<string, int>> mod4_diffcnt;
 map<string, map<string, int>> flow_mod5;        // module 5 - Amount of (SYN-ACK)
+
+chrono::time_point<std::chrono::system_clock> t_start, t_end;
 
 // threshold 
 int threshold_1 = 50;
+// float threshold_2 = 4.5; // ratio
 int threshold_2 = 1000;
 int threshold_3 = 50;
 int threshold_4 = 10000;
@@ -68,6 +77,7 @@ int threshold_5 = 50;
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
 
 int main(int argc, char **argv){
+    t_start = chrono::system_clock::now();
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
     while((ch=getopt(argc, argv, "df:1:2:3:4:5:")) != -1)
@@ -125,6 +135,15 @@ int main(int argc, char **argv){
         // close
         pcap_close(handle);
     }
+
+    t_end = chrono::system_clock::now();
+    chrono::duration<double> elapsed_seconds = t_end-t_start;
+    time_t end_time = chrono::system_clock::to_time_t(t_end);
+
+    cout << "=====================================================" << endl;
+    cout << "Finished at " << ctime(&end_time)
+              << "Elapsed time: " << elapsed_seconds.count() << " (sec)\n";
+    cout << "=====================================================" << endl;
 
 
     cout << "Threshold: " << endl;
@@ -238,58 +257,74 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // report
                     repo_bitmap_val |= 16;
                     // decrease
-                    flow_mod5[srcIP][dstIP] = 0;//(flow_mod5[srcIP][dstIP] >= threshold_5) ? flow_mod5[srcIP][dstIP]/2 : flow_mod5[srcIP][dstIP];
-                    flow_mod5[dstIP][srcIP] = 0;//(flow_mod5[dstIP][srcIP] >= threshold_5) ? flow_mod5[dstIP][srcIP]/2 : flow_mod5[dstIP][srcIP];
-                } 
-
-                // goto mod2
-                int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
-                if(sr_diff > threshold_2){
-                    repo_bitmap_val |= 2;
-                    // reset
-                    mod2[srcIP][dstIP]=0;
-                    mod2[dstIP][srcIP]=0;
+                    //flow_mod5[srcIP][dstIP] = 0;//flow_mod5[srcIP][dstIP]/2;
+                    //flow_mod5[dstIP][srcIP] = 0;//flow_mod5[dstIP][srcIP]/2;
                 }
 
+                // goto mod2
+                /*int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
+                if(sr_diff > threshold_2){
+                    repo_bitmap_val |= 2;
+                    //mod2[srcIP][dstIP]=0;
+                    //mod2[dstIP][srcIP]=0;
+                }*/
 
                 // goto mod4
-                // int diff =  std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
-                if(mod4[srcIP][dstIP].dst_aoc_port >= threshold_4){
+                if(mod4_diffcnt[srcIP][dstIP] >= threshold_4){
                     // report
                     repo_bitmap_val |= 8;
                     // reset aoc
-                    mod4[srcIP][dstIP].dst_aoc_port = 0;
+                    // mod4[srcIP][dstIP].src_uniq.clear();
+                    // mod4[srcIP][dstIP].dst_uniq.clear();
                 }
 
             } else {
                 // low frequency
                 // goto mod3
-                if(mod3[srcIP][dstIP] > threshold_3){
+                /*if(mod3[srcIP][dstIP] > threshold_3){
                     // set report_bitmap
                     repo_bitmap_val|=4;
                     // reset
-                    mod3[srcIP][dstIP]=0;
-                } 
+                    // mod3[srcIP][dstIP]=0;
+                }*/
 
                 // goto mod2
-                int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
+                /*int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
                 if(sr_diff > threshold_2){
+                    repo_bitmap_val |= 2;
+
+                    mod2[srcIP][dstIP]=0;
+                    mod2[dstIP][srcIP]=0;
+                }*/
+
+                /*float sr_ratio=0.0;
+                if(mod2[srcIP][dstIP] > mod2[dstIP][srcIP]){
+                    sr_ratio=mod2[dstIP][srcIP]/(float)mod2[srcIP][dstIP];
+                } else if(mod2[srcIP][dstIP] < mod2[dstIP][srcIP]){
+                    sr_ratio=mod2[srcIP][dstIP]/(float)mod2[dstIP][srcIP];
+                }
+                if(sr_ratio > threshold_2){
                     repo_bitmap_val |= 2;
                     // reset
                     mod2[srcIP][dstIP]=0;
                     mod2[dstIP][srcIP]=0;
-                }
-
+                }*/
 
                 // goto mod4
-                // int diff =  std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
-                if(mod4[srcIP][dstIP].dst_aoc_port >= threshold_4){
+                if(mod4_diffcnt[srcIP][dstIP] >= threshold_4){
                     // report
                     repo_bitmap_val |= 8;
                     // reset aoc
-                    mod4[srcIP][dstIP].dst_aoc_port = 0;
+                    // mod4[srcIP][dstIP].src_uniq.clear();
+                    // mod4[srcIP][dstIP].dst_uniq.clear();
                 }
             }
+
+            // pktlen 
+            /*if((nopayload[srcIP][dstIP]*nopayload[srcIP][dstIP])/(request[srcIP][dstIP]+1) >= 2500 ){
+                repo_bitmap_val |= 4;
+            }*/
+
             amount_count.push_back(mod1[srcIP][dstIP]);
             // reset the state 
             mod1[srcIP][dstIP]=1;
@@ -297,24 +332,28 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             // update mod1
             mod1[srcIP][dstIP]++;
             // update mod2
-            mod2[srcIP][dstIP]++;
+            // mod2[srcIP][dstIP]++;
             // update mod3
-            if(icmp!=NULL){
+            /*if(icmp!=NULL){
                 if(icmp->type == (u_char)3 || icmp->type == (u_char)11 || icmp->type == (u_char)12){
                     mod3[srcIP][dstIP]++;
                 }
+            }*/
+            if(header->len > 1500){
+                // pktlen[srcIP][dstIP]--;
+            } else if(header->len < 100){
+                nopayload[srcIP][dstIP]++;
             }
+            // increase mod1 
+            request[srcIP][dstIP]++;
             // update mod4
             // mod4[srcIP][dstIP].src_uniq[srcPort]++;
             // mod4[srcIP][dstIP].dst_uniq[dstPort]++;
-            if(mod4[srcIP].find(dstIP)!=mod4[srcIP].end()){
-                // existed
-                if(dstPort != mod4[srcIP][dstIP].prev_dport){
-                    mod4[srcIP][dstIP].dst_aoc_port++;
-                }
-            } 
-            mod4[srcIP][dstIP].prev_dport=dstPort;
-            
+            if(prev_dport[srcIP][dstIP] != dstPort){
+                mod4_diffcnt[srcIP][dstIP]++;
+            }
+            prev_dport[srcIP][dstIP]=dstPort;
+
             // update mod5
             if(tcp!=NULL){
                 if(tcp->flags&TH_RST){
@@ -327,12 +366,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // check report_bitmap value
         if(repo_bitmap_val>1){
-            if(repo_bitmap_val==repo_bitmap[srcIP][dstIP]){
+            if((repo_bitmap_val|repo_bitmap[srcIP][dstIP])==repo_bitmap[srcIP][dstIP]){
                 // no need to report 
             } else {
                 // report, and record 
                 cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << endl;
-                repo_bitmap[srcIP][dstIP]=repo_bitmap_val;
+                repo_bitmap[srcIP][dstIP]|=repo_bitmap_val;
             }
         }
 

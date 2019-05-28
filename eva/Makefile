@@ -1,7 +1,7 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out srr.out bitmap_control.out 
 UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out sampled.out cusum.out
 TESTS:=test_hash.out
-BITMAP:=bcm1.out bcm2.out bcm3.out bcm4.out bcm4_nomap.out bcm5.out bcm7.out bcmpktlen.out bcm_all_without_eb.out bcm_only_update_first.out bcm_without_eb_mod4_diffcnt.out
+BITMAP:=bcm1.out bcm2.out bcm3.out bcm4.out bcm4_nomap.out bcm5.out bcm7.out bcmpktlen.out bcm_all_without_eb.out bcm_only_update_first.out bcm_without_eb_mod4_diffcnt.out bcm_limited_tablesize.out
 CXXFLAGS:= -std=c++11
 
 all: $(EXECS) $(UTILS) $(TESTS) $(BITMAP)
@@ -28,6 +28,8 @@ bcm_all_without_eb.out: hash.o xxhash.o bitmap_control_without_e_bitmap.cc
 bcm_only_update_first.out: hash.o xxhash.o bitmap_control_only_firstpkt_flowlet.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 bcm_without_eb_mod4_diffcnt.out:  hash.o xxhash.o bitmap_control_without_eb_mod4_diffcnt.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm_limited_tablesize.out: hash.o xxhash.o bitmap_control_limited_tablesize.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 
 # executable file

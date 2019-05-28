@@ -46,6 +46,9 @@ control ids(
         lastSeen.read(prev_ts, metadata.flow_id);
         // using ingress_global_timestamp as current_timestamp
         interval=(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts);
+
+        // TODO: add "Long-term timeout" event -> reset corresponding entries (identify as a brand-new flow)
+
         // checking 
         if(interval > TIMEOUT){
             // timeout event (detection phase)
