@@ -5,10 +5,11 @@
 
 #include "../headers.p4"
 
+// FIXME: use register to make this timeout configurable
 #define FREQ_THRESHOLD 10
 
 control frequency(
-    in bit<1>                   ctrl,
+    in bit<2>                   ctrl,
     inout headers_t             hdr,
     inout metadata_t            metadata,
     inout standard_metadata_t   standard_metadata
@@ -23,7 +24,7 @@ control frequency(
             pktcnt.read(prev_pktcnt, metadata.flow_id);
             // increase
             pktcnt.write(metadata.flow_id, prev_pktcnt+1);
-        } else {
+        } else if(ctrl==1) {
             // 1: detect (check if it surpass threshold)
             // and update result in "metadata.report_bitmap"
             bit<16> prev_pktcnt;
@@ -33,6 +34,9 @@ control frequency(
                 metadata.report_bitmap = metadata.report_bitmap | 1;
             } 
             // reset
+            pktcnt.write(metadata.flow_id, 1);
+        } else if(ctrl==2) {
+            // 2: reset 
             pktcnt.write(metadata.flow_id, 1);
         }
     }

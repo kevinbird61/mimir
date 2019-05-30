@@ -5,10 +5,11 @@
 
 #include "../headers.p4"
 
+// FIXME: use register to make this timeout configurable
 #define DPORT_THRESHOLD 1000
 
 control unique_dport(
-    in bit<1>                   ctrl,
+    in bit<2>                   ctrl,
     inout headers_t             hdr,
     inout metadata_t            metadata,
     inout standard_metadata_t   standard_metadata
@@ -32,7 +33,7 @@ control unique_dport(
             }
             // update prev port
             prev_dport.write(metadata.flow_id, metadata.l4_dstPort);
-        } else {
+        } else if(ctrl==1){
             // 1: detect
             bit<32> dport_cnt;
             dport.read(dport_cnt, metadata.flow_id);
@@ -40,6 +41,10 @@ control unique_dport(
             if(dport_cnt > DPORT_THRESHOLD){
                 metadata.report_bitmap = metadata.report_bitmap | 8;
             }
+        } else if(ctrl==2){
+            // 2: reset 
+            prev_dport.write(metadata.flow_id, metadata.l4_dstPort); // update to latest dport
+            dport.write(metadata.flow_id, 0);
         }
     }
 }

@@ -10,7 +10,9 @@
 // report (digest)
 #include "report.p4"
 
-#define TIMEOUT 5000         // represent 0.1 sec 
+// FIXME: use register to make this timeout configurable
+#define FLOW_TIMEOUT 5000                    // FIMXE: Value fixed
+#define LONG_TERM_TIMEOUT 50000         // FIXME: Value fixed
 
 control ids(
     inout headers_t hdr, 
@@ -47,30 +49,45 @@ control ids(
         // using ingress_global_timestamp as current_timestamp
         interval=(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts);
 
-        // TODO: add "Long-term timeout" event -> reset corresponding entries (identify as a brand-new flow)
-
         // checking 
-        if(interval > TIMEOUT){
+        if(interval > FLOW_TIMEOUT){
             // timeout event (detection phase)
-            // goto frequency module  
-            mod1.apply(1w1, hdr, metadata, standard_metadata);
-            // check report
-            if((metadata.report_bitmap | 1)==1){
-                // high frequency confirm
-                // goto amount_rst module 
-                mod5.apply(1, hdr, metadata, standard_metadata);
-                // goto unique_dport module
-                mod4.apply(1, hdr, metadata, standard_metadata);
+            // update each module (call same module, with different control flag)
+            // - 0: update status
+            // - 1: detection
+            // - 2: reset status
+
+            // TODO: add "Long-term timeout" event -> reset corresponding entries (identify as a brand-new flow)
+            if(interval > LONG_TERM_TIMEOUT){
+                // reset all the counter value, take this flow as a new one
+                // need to use control flags to tell module reset.
+
+                mod1.apply(2, hdr, metadata, standard_metadata);
+                mod4.apply(2, hdr, metadata, standard_metadata);
+                mod5.apply(2, hdr, metadata, standard_metadata);
             } else {
-                // low frequency confirm 
-                // goto unique_dport module
-                mod4.apply(1, hdr, metadata, standard_metadata);
+                // goto frequency module  
+                mod1.apply(1, hdr, metadata, standard_metadata);
+                // check report
+                if((metadata.report_bitmap | 1)==1){
+                    // high frequency confirm
+                    // goto amount_rst module 
+                    mod5.apply(1, hdr, metadata, standard_metadata);
+                    // goto unique_dport module
+                    mod4.apply(1, hdr, metadata, standard_metadata);
+                } else {
+                    // low frequency confirm 
+                    // goto unique_dport module
+                    mod4.apply(1, hdr, metadata, standard_metadata);
+                }
             }
+            
         } else {
             // normal (sampled phase)
             // update each module (call same module, with different control flag)
             // - 0: update status
             // - 1: detection
+            // - 2: reset status
 
             // update frequency 
             mod1.apply(0, hdr, metadata, standard_metadata);

@@ -3,8 +3,10 @@
 
 #include "headers.p4"
 
-action drop() {
-    // mark_to_drop();
+action drop(inout standard_metadata_t standard_metadata) 
+{
+    // set drop bit to 1
+    standard_metadata.drop=1;
 }
 
 #endif

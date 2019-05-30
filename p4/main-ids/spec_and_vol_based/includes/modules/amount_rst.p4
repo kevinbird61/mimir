@@ -5,10 +5,11 @@
 
 #include "../headers.p4"
 
+// FIXME: use register to make this timeout configurable
 #define RST_THRESHOLD 50
 
 control amount_rst(
-    in bit<1>                   ctrl,
+    in bit<2>                   ctrl,
     inout headers_t             hdr,
     inout metadata_t            metadata,
     inout standard_metadata_t   standard_metadata
@@ -28,7 +29,7 @@ control amount_rst(
                     rst.write(metadata.flow_id, prev_rst+1);
                 }
             }
-        } else {
+        } else if(ctrl==1) {
             // 1: detect
             bit<16> prev_rst;
             rst.read(prev_rst, metadata.flow_id);
@@ -36,6 +37,9 @@ control amount_rst(
             if(prev_rst > RST_THRESHOLD){
                 metadata.report_bitmap = metadata.report_bitmap | 16;
             }
+        } else if(ctrl==2) {
+            // 2: reset
+            rst.write(metadata.flow_id, 0);
         }
     }
 }
