@@ -40,6 +40,8 @@ using namespace std;
 */
 #define FLOWLET_TIMEOUT 0.1
 
+double separated_timeout=0.1;
+
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp) 
 
@@ -55,10 +57,13 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:p:")) != -1)
+    while((ch=getopt(argc, argv, "df:p:t:")) != -1)
     {
         switch(ch)
         {
+            case 't':
+                separated_timeout=atof(optarg);
+                break;
             case 'p':
                 pktcnt_threshold=atoi(optarg);
                 break;
@@ -99,6 +104,7 @@ int main(int argc, char **argv){
         pcap_close(handle);
     }
 
+    cout << "Separated timeout(sec): " << separated_timeout << endl;
     cout << "Sampled rate: " << sampled/(float)all << endl;
     cout << "Detection rate: " << detect/(float)all << endl;
     return 0;
@@ -135,7 +141,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         // interval
         interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
 
-        if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
+        if(interval > separated_timeout && (lastseen_ts!=0)){
             detect++;
         } else {
             sampled++;
