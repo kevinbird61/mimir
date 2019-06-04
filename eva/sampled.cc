@@ -41,11 +41,18 @@ using namespace std;
 #define FLOWLET_TIMEOUT 0.1
 
 double separated_timeout=0.1;
+double start_of_pcap=10000000000, end_of_pcap=-10000000;
 
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp) 
+vector<double> interval_q;
+vector<double> sampled_interval_q;              //
+int sampled_pkt=0;
+vector<double> sampled_pkt_duration_q;
+vector<double> avg_sampled_pkt_q;
+vector<double> avg_sampled_pkt_duration_q;
+vector<double> detect_interval_q;               //
 
-vector<int> amount_count;
 // threshold 
 int pktcnt_threshold=50;
 
@@ -107,6 +114,39 @@ int main(int argc, char **argv){
     cout << "Separated timeout(sec): " << separated_timeout << endl;
     cout << "Sampled rate: " << sampled/(float)all << endl;
     cout << "Detection rate: " << detect/(float)all << endl;
+    cout << "Total pcap duration: " << end_of_pcap-start_of_pcap << endl;
+
+    double avg_interval=0;
+    for(auto i=0;i<interval_q.size();i++){
+        avg_interval+=interval_q.at(i);
+    }
+    cout << "Avg. inter-arrival time: " << avg_interval/interval_q.size() << endl;
+    avg_interval=0;
+    for(auto i=0;i<sampled_interval_q.size();i++){
+        avg_interval+=sampled_interval_q.at(i);
+    }
+    cout << "Avg. sampled inter-arrival time: " << avg_interval/sampled_interval_q.size() << endl;
+    avg_interval=0;
+    for(auto i=0;i<detect_interval_q.size();i++){
+        avg_interval+=detect_interval_q.at(i);
+    }
+    cout << "Avg. detection inter-arrival time: " << avg_interval/detect_interval_q.size() << endl;
+    for(auto i=0;i<avg_sampled_pkt_duration_q.size();i++){
+        avg_interval+=avg_sampled_pkt_duration_q.at(i);
+    }
+    cout << "Avg. duration of each S (holding time): " << avg_interval/avg_sampled_pkt_duration_q.size() << endl;
+    double avg_pkt=0, first_10percent_reward=0, cnt=0;
+    for(auto i=0;i<avg_sampled_pkt_q.size();i++){
+        if(i==0)
+            cout << "Pkt count in S1 (holding time): " << avg_sampled_pkt_q.at(i) << endl;
+        if(cnt<(0.1)*avg_sampled_pkt_q.size())
+            first_10percent_reward+=avg_sampled_pkt_q.at(i);
+        cnt++;
+        avg_pkt+=avg_sampled_pkt_q.at(i);
+    }
+    cout << "Avg. pkt count in first 10% S (holding time): " << first_10percent_reward/(avg_sampled_pkt_q.size()/10) << endl;
+    cout << "Avg. pkt count in each S (holding time): " << avg_pkt/avg_sampled_pkt_q.size() << endl;
+
     return 0;
 }
 
@@ -117,6 +157,9 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
     /* ============================================= */
     ethernet = (struct sniff_ethernet*)(packet);
     size_existed += SIZE_ETHER;
+
+    if( start_of_pcap > (header->ts.tv_sec + header->ts.tv_usec/1000.0)){ start_of_pcap=header->ts.tv_sec + header->ts.tv_usec/1000.0; }
+    if( end_of_pcap < (header->ts.tv_sec + header->ts.tv_usec/1000.0)){ end_of_pcap=header->ts.tv_sec + header->ts.tv_usec/1000.0; }
 
     // Parse IPv4
     if(ethernet->etherType == (u_short)8){
@@ -141,10 +184,26 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         // interval
         interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
 
+        if(lastseen_ts!=0)
+            interval_q.push_back(interval);
+
         if(interval > separated_timeout && (lastseen_ts!=0)){
             detect++;
+            detect_interval_q.push_back(interval);
+            //if(sampled_pkt_duration_q.size()!=0)
+                avg_sampled_pkt_q.push_back(sampled_pkt_duration_q.size());
+            double duration=0;
+            for(auto i=0;i<sampled_pkt_duration_q.size();i++){
+                duration+=sampled_pkt_duration_q.at(i);
+            }
+            avg_sampled_pkt_duration_q.push_back(duration);
+            sampled_pkt_duration_q.clear();
         } else {
             sampled++;
+            if(lastseen_ts!=0 && interval > 0) {// skip the negative ones
+                sampled_interval_q.push_back(interval);
+                sampled_pkt_duration_q.push_back(interval);
+            }
         }
 
         all++;
