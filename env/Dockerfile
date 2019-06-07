@@ -2,10 +2,10 @@ FROM kevinbird61/vnet
 
 RUN apt-get update && apt-get install -y openssh-server \
     net-tools iputils-ping git vim curl wget \ 
-    tcpdump 
+    tcpdump iptables
 RUN mkdir /var/run/sshd
 # using argument to assign passwd to create image
-RUN echo 'root:root' | chpasswd
+RUN echo 'root:imslab' | chpasswd
 RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 # SSH login fix. Otherwise user is kicked off after login
