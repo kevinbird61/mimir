@@ -9,6 +9,7 @@ package main
 import (
     "fmt"
     //"net/url"
+    "time"
     "os/exec"
     "os"
     "flag"
@@ -40,8 +41,17 @@ func create_benign_host(num int) {
     }
 }
 
-func create_atk(name string) { 
-
+func run_benign_host(num int, duration int) {
+    // all benign host are running iperf client 
+    // FIXME: do all hosts send iperf traffic to victim? or atk_benign_host->vic, vic_benign_host->atk ?
+    // atk
+    for i:=0; i< num; i++ {
+        exec_command("docker", "exec", "-i", "-d" , "user_a"+strconv.Itoa(i), "iperf", "-t", strconv.Itoa(duration), "-c", "victim")
+    }
+    // vic
+    for i:=0; i< num; i++ {
+        exec_command("docker", "exec", "-i", "-d" , "user_v"+strconv.Itoa(i), "iperf", "-t", strconv.Itoa(duration), "-c", "victim")
+    }
 }
 
 func main(){
@@ -50,7 +60,9 @@ func main(){
     verbose :=          flag.Bool("v", false, "Verbose mode.")
     victim_ip :=        flag.String("vip", "127.0.0.1", "Victim's IP address.")
     victim_port :=      flag.Int("vport", 80, "Victim's Port number.")
-    delay :=            flag.Int("d", 10, "Delay (seconds) between virtual network creation and running attack.")
+    round :=            flag.Int("round", 100, "How many iperf tests will be executed." )
+    duration :=         flag.Int("dur", 100, "How long will iperf be executed.")
+    delay :=            flag.Int("del", 20, "Delay (seconds) between virtual network creation and running attack.")
     clean :=            flag.Bool("c", false, "Clean all container.")
 
     flag.Parse()
@@ -80,10 +92,17 @@ func main(){
         // create attacker 
         exec_command("./build.sh", "create", "attacker", "atk")
         exec_command("./build.sh", "create", "victim", "vic")
-
         // run service on those virtual devices
         // running iperf server on victim (FIXME: need to change ?)
-        
+        exec_command("docker", "exec", "-i", "-d", "victim", "iperf", "-s")
+
+        // run several rounds, each will delay for period time before next iperf task.
+        for i:=0; i< *round; i++ {
+            // time sleep (wait for user to get into victim and start tcpdump to record traffic)
+            time.Sleep(time.Duration(*delay)*time.Second)
+            // running benign host (iperf -t duration -c victim )
+            run_benign_host(*benign_hosts, *duration)
+        }
     }
 
 }

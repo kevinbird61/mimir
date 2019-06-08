@@ -2,7 +2,8 @@
 
 # windows/linux (need to modify when your env change)
 # docker executable file 
-DOCKER="/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe"
+#DOCKER="/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe"
+DOCKER="docker"
 
 # initial environment setting for virtual network
 function init()
@@ -10,7 +11,9 @@ function init()
     echo "Initializing our virtual network..."
     # create bridge (to seperate victim network and attacker network)
     echo "Create bridge ..."
+    # atk will be 172.18.0.0/24
     "$DOCKER" network create --driver bridge "atk"
+    # and vic will be 172.19.0.0/24 (create later)
     "$DOCKER" network create --driver bridge "vic"
 }
 
@@ -41,6 +44,7 @@ function run()
     # $1: name
     # $2: command 
     # -d: running in background
+    echo "Running command: $2"
     "$DOCKER" exec -i -d "$1" "$2"
 }
 
@@ -52,11 +56,14 @@ if [ $# -eq 0 ]; then
 fi
 
 if [ "$1" == "create" ]; then
-    # $2 = name of host device, $3 = network of device
+    # $2 = name of host device
+    # $3 = network of device
     $1 $2 $3
     exit
 elif [ "$1" == "run" ]; then 
-    $1 $2 
+    # $2 = name
+    # $3 = cmd 
+    $1 $2 $3
     exit
 fi
 
