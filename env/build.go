@@ -54,6 +54,28 @@ func run_benign_host(num int, duration int) {
     }
 }
 
+func run_benign_host_udp(num int, duration int) {
+    // half tcp and udp 
+    // atk
+    for i:=0; i< num; i++ {
+        if(i<(num/2)){
+            exec_command("docker", "exec", "-i", "-d" , "user_a"+strconv.Itoa(i), "iperf", "-t", strconv.Itoa(duration), "-c", "victim")
+        } else {
+            // exec_command("docker", "exec", "-i", "-d" , "user_a"+strconv.Itoa(i), "iperf", "-u", "-t", strconv.Itoa(duration), "-c", "victim", "-b", strconv.Itoa(18000)+"m")
+            exec_command("docker", "exec", "-i", "-d" , "user_a"+strconv.Itoa(i), "iperf", "-u", "-t", strconv.Itoa(duration), "-c", "victim")
+        }
+    }
+    // vic
+    for i:=0; i< num; i++ {
+        if(i<(num/2)){
+            exec_command("docker", "exec", "-i", "-d" , "user_v"+strconv.Itoa(i), "iperf", "-t", strconv.Itoa(duration), "-c", "victim")
+        } else {
+            // exec_command("docker", "exec", "-i", "-d" , "user_v"+strconv.Itoa(i), "iperf", "-u", "-t", strconv.Itoa(duration), "-c", "victim", "-b", strconv.Itoa(18000)+"m")
+            exec_command("docker", "exec", "-i", "-d" , "user_v"+strconv.Itoa(i), "iperf", "-u", "-t", strconv.Itoa(duration), "-c", "victim")
+        }
+    }
+}
+
 func main(){
 	// Args 
     benign_hosts :=     flag.Int("b", 10, "Number of benign hosts under each network domain. (Victim/Attacker)")
@@ -63,29 +85,29 @@ func main(){
     round :=            flag.Int("round", 10, "How many iperf tests will be executed." )
     duration :=         flag.Int("dur", 20, "How long will iperf be executed.")
     delay :=            flag.Int("del", 20, "Delay (seconds) between virtual network creation and running attack.")
+    udp :=              flag.Bool("u", false, "Using UDP mixed with TCP as iperf (benign) traffic.")
     clean :=            flag.Bool("c", false, "Clean all container.")
 
     flag.Parse()
-    
-    // Print out all profile specify
-    fmt.Println("============================================================")
-    fmt.Println("Number of benign hosts: ", *benign_hosts)
-    fmt.Println("Verbose mode: ", *verbose)
-    // check IP address is valid or not
-    fmt.Println("Victim IP address: ", *victim_ip)
-    if *victim_port < 0 || *victim_port > 65535 {
-        fmt.Println("Invalid port. Value need to set between 1~65535.")
-        os.Exit(1)
-    }
-    fmt.Println("Victim Port number: ", *victim_port)
-    fmt.Println("Delay duration: ", *delay)
-    fmt.Println("Service running duration: ", *duration)
-    fmt.Println("============================================================")
 
     if *clean {
         fmt.Println("Clean all executable container.")
         exec_command("./build.sh", "clean")
     } else {
+        // Print out all profile specify
+        fmt.Println("============================================================")
+        fmt.Println("Number of benign hosts: ", *benign_hosts)
+        fmt.Println("Verbose mode: ", *verbose)
+        // check IP address is valid or not
+        fmt.Println("Victim IP address: ", *victim_ip)
+        if *victim_port < 0 || *victim_port > 65535 {
+            fmt.Println("Invalid port. Value need to set between 1~65535.")
+            os.Exit(1)
+        }
+        fmt.Println("Victim Port number: ", *victim_port)
+        fmt.Println("Delay duration: ", *delay)
+        fmt.Println("Service running duration: ", *duration)
+        fmt.Println("============================================================")
         // init 
         exec_command("./build.sh", "init")
         // first create container from pre-build docker images
@@ -95,9 +117,18 @@ func main(){
         exec_command("./build.sh", "create", "victim", "vic")
         // run service on those virtual devices
         // running iperf server on victim (FIXME: need to change ?)
-        go exec_command("docker", "exec", "-i", "-d", "victim", "iperf", "-s")
+        go exec_command("docker", "exec", "-i", "-d", "victim", "iperf", "-s")          // TCP
+        if *udp {
+            go exec_command("docker", "exec", "-i", "-d", "victim", "iperf", "-s", "-u")    // UDP
+        }
         // recording 
-        go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-G", strconv.Itoa((*duration)*(*round+1)), "-w", "/home/ddos-with-iperf-tcp.pcap")
+        if *udp {
+            // go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-G", strconv.Itoa((*duration)*(*round+1)), "-w", "/home/ddos-with-iperf-mixed-udp-tcp.pcap")
+            go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-W", strconv.Itoa(1), "-w", "/home/ddos-with-iperf-mixed-udp-tcp.pcap")
+        } else {
+            // go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-G", strconv.Itoa((*duration)*(*round+1)), "-w", "/home/ddos-with-iperf-tcp.pcap")
+            go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-W", strconv.Itoa(1), "-w", "/home/ddos-with-iperf-tcp.pcap")
+        }
 
         // run several rounds, each will delay for period time before next iperf task.
         fmt.Println("=====================================================")
@@ -108,12 +139,17 @@ func main(){
             // time sleep (wait for user to get into victim and start tcpdump to record traffic)
             time.Sleep(time.Duration(*delay)*time.Second)
             // running benign host (iperf -t duration -c victim )
-            go run_benign_host(*benign_hosts, *duration)
+            if *udp {
+                go run_benign_host_udp(*benign_hosts, *duration)
+            } else {
+                go run_benign_host(*benign_hosts, *duration)
+            }
             // running attacker (from external)
             go exec_command("docker", "exec", "-i", "-d", "attacker", "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(*benign_hosts+1), "-d="+strconv.Itoa(*delay)+"s")
             // running attacker (from internal)
             go exec_command("docker", "exec", "-i", "-d", "user_v0", "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(*benign_hosts+1), "-d="+strconv.Itoa(*delay)+"s")
         }
+        fmt.Println("=====================================================")
     }
 
 }
