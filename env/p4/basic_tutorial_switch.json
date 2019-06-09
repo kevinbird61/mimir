@@ -1,0 +1,4091 @@
+{
+  "header_types" : [
+    {
+      "name" : "scalars_0",
+      "id" : 0,
+      "fields" : [
+        ["tmp", 16, false],
+        ["tmp_0", 16, false],
+        ["tmp_1", 32, false],
+        ["tmp_2", 32, false],
+        ["tmp_3", 32, false],
+        ["tmp_4", 5, false],
+        ["ids_prev_ts", 48, false],
+        ["ids_tmp", 48, false],
+        ["ids_mod1_prev_pktcnt", 16, false],
+        ["ids_mod1_prev_pktcnt_0", 16, false],
+        ["ids_mod4_prev_dport_val", 16, false],
+        ["ids_mod4_dport_cnt", 32, false],
+        ["ids_mod4_dport_cnt_0", 32, false],
+        ["ids_mod5_prev_rst", 16, false],
+        ["ids_mod5_prev_rst_0", 16, false],
+        ["ids_mod_report_prev_report_val", 5, false],
+        ["metadata_t.l4_srcPort", 16, false],
+        ["metadata_t.l4_dstPort", 16, false],
+        ["metadata_t.flow_id", 32, false],
+        ["metadata_t.report_bitmap", 5, false],
+        ["_padding_3", 1, false]
+      ]
+    },
+    {
+      "name" : "userMetadata",
+      "id" : 1,
+      "fields" : [
+        ["l4_srcPort", 16, false],
+        ["l4_dstPort", 16, false],
+        ["flow_id", 32, false],
+        ["report_bitmap", 5, false],
+        ["_padding", 3, false]
+      ]
+    },
+    {
+      "name" : "tcp_t",
+      "id" : 2,
+      "fields" : [
+        ["srcPort", 16, false],
+        ["dstPort", 16, false],
+        ["seqNo", 32, false],
+        ["ackNo", 32, false],
+        ["dataOffset", 4, false],
+        ["res", 4, false],
+        ["flags", 8, false],
+        ["window", 16, false],
+        ["checksum", 16, false],
+        ["urgentPtr", 16, false]
+      ]
+    },
+    {
+      "name" : "standard_metadata",
+      "id" : 3,
+      "fields" : [
+        ["ingress_port", 9, false],
+        ["egress_spec", 9, false],
+        ["egress_port", 9, false],
+        ["clone_spec", 32, false],
+        ["instance_type", 32, false],
+        ["drop", 1, false],
+        ["recirculate_port", 16, false],
+        ["packet_length", 32, false],
+        ["enq_timestamp", 32, false],
+        ["enq_qdepth", 19, false],
+        ["deq_timedelta", 32, false],
+        ["deq_qdepth", 19, false],
+        ["ingress_global_timestamp", 48, false],
+        ["egress_global_timestamp", 48, false],
+        ["lf_field_list", 32, false],
+        ["mcast_grp", 16, false],
+        ["resubmit_flag", 32, false],
+        ["egress_rid", 16, false],
+        ["recirculate_flag", 32, false],
+        ["checksum_error", 1, false],
+        ["parser_error", 32, false],
+        ["priority", 3, false],
+        ["_padding_2", 2, false]
+      ]
+    },
+    {
+      "name" : "packet_out_header_t",
+      "id" : 4,
+      "fields" : [
+        ["egress_port", 16, false],
+        ["mcast_grp", 16, false]
+      ]
+    },
+    {
+      "name" : "packet_in_header_t",
+      "id" : 5,
+      "fields" : [
+        ["ingress_port", 16, false]
+      ]
+    },
+    {
+      "name" : "ethernet_t",
+      "id" : 6,
+      "fields" : [
+        ["dstAddr", 48, false],
+        ["srcAddr", 48, false],
+        ["etherType", 16, false]
+      ]
+    },
+    {
+      "name" : "ipv4_t",
+      "id" : 7,
+      "fields" : [
+        ["version", 4, false],
+        ["ihl", 4, false],
+        ["dscp", 6, false],
+        ["ecn", 2, false],
+        ["totalLen", 16, false],
+        ["identification", 16, false],
+        ["flags", 3, false],
+        ["fragOffset", 13, false],
+        ["ttl", 8, false],
+        ["protocol", 8, false],
+        ["hdrChecksum", 16, false],
+        ["srcAddr", 32, false],
+        ["dstAddr", 32, false]
+      ]
+    },
+    {
+      "name" : "udp_t",
+      "id" : 8,
+      "fields" : [
+        ["srcPort", 16, false],
+        ["dstPort", 16, false],
+        ["length_", 16, false],
+        ["checksum", 16, false]
+      ]
+    }
+  ],
+  "headers" : [
+    {
+      "name" : "ids_metadata",
+      "id" : 0,
+      "header_type" : "userMetadata",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "ids_metadata_0",
+      "id" : 1,
+      "header_type" : "userMetadata",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "ids_hdr_1_tcp",
+      "id" : 2,
+      "header_type" : "tcp_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "ids_metadata_1",
+      "id" : 3,
+      "header_type" : "userMetadata",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "scalars",
+      "id" : 4,
+      "header_type" : "scalars_0",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "standard_metadata",
+      "id" : 5,
+      "header_type" : "standard_metadata",
+      "metadata" : true,
+      "pi_omit" : true
+    },
+    {
+      "name" : "packet_out",
+      "id" : 6,
+      "header_type" : "packet_out_header_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "packet_in",
+      "id" : 7,
+      "header_type" : "packet_in_header_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "ethernet",
+      "id" : 8,
+      "header_type" : "ethernet_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "ipv4",
+      "id" : 9,
+      "header_type" : "ipv4_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "tcp",
+      "id" : 10,
+      "header_type" : "tcp_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "udp",
+      "id" : 11,
+      "header_type" : "udp_t",
+      "metadata" : false,
+      "pi_omit" : true
+    }
+  ],
+  "header_stacks" : [],
+  "header_union_types" : [],
+  "header_unions" : [],
+  "header_union_stacks" : [],
+  "field_lists" : [],
+  "errors" : [
+    ["NoError", 1],
+    ["PacketTooShort", 2],
+    ["NoMatch", 3],
+    ["StackOutOfBounds", 4],
+    ["HeaderTooShort", 5],
+    ["ParserTimeout", 6],
+    ["ParserInvalidArgument", 7]
+  ],
+  "enums" : [],
+  "parsers" : [
+    {
+      "name" : "parser",
+      "id" : 0,
+      "init_state" : "start",
+      "parse_states" : [
+        {
+          "name" : "start",
+          "id" : 0,
+          "parser_ops" : [],
+          "transitions" : [
+            {
+              "type" : "hexstr",
+              "value" : "0x00ff",
+              "mask" : null,
+              "next_state" : "parse_packet_out"
+            },
+            {
+              "value" : "default",
+              "mask" : null,
+              "next_state" : "parse_ethernet"
+            }
+          ],
+          "transition_key" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "ingress_port"]
+            }
+          ]
+        },
+        {
+          "name" : "parse_packet_out",
+          "id" : 1,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "packet_out"
+                }
+              ],
+              "op" : "extract"
+            }
+          ],
+          "transitions" : [
+            {
+              "value" : "default",
+              "mask" : null,
+              "next_state" : "parse_ethernet"
+            }
+          ],
+          "transition_key" : []
+        },
+        {
+          "name" : "parse_ethernet",
+          "id" : 2,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "ethernet"
+                }
+              ],
+              "op" : "extract"
+            }
+          ],
+          "transitions" : [
+            {
+              "type" : "hexstr",
+              "value" : "0x0800",
+              "mask" : null,
+              "next_state" : "parse_ipv4"
+            },
+            {
+              "value" : "default",
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : [
+            {
+              "type" : "field",
+              "value" : ["ethernet", "etherType"]
+            }
+          ]
+        },
+        {
+          "name" : "parse_ipv4",
+          "id" : 3,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "ipv4"
+                }
+              ],
+              "op" : "extract"
+            }
+          ],
+          "transitions" : [
+            {
+              "type" : "hexstr",
+              "value" : "0x06",
+              "mask" : null,
+              "next_state" : "parse_tcp"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x11",
+              "mask" : null,
+              "next_state" : "parse_udp"
+            },
+            {
+              "value" : "default",
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : [
+            {
+              "type" : "field",
+              "value" : ["ipv4", "protocol"]
+            }
+          ]
+        },
+        {
+          "name" : "parse_tcp",
+          "id" : 4,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "tcp"
+                }
+              ],
+              "op" : "extract"
+            },
+            {
+              "parameters" : [
+                {
+                  "type" : "field",
+                  "value" : ["scalars", "metadata_t.l4_srcPort"]
+                },
+                {
+                  "type" : "field",
+                  "value" : ["tcp", "srcPort"]
+                }
+              ],
+              "op" : "set"
+            },
+            {
+              "parameters" : [
+                {
+                  "type" : "field",
+                  "value" : ["scalars", "metadata_t.l4_dstPort"]
+                },
+                {
+                  "type" : "field",
+                  "value" : ["tcp", "dstPort"]
+                }
+              ],
+              "op" : "set"
+            }
+          ],
+          "transitions" : [
+            {
+              "value" : "default",
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : []
+        },
+        {
+          "name" : "parse_udp",
+          "id" : 5,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "udp"
+                }
+              ],
+              "op" : "extract"
+            },
+            {
+              "parameters" : [
+                {
+                  "type" : "field",
+                  "value" : ["scalars", "metadata_t.l4_srcPort"]
+                },
+                {
+                  "type" : "field",
+                  "value" : ["udp", "srcPort"]
+                }
+              ],
+              "op" : "set"
+            },
+            {
+              "parameters" : [
+                {
+                  "type" : "field",
+                  "value" : ["scalars", "metadata_t.l4_dstPort"]
+                },
+                {
+                  "type" : "field",
+                  "value" : ["udp", "dstPort"]
+                }
+              ],
+              "op" : "set"
+            }
+          ],
+          "transitions" : [
+            {
+              "value" : "default",
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : []
+        }
+      ]
+    }
+  ],
+  "parse_vsets" : [],
+  "deparsers" : [
+    {
+      "name" : "deparser",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "includes/parser.p4",
+        "line" : 58,
+        "column" : 8,
+        "source_fragment" : "basic_tutor_switch_deparser"
+      },
+      "order" : ["packet_in", "ethernet", "ipv4", "tcp", "udp"]
+    }
+  ],
+  "meter_arrays" : [],
+  "counter_arrays" : [],
+  "register_arrays" : [
+    {
+      "name" : "basic_tutorial_ingress.ids.mod1.pktcnt",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "includes/modules/frequency.p4",
+        "line" : 17,
+        "column" : 27,
+        "source_fragment" : "pktcnt"
+      },
+      "size" : 128,
+      "bitwidth" : 16
+    },
+    {
+      "name" : "basic_tutorial_ingress.ids.mod4.prev_dport",
+      "id" : 1,
+      "source_info" : {
+        "filename" : "includes/modules/unique_dport.p4",
+        "line" : 17,
+        "column" : 27,
+        "source_fragment" : "prev_dport"
+      },
+      "size" : 128,
+      "bitwidth" : 16
+    },
+    {
+      "name" : "basic_tutorial_ingress.ids.mod4.dport",
+      "id" : 2,
+      "source_info" : {
+        "filename" : "includes/modules/unique_dport.p4",
+        "line" : 20,
+        "column" : 27,
+        "source_fragment" : "dport"
+      },
+      "size" : 128,
+      "bitwidth" : 32
+    },
+    {
+      "name" : "basic_tutorial_ingress.ids.mod5.rst",
+      "id" : 3,
+      "source_info" : {
+        "filename" : "includes/modules/amount_rst.p4",
+        "line" : 17,
+        "column" : 27,
+        "source_fragment" : "rst"
+      },
+      "size" : 128,
+      "bitwidth" : 16
+    },
+    {
+      "name" : "basic_tutorial_ingress.ids.mod_report.report_bitmap",
+      "id" : 4,
+      "source_info" : {
+        "filename" : "includes/report.p4",
+        "line" : 20,
+        "column" : 26,
+        "source_fragment" : "report_bitmap"
+      },
+      "size" : 128,
+      "bitwidth" : 5
+    },
+    {
+      "name" : "basic_tutorial_ingress.ids.lastSeen",
+      "id" : 5,
+      "source_info" : {
+        "filename" : "includes/ids.p4",
+        "line" : 30,
+        "column" : 27,
+        "source_fragment" : "lastSeen"
+      },
+      "size" : 128,
+      "bitwidth" : 48
+    }
+  ],
+  "calculations" : [
+    {
+      "name" : "calc",
+      "id" : 0,
+      "algo" : "crc32",
+      "input" : [
+        {
+          "type" : "field",
+          "value" : ["ipv4", "srcAddr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "dstAddr"]
+        }
+      ]
+    },
+    {
+      "name" : "calc_0",
+      "id" : 1,
+      "source_info" : {
+        "filename" : "includes/checksums.p4",
+        "line" : 20,
+        "column" : 8,
+        "source_fragment" : "update_checksum( ..."
+      },
+      "algo" : "csum16",
+      "input" : [
+        {
+          "type" : "field",
+          "value" : ["ipv4", "version"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "ihl"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "dscp"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "ecn"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "totalLen"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "identification"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "flags"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "fragOffset"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "ttl"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "protocol"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "srcAddr"]
+        },
+        {
+          "type" : "field",
+          "value" : ["ipv4", "dstAddr"]
+        }
+      ]
+    }
+  ],
+  "learn_lists" : [
+    {
+      "id" : 1,
+      "name" : "report_digest_t",
+      "source_info" : {
+        "filename" : "includes/report.p4",
+        "line" : 38,
+        "column" : 20,
+        "source_fragment" : "{ ..."
+      },
+      "elements" : [
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_2"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_3"]
+        },
+        {
+          "type" : "field",
+          "value" : ["scalars", "tmp_4"]
+        }
+      ]
+    }
+  ],
+  "actions" : [
+    {
+      "name" : "NoAction",
+      "id" : 0,
+      "runtime_data" : [],
+      "primitives" : []
+    },
+    {
+      "name" : "basic_tutorial_ingress.ipv4_forwarding.ipv4_forward",
+      "id" : 1,
+      "runtime_data" : [
+        {
+          "name" : "dstAddr",
+          "bitwidth" : 48
+        },
+        {
+          "name" : "port",
+          "bitwidth" : 9
+        }
+      ],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "egress_spec"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 1
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ipv4_forward.p4",
+            "line" : 14,
+            "column" : 8,
+            "source_fragment" : "standard_metadata.egress_spec = port"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ethernet", "srcAddr"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ethernet", "dstAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ipv4_forward.p4",
+            "line" : 15,
+            "column" : 8,
+            "source_fragment" : "hdr.ethernet.srcAddr = hdr.ethernet.dstAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ethernet", "dstAddr"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 0
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ipv4_forward.p4",
+            "line" : 16,
+            "column" : 8,
+            "source_fragment" : "hdr.ethernet.dstAddr = dstAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ipv4", "ttl"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["ipv4", "ttl"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0xff"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ipv4_forward.p4",
+            "line" : 17,
+            "column" : 8,
+            "source_fragment" : "hdr.ipv4.ttl = hdr.ipv4.ttl - 1"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "basic_tutorial_ingress.arp.send_to_cpu",
+      "id" : 2,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "egress_spec"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00ff"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 12,
+            "column" : 8,
+            "source_fragment" : "standard_metadata.egress_spec = 255"
+          }
+        },
+        {
+          "op" : "add_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "packet_in"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 13,
+            "column" : 8,
+            "source_fragment" : "hdr.packet_in.setValid()"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["packet_in", "ingress_port"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["standard_metadata", "ingress_port"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 14,
+            "column" : 8,
+            "source_fragment" : "hdr.packet_in.ingress_port = (bit<16>)standard_metadata.ingress_port"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "basic_tutorial_ingress.arp.flooding",
+      "id" : 3,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "mcast_grp"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0001"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 18,
+            "column" : 8,
+            "source_fragment" : "standard_metadata.mcast_grp = 1"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "basic_tutorial_ingress.arp.arp_reply",
+      "id" : 4,
+      "runtime_data" : [
+        {
+          "name" : "port",
+          "bitwidth" : 9
+        }
+      ],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "egress_spec"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 0
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 22,
+            "column" : 8,
+            "source_fragment" : "standard_metadata.egress_spec = port"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act",
+      "id" : 5,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "egress_spec"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["packet_out", "egress_port"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x01ff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 41,
+            "column" : 12,
+            "source_fragment" : "standard_metadata.egress_spec = (bit<9>)hdr.packet_out.egress_port"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "mcast_grp"]
+            },
+            {
+              "type" : "field",
+              "value" : ["packet_out", "mcast_grp"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 42,
+            "column" : 12,
+            "source_fragment" : "standard_metadata.mcast_grp = hdr.packet_out.mcast_grp"
+          }
+        },
+        {
+          "op" : "remove_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "packet_out"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 43,
+            "column" : 12,
+            "source_fragment" : "hdr.packet_out.setInvalid()"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_0",
+      "id" : 6,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_tmp"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x000000000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 50,
+            "column" : 17,
+            "source_fragment" : "(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_1",
+      "id" : 7,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "-",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["standard_metadata", "ingress_global_timestamp"]
+                      },
+                      "right" : {
+                        "type" : "field",
+                        "value" : ["scalars", "ids_prev_ts"]
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 50,
+            "column" : 17,
+            "source_fragment" : "(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_2",
+      "id" : 8,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "modify_field_with_hash_based_offset",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            },
+            {
+              "type" : "calculation",
+              "value" : "calc"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000080"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 34,
+            "column" : 8,
+            "source_fragment" : "hash( ..."
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_prev_ts"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.lastSeen"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 48,
+            "column" : 8,
+            "source_fragment" : "lastSeen.read(prev_ts, metadata.flow_id)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_3",
+      "id" : 9,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod1.pktcnt"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0001"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 40,
+            "column" : 12,
+            "source_fragment" : "pktcnt.write(metadata.flow_id, 1)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod4.prev_dport"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 46,
+            "column" : 12,
+            "source_fragment" : "prev_dport.write(metadata.flow_id, metadata.l4_dstPort)"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod4.dport"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00000000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 47,
+            "column" : 12,
+            "source_fragment" : "dport.write(metadata.flow_id, 0)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod5.rst"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0000"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 42,
+            "column" : 12,
+            "source_fragment" : "rst.write(metadata.flow_id, 0)"
+          }
+        },
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "act_4",
+      "id" : 10,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["scalars", "metadata_t.report_bitmap"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x01"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 34,
+            "column" : 16,
+            "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 1"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_5",
+      "id" : 11,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod1_prev_pktcnt_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod1.pktcnt"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 31,
+            "column" : 12,
+            "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_6",
+      "id" : 12,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["ids_metadata", "report_bitmap"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x10"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 38,
+            "column" : 16,
+            "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 16"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_7",
+      "id" : 13,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod5_prev_rst_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod5.rst"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 35,
+            "column" : 12,
+            "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_8",
+      "id" : 14,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["ids_metadata_1", "report_bitmap"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x08"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 42,
+            "column" : 16,
+            "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 8"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_9",
+      "id" : 15,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod4_dport_cnt_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod4.dport"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 39,
+            "column" : 12,
+            "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_10",
+      "id" : 16,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "act_11",
+      "id" : 17,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["ids_metadata", "report_bitmap"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x08"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 42,
+            "column" : 16,
+            "source_fragment" : "metadata.report_bitmap = metadata.report_bitmap | 8"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_12",
+      "id" : 18,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod4_dport_cnt_0"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod4.dport"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 39,
+            "column" : 12,
+            "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_13",
+      "id" : 19,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "act_14",
+      "id" : 20,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod1.pktcnt"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x0001"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 37,
+            "column" : 12,
+            "source_fragment" : "pktcnt.write(metadata.flow_id, 1)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "act_15",
+      "id" : 21,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "ids_mod5_prev_rst"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x0001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 29,
+            "column" : 48,
+            "source_fragment" : "prev_rst+1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod5.rst"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 29,
+            "column" : 20,
+            "source_fragment" : "rst.write(metadata.flow_id, prev_rst+1)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_16",
+      "id" : 22,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod1_prev_pktcnt"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod1.pktcnt"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 24,
+            "column" : 12,
+            "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_0"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "ids_mod1_prev_pktcnt"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x0001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 26,
+            "column" : 43,
+            "source_fragment" : "prev_pktcnt+1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod1.pktcnt"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_0"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 26,
+            "column" : 12,
+            "source_fragment" : "pktcnt.write(metadata.flow_id, prev_pktcnt+1)"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod5_prev_rst"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod5.rst"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 24,
+            "column" : 12,
+            "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_17",
+      "id" : 23,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_1"]
+            },
+            {
+              "type" : "expression",
+              "value" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "expression",
+                    "value" : {
+                      "op" : "+",
+                      "left" : {
+                        "type" : "field",
+                        "value" : ["scalars", "ids_mod4_dport_cnt"]
+                      },
+                      "right" : {
+                        "type" : "hexstr",
+                        "value" : "0x00000001"
+                      }
+                    }
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0xffffffff"
+                  }
+                }
+              }
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 32,
+            "column" : 46,
+            "source_fragment" : "dport_cnt+1"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod4.dport"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_1"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 32,
+            "column" : 16,
+            "source_fragment" : "dport.write(metadata.flow_id, dport_cnt+1)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_18",
+      "id" : 24,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "l4_srcPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_srcPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "l4_dstPort"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod4_prev_dport_val"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod4.prev_dport"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 28,
+            "column" : 12,
+            "source_fragment" : "prev_dport.read(prev_dport_val, metadata.flow_id)"
+          }
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod4_dport_cnt"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod4.dport"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 29,
+            "column" : 12,
+            "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_19",
+      "id" : 25,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod4.prev_dport"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.l4_dstPort"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 35,
+            "column" : 12,
+            "source_fragment" : "prev_dport.write(metadata.flow_id, metadata.l4_dstPort)"
+          }
+        },
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_0", "report_bitmap"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name" : "act_20",
+      "id" : 26,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_2"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "srcAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 39,
+            "column" : 24,
+            "source_fragment" : "hdr.ipv4.srcAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_3"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "dstAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 40,
+            "column" : 24,
+            "source_fragment" : "hdr.ipv4.dstAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "tmp_4"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 41,
+            "column" : 24,
+            "source_fragment" : "metadata.report_bitmap"
+          }
+        },
+        {
+          "op" : "generate_digest",
+          "parameters" : [
+            {
+              "type" : "hexstr",
+              "value" : "0x00000400"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x1"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 36,
+            "column" : 16,
+            "source_fragment" : "digest<report_digest_t>( ..."
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod_report.report_bitmap"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 48,
+            "column" : 16,
+            "source_fragment" : "report_bitmap.write(metadata.flow_id, metadata.report_bitmap)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_21",
+      "id" : 27,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod_report_prev_report_val"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod_report.report_bitmap"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 26,
+            "column" : 8,
+            "source_fragment" : "report_bitmap.read(prev_report_val, metadata.flow_id)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "act_22",
+      "id" : 28,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.lastSeen"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "ingress_global_timestamp"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 104,
+            "column" : 8,
+            "source_fragment" : "lastSeen.write(metadata.flow_id, standard_metadata.ingress_global_timestamp)"
+          }
+        }
+      ]
+    }
+  ],
+  "pipelines" : [
+    {
+      "name" : "ingress",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "basic_tutorial_switch.p4",
+        "line" : 20,
+        "column" : 8,
+        "source_fragment" : "basic_tutorial_ingress"
+      },
+      "init_table" : "node_2",
+      "tables" : [
+        {
+          "name" : "basic_tutorial_ingress.ipv4_forwarding.ipv4_lpm",
+          "id" : 0,
+          "source_info" : {
+            "filename" : "includes/ipv4_forward.p4",
+            "line" : 20,
+            "column" : 10,
+            "source_fragment" : "ipv4_lpm"
+          },
+          "key" : [
+            {
+              "match_type" : "lpm",
+              "name" : "hdr.ipv4.dstAddr",
+              "target" : ["ipv4", "dstAddr"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "lpm",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [1, 0],
+          "actions" : ["basic_tutorial_ingress.ipv4_forwarding.ipv4_forward", "NoAction"],
+          "base_default_next" : "node_4",
+          "next_tables" : {
+            "basic_tutorial_ingress.ipv4_forwarding.ipv4_forward" : "node_4",
+            "NoAction" : "node_4"
+          },
+          "default_entry" : {
+            "action_id" : 0,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : false
+          }
+        },
+        {
+          "name" : "tbl_act",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 41,
+            "column" : 42,
+            "source_fragment" : "= (bit<9>)hdr.packet_out.egress_port; ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [5],
+          "actions" : ["act"],
+          "base_default_next" : "tbl_act_0",
+          "next_tables" : {
+            "act" : "tbl_act_0"
+          },
+          "default_entry" : {
+            "action_id" : 5,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "basic_tutorial_ingress.arp.arp_exact",
+          "id" : 2,
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 25,
+            "column" : 10,
+            "source_fragment" : "arp_exact"
+          },
+          "key" : [
+            {
+              "match_type" : "exact",
+              "name" : "standard_metadata.ingress_port",
+              "target" : ["standard_metadata", "ingress_port"],
+              "mask" : null
+            },
+            {
+              "match_type" : "exact",
+              "name" : "hdr.ethernet.dstAddr",
+              "target" : ["ethernet", "dstAddr"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [2, 3, 4],
+          "actions" : ["basic_tutorial_ingress.arp.send_to_cpu", "basic_tutorial_ingress.arp.flooding", "basic_tutorial_ingress.arp.arp_reply"],
+          "base_default_next" : "tbl_act_0",
+          "next_tables" : {
+            "basic_tutorial_ingress.arp.send_to_cpu" : "tbl_act_0",
+            "basic_tutorial_ingress.arp.flooding" : "tbl_act_0",
+            "basic_tutorial_ingress.arp.arp_reply" : "tbl_act_0"
+          },
+          "default_entry" : {
+            "action_id" : 2,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : false
+          }
+        },
+        {
+          "name" : "tbl_act_0",
+          "id" : 3,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 34,
+            "column" : 8,
+            "source_fragment" : "hash( ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [8],
+          "actions" : ["act_2"],
+          "base_default_next" : "node_8",
+          "next_tables" : {
+            "act_2" : "node_8"
+          },
+          "default_entry" : {
+            "action_id" : 8,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_1",
+          "id" : 4,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 50,
+            "column" : 17,
+            "source_fragment" : "(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [6],
+          "actions" : ["act_0"],
+          "base_default_next" : "node_11",
+          "next_tables" : {
+            "act_0" : "node_11"
+          },
+          "default_entry" : {
+            "action_id" : 6,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_2",
+          "id" : 5,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 50,
+            "column" : 17,
+            "source_fragment" : "(prev_ts== 0)? 0 :(standard_metadata.ingress_global_timestamp - prev_ts)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [7],
+          "actions" : ["act_1"],
+          "base_default_next" : "node_11",
+          "next_tables" : {
+            "act_1" : "node_11"
+          },
+          "default_entry" : {
+            "action_id" : 7,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_3",
+          "id" : 6,
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 40,
+            "column" : 12,
+            "source_fragment" : "pktcnt.write(metadata.flow_id, 1); ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [9],
+          "actions" : ["act_3"],
+          "base_default_next" : "tbl_act_20",
+          "next_tables" : {
+            "act_3" : "tbl_act_20"
+          },
+          "default_entry" : {
+            "action_id" : 9,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_4",
+          "id" : 7,
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 31,
+            "column" : 12,
+            "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [11],
+          "actions" : ["act_5"],
+          "base_default_next" : "node_15",
+          "next_tables" : {
+            "act_5" : "node_15"
+          },
+          "default_entry" : {
+            "action_id" : 11,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_5",
+          "id" : 8,
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 34,
+            "column" : 39,
+            "source_fragment" : "="
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [10],
+          "actions" : ["act_4"],
+          "base_default_next" : "tbl_act_6",
+          "next_tables" : {
+            "act_4" : "tbl_act_6"
+          },
+          "default_entry" : {
+            "action_id" : 10,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_6",
+          "id" : 9,
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 37,
+            "column" : 12,
+            "source_fragment" : "pktcnt.write(metadata.flow_id, 1)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [20],
+          "actions" : ["act_14"],
+          "base_default_next" : "node_18",
+          "next_tables" : {
+            "act_14" : "node_18"
+          },
+          "default_entry" : {
+            "action_id" : 20,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_7",
+          "id" : 10,
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 35,
+            "column" : 12,
+            "source_fragment" : "rst.read(prev_rst, metadata.flow_id)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [13],
+          "actions" : ["act_7"],
+          "base_default_next" : "node_20",
+          "next_tables" : {
+            "act_7" : "node_20"
+          },
+          "default_entry" : {
+            "action_id" : 13,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_8",
+          "id" : 11,
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 38,
+            "column" : 39,
+            "source_fragment" : "="
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [12],
+          "actions" : ["act_6"],
+          "base_default_next" : "tbl_act_9",
+          "next_tables" : {
+            "act_6" : "tbl_act_9"
+          },
+          "default_entry" : {
+            "action_id" : 12,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_9",
+          "id" : 12,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 39,
+            "column" : 12,
+            "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [15],
+          "actions" : ["act_9"],
+          "base_default_next" : "node_23",
+          "next_tables" : {
+            "act_9" : "node_23"
+          },
+          "default_entry" : {
+            "action_id" : 15,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_10",
+          "id" : 13,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 42,
+            "column" : 39,
+            "source_fragment" : "="
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [14],
+          "actions" : ["act_8"],
+          "base_default_next" : "tbl_act_11",
+          "next_tables" : {
+            "act_8" : "tbl_act_11"
+          },
+          "default_entry" : {
+            "action_id" : 14,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_11",
+          "id" : 14,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [16],
+          "actions" : ["act_10"],
+          "base_default_next" : "tbl_act_20",
+          "next_tables" : {
+            "act_10" : "tbl_act_20"
+          },
+          "default_entry" : {
+            "action_id" : 16,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_12",
+          "id" : 15,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 39,
+            "column" : 12,
+            "source_fragment" : "dport.read(dport_cnt, metadata.flow_id)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [18],
+          "actions" : ["act_12"],
+          "base_default_next" : "node_27",
+          "next_tables" : {
+            "act_12" : "node_27"
+          },
+          "default_entry" : {
+            "action_id" : 18,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_13",
+          "id" : 16,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 42,
+            "column" : 39,
+            "source_fragment" : "="
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [17],
+          "actions" : ["act_11"],
+          "base_default_next" : "tbl_act_14",
+          "next_tables" : {
+            "act_11" : "tbl_act_14"
+          },
+          "default_entry" : {
+            "action_id" : 17,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_14",
+          "id" : 17,
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [19],
+          "actions" : ["act_13"],
+          "base_default_next" : "tbl_act_20",
+          "next_tables" : {
+            "act_13" : "tbl_act_20"
+          },
+          "default_entry" : {
+            "action_id" : 19,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_15",
+          "id" : 18,
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 24,
+            "column" : 12,
+            "source_fragment" : "pktcnt.read(prev_pktcnt, metadata.flow_id); ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [22],
+          "actions" : ["act_16"],
+          "base_default_next" : "node_31",
+          "next_tables" : {
+            "act_16" : "node_31"
+          },
+          "default_entry" : {
+            "action_id" : 22,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_16",
+          "id" : 19,
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 29,
+            "column" : 20,
+            "source_fragment" : "rst.write(metadata.flow_id, prev_rst+1)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [21],
+          "actions" : ["act_15"],
+          "base_default_next" : "tbl_act_17",
+          "next_tables" : {
+            "act_15" : "tbl_act_17"
+          },
+          "default_entry" : {
+            "action_id" : 21,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_17",
+          "id" : 20,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 28,
+            "column" : 12,
+            "source_fragment" : "prev_dport.read(prev_dport_val, metadata.flow_id); ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [24],
+          "actions" : ["act_18"],
+          "base_default_next" : "node_35",
+          "next_tables" : {
+            "act_18" : "node_35"
+          },
+          "default_entry" : {
+            "action_id" : 24,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_18",
+          "id" : 21,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 32,
+            "column" : 16,
+            "source_fragment" : "dport.write(metadata.flow_id, dport_cnt+1)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [23],
+          "actions" : ["act_17"],
+          "base_default_next" : "tbl_act_19",
+          "next_tables" : {
+            "act_17" : "tbl_act_19"
+          },
+          "default_entry" : {
+            "action_id" : 23,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_19",
+          "id" : 22,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 35,
+            "column" : 12,
+            "source_fragment" : "prev_dport.write(metadata.flow_id, metadata.l4_dstPort)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [25],
+          "actions" : ["act_19"],
+          "base_default_next" : "tbl_act_20",
+          "next_tables" : {
+            "act_19" : "tbl_act_20"
+          },
+          "default_entry" : {
+            "action_id" : 25,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_20",
+          "id" : 23,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 26,
+            "column" : 8,
+            "source_fragment" : "report_bitmap.read(prev_report_val, metadata.flow_id)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [27],
+          "actions" : ["act_21"],
+          "base_default_next" : "node_39",
+          "next_tables" : {
+            "act_21" : "node_39"
+          },
+          "default_entry" : {
+            "action_id" : 27,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_21",
+          "id" : 24,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 36,
+            "column" : 16,
+            "source_fragment" : "digest<report_digest_t>( ..."
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [26],
+          "actions" : ["act_20"],
+          "base_default_next" : "tbl_act_22",
+          "next_tables" : {
+            "act_20" : "tbl_act_22"
+          },
+          "default_entry" : {
+            "action_id" : 26,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        },
+        {
+          "name" : "tbl_act_22",
+          "id" : 25,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 104,
+            "column" : 8,
+            "source_fragment" : "lastSeen.write(metadata.flow_id, standard_metadata.ingress_global_timestamp)"
+          },
+          "key" : [],
+          "match_type" : "exact",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [28],
+          "actions" : ["act_22"],
+          "base_default_next" : null,
+          "next_tables" : {
+            "act_22" : null
+          },
+          "default_entry" : {
+            "action_id" : 28,
+            "action_const" : true,
+            "action_data" : [],
+            "action_entry_const" : true
+          }
+        }
+      ],
+      "action_profiles" : [],
+      "conditionals" : [
+        {
+          "name" : "node_2",
+          "id" : 0,
+          "source_info" : {
+            "filename" : "includes/ipv4_forward.p4",
+            "line" : 33,
+            "column" : 11,
+            "source_fragment" : "hdr.ipv4.isValid()"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["ipv4", "$valid$"]
+              }
+            }
+          },
+          "true_next" : "basic_tutorial_ingress.ipv4_forwarding.ipv4_lpm",
+          "false_next" : "node_4"
+        },
+        {
+          "name" : "node_4",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "includes/arp.p4",
+            "line" : 40,
+            "column" : 11,
+            "source_fragment" : "standard_metadata.ingress_port == 255"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["standard_metadata", "ingress_port"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x00ff"
+              }
+            }
+          },
+          "true_next" : "tbl_act",
+          "false_next" : "basic_tutorial_ingress.arp.arp_exact"
+        },
+        {
+          "name" : "node_8",
+          "id" : 2,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 50,
+            "column" : 18,
+            "source_fragment" : "prev_ts== 0"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_prev_ts"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x000000000000"
+              }
+            }
+          },
+          "true_next" : "tbl_act_1",
+          "false_next" : "tbl_act_2"
+        },
+        {
+          "name" : "node_11",
+          "id" : 3,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 53,
+            "column" : 11,
+            "source_fragment" : "interval > 5000"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_tmp"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x000000001388"
+              }
+            }
+          },
+          "true_next" : "node_12",
+          "false_next" : "tbl_act_15"
+        },
+        {
+          "name" : "node_12",
+          "id" : 4,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 61,
+            "column" : 15,
+            "source_fragment" : "interval > 50000"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_tmp"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x00000000c350"
+              }
+            }
+          },
+          "true_next" : "tbl_act_3",
+          "false_next" : "tbl_act_4"
+        },
+        {
+          "name" : "node_15",
+          "id" : 5,
+          "source_info" : {
+            "filename" : "includes/modules/frequency.p4",
+            "line" : 33,
+            "column" : 15,
+            "source_fragment" : "prev_pktcnt > 10"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod1_prev_pktcnt_0"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x000a"
+              }
+            }
+          },
+          "true_next" : "tbl_act_5",
+          "false_next" : "tbl_act_6"
+        },
+        {
+          "name" : "node_18",
+          "id" : 6,
+          "source_info" : {
+            "filename" : "includes/ids.p4",
+            "line" : 72,
+            "column" : 19,
+            "source_fragment" : "(metadata.report_bitmap | 1)==1"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["ids_metadata", "report_bitmap"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x01"
+                  }
+                }
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x01"
+              }
+            }
+          },
+          "true_next" : "tbl_act_7",
+          "false_next" : "tbl_act_12"
+        },
+        {
+          "name" : "node_20",
+          "id" : 7,
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 37,
+            "column" : 15,
+            "source_fragment" : "prev_rst > 50"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod5_prev_rst_0"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x0032"
+              }
+            }
+          },
+          "true_next" : "tbl_act_8",
+          "false_next" : "tbl_act_9"
+        },
+        {
+          "name" : "node_23",
+          "id" : 8,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 41,
+            "column" : 15,
+            "source_fragment" : "dport_cnt > 1000"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod4_dport_cnt_0"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x000003e8"
+              }
+            }
+          },
+          "true_next" : "tbl_act_10",
+          "false_next" : "tbl_act_11"
+        },
+        {
+          "name" : "node_27",
+          "id" : 9,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 41,
+            "column" : 15,
+            "source_fragment" : "dport_cnt > 1000"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod4_dport_cnt_0"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x000003e8"
+              }
+            }
+          },
+          "true_next" : "tbl_act_13",
+          "false_next" : "tbl_act_14"
+        },
+        {
+          "name" : "node_31",
+          "id" : 10,
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 26,
+            "column" : 15,
+            "source_fragment" : "hdr.tcp.isValid()"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["ids_hdr_1_tcp", "$valid$"]
+              }
+            }
+          },
+          "true_next" : "node_32",
+          "false_next" : "tbl_act_17"
+        },
+        {
+          "name" : "node_32",
+          "id" : 11,
+          "source_info" : {
+            "filename" : "includes/modules/amount_rst.p4",
+            "line" : 28,
+            "column" : 19,
+            "source_fragment" : "hdr.tcp.flags & 4 > 0"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "&",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["ids_hdr_1_tcp", "flags"]
+                  },
+                  "right" : {
+                    "type" : "hexstr",
+                    "value" : "0x04"
+                  }
+                }
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x00"
+              }
+            }
+          },
+          "true_next" : "tbl_act_16",
+          "false_next" : "tbl_act_17"
+        },
+        {
+          "name" : "node_35",
+          "id" : 12,
+          "source_info" : {
+            "filename" : "includes/modules/unique_dport.p4",
+            "line" : 31,
+            "column" : 15,
+            "source_fragment" : "metadata.l4_dstPort != prev_dport_val"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "!=",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "metadata_t.l4_dstPort"]
+              },
+              "right" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod4_prev_dport_val"]
+              }
+            }
+          },
+          "true_next" : "tbl_act_18",
+          "false_next" : "tbl_act_19"
+        },
+        {
+          "name" : "node_39",
+          "id" : 13,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 28,
+            "column" : 11,
+            "source_fragment" : "metadata.report_bitmap>1"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : ">",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "metadata_t.report_bitmap"]
+              },
+              "right" : {
+                "type" : "hexstr",
+                "value" : "0x01"
+              }
+            }
+          },
+          "true_next" : "node_40",
+          "false_next" : "tbl_act_22"
+        },
+        {
+          "name" : "node_40",
+          "id" : 14,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 29,
+            "column" : 15,
+            "source_fragment" : "prev_report_val==metadata.report_bitmap"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod_report_prev_report_val"]
+              },
+              "right" : {
+                "type" : "field",
+                "value" : ["scalars", "metadata_t.report_bitmap"]
+              }
+            }
+          },
+          "false_next" : "tbl_act_21",
+          "true_next" : "tbl_act_22"
+        }
+      ]
+    },
+    {
+      "name" : "egress",
+      "id" : 1,
+      "source_info" : {
+        "filename" : "basic_tutorial_switch.p4",
+        "line" : 41,
+        "column" : 8,
+        "source_fragment" : "basic_tutorial_egress"
+      },
+      "init_table" : null,
+      "tables" : [],
+      "action_profiles" : [],
+      "conditionals" : []
+    }
+  ],
+  "checksums" : [
+    {
+      "name" : "cksum",
+      "id" : 0,
+      "source_info" : {
+        "filename" : "includes/checksums.p4",
+        "line" : 20,
+        "column" : 8,
+        "source_fragment" : "update_checksum( ..."
+      },
+      "target" : ["ipv4", "hdrChecksum"],
+      "type" : "generic",
+      "calculation" : "calc_0",
+      "verify" : false,
+      "update" : true,
+      "if_cond" : {
+        "type" : "expression",
+        "value" : {
+          "op" : "d2b",
+          "left" : null,
+          "right" : {
+            "type" : "field",
+            "value" : ["ipv4", "$valid$"]
+          }
+        }
+      }
+    }
+  ],
+  "force_arith" : [],
+  "extern_instances" : [],
+  "field_aliases" : [
+    [
+      "queueing_metadata.enq_timestamp",
+      ["standard_metadata", "enq_timestamp"]
+    ],
+    [
+      "queueing_metadata.enq_qdepth",
+      ["standard_metadata", "enq_qdepth"]
+    ],
+    [
+      "queueing_metadata.deq_timedelta",
+      ["standard_metadata", "deq_timedelta"]
+    ],
+    [
+      "queueing_metadata.deq_qdepth",
+      ["standard_metadata", "deq_qdepth"]
+    ],
+    [
+      "intrinsic_metadata.ingress_global_timestamp",
+      ["standard_metadata", "ingress_global_timestamp"]
+    ],
+    [
+      "intrinsic_metadata.egress_global_timestamp",
+      ["standard_metadata", "egress_global_timestamp"]
+    ],
+    [
+      "intrinsic_metadata.lf_field_list",
+      ["standard_metadata", "lf_field_list"]
+    ],
+    [
+      "intrinsic_metadata.mcast_grp",
+      ["standard_metadata", "mcast_grp"]
+    ],
+    [
+      "intrinsic_metadata.resubmit_flag",
+      ["standard_metadata", "resubmit_flag"]
+    ],
+    [
+      "intrinsic_metadata.egress_rid",
+      ["standard_metadata", "egress_rid"]
+    ],
+    [
+      "intrinsic_metadata.recirculate_flag",
+      ["standard_metadata", "recirculate_flag"]
+    ],
+    [
+      "intrinsic_metadata.priority",
+      ["standard_metadata", "priority"]
+    ]
+  ],
+  "program" : "basic_tutorial_switch.p4",
+  "__meta__" : {
+    "version" : [2, 18],
+    "compiler" : "https://github.com/p4lang/p4c"
+  }
+}

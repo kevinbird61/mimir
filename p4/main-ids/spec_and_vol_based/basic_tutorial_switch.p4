@@ -12,6 +12,7 @@
 // application
 #include "includes/ipv4_forward.p4"
 #include "includes/ids.p4"
+#include "includes/arp.p4"
 
 //------------------------------------------------------------------------------
 // INGRESS PIPELINE
@@ -26,6 +27,8 @@ control basic_tutorial_ingress(
 
         // forwarding
         ipv4_forwarding.apply(hdr, metadata, standard_metadata);
+        // arp 
+        arp.apply(hdr, metadata, standard_metadata);
 
         // ids
         ids.apply(hdr, metadata, standard_metadata);

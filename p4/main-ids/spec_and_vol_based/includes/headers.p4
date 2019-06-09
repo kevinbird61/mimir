@@ -22,6 +22,7 @@ header packet_in_header_t {
 @controller_header("packet_out")
 header packet_out_header_t {
     bit<16>  egress_port;
+    bit<16>  mcast_grp;
 }
 
 // header struct for packet

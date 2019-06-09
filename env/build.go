@@ -60,8 +60,8 @@ func main(){
     verbose :=          flag.Bool("v", false, "Verbose mode.")
     victim_ip :=        flag.String("vip", "127.0.0.1", "Victim's IP address.")
     victim_port :=      flag.Int("vport", 80, "Victim's Port number.")
-    round :=            flag.Int("round", 100, "How many iperf tests will be executed." )
-    duration :=         flag.Int("dur", 100, "How long will iperf be executed.")
+    round :=            flag.Int("round", 10, "How many iperf tests will be executed." )
+    duration :=         flag.Int("dur", 20, "How long will iperf be executed.")
     delay :=            flag.Int("del", 20, "Delay (seconds) between virtual network creation and running attack.")
     clean :=            flag.Bool("c", false, "Clean all container.")
 
@@ -79,6 +79,7 @@ func main(){
     }
     fmt.Println("Victim Port number: ", *victim_port)
     fmt.Println("Delay duration: ", *delay)
+    fmt.Println("Service running duration: ", *duration)
     fmt.Println("============================================================")
 
     if *clean {
@@ -94,14 +95,24 @@ func main(){
         exec_command("./build.sh", "create", "victim", "vic")
         // run service on those virtual devices
         // running iperf server on victim (FIXME: need to change ?)
-        exec_command("docker", "exec", "-i", "-d", "victim", "iperf", "-s")
+        go exec_command("docker", "exec", "-i", "-d", "victim", "iperf", "-s")
+        // recording 
+        go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-G", strconv.Itoa((*duration)*(*round+1)), "-w", "/home/ddos-with-iperf-tcp.pcap")
 
         // run several rounds, each will delay for period time before next iperf task.
+        fmt.Println("=====================================================")
         for i:=0; i< *round; i++ {
+            fmt.Println("Starting a new round ..., current round: ", strconv.Itoa(i))
+            fmt.Println("Waiting for ", *delay, " seconds to start another round ...")
+            fmt.Println("")
             // time sleep (wait for user to get into victim and start tcpdump to record traffic)
             time.Sleep(time.Duration(*delay)*time.Second)
             // running benign host (iperf -t duration -c victim )
-            run_benign_host(*benign_hosts, *duration)
+            go run_benign_host(*benign_hosts, *duration)
+            // running attacker (from external)
+            go exec_command("docker", "exec", "-i", "-d", "attacker", "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(*benign_hosts+1), "-d="+strconv.Itoa(*delay)+"s")
+            // running attacker (from internal)
+            go exec_command("docker", "exec", "-i", "-d", "user_v0", "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(*benign_hosts+1), "-d="+strconv.Itoa(*delay)+"s")
         }
     }
 

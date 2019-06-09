@@ -11,10 +11,11 @@ function init()
     echo "Initializing our virtual network..."
     # create bridge (to seperate victim network and attacker network)
     echo "Create bridge ..."
-    # atk will be 172.18.0.0/24
-    "$DOCKER" network create --driver bridge "atk"
-    # and vic will be 172.19.0.0/24 (create later)
-    "$DOCKER" network create --driver bridge "vic"
+    # Specify their subnet information and ip-range.
+    # atk will be 172.28.0.0/16
+    "$DOCKER" network create --driver bridge "atk" --opt com.docker.network.bridge.name=br_atk --subnet=172.28.0.0/16 --ip-range=172.28.1.0/24 
+    # and vic will be 172.30.0.0/16 
+    "$DOCKER" network create --driver bridge "vic" --opt com.docker.network.bridge.name=br_vic --subnet=172.30.0.0/16 --ip-range=172.30.1.0/24 
 }
 
 function clean()
@@ -66,7 +67,5 @@ elif [ "$1" == "run" ]; then
     $1 $2 $3
     exit
 fi
-
-
 
 $1
