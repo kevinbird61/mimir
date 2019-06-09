@@ -54,7 +54,7 @@ func run_benign_host(num int, duration int) {
     }
 }
 
-func run_benign_host_udp(num int, duration int) {
+func run_benign_host_mixed(num int, duration int) {
     // half tcp and udp 
     // atk
     for i:=0; i< num; i++ {
@@ -76,6 +76,20 @@ func run_benign_host_udp(num int, duration int) {
     }
 }
 
+func run_benign_host_udp(num int, duration int) {
+    // half tcp and udp 
+    // atk
+    for i:=0; i< num; i++ {
+        exec_command("docker", "exec", "-i", "-d" , "user_a"+strconv.Itoa(i), "iperf", "-u", "-t", strconv.Itoa(duration), "-c", "victim", "-b", "1000m")
+        // exec_command("docker", "exec", "-i", "-d" , "user_a"+strconv.Itoa(i), "iperf", "-u", "-t", strconv.Itoa(duration), "-c", "victim")
+    }
+    // vic
+    for i:=0; i< num; i++ {
+        exec_command("docker", "exec", "-i", "-d" , "user_v"+strconv.Itoa(i), "iperf", "-u", "-t", strconv.Itoa(duration), "-c", "victim", "-b", "1000m")
+        // exec_command("docker", "exec", "-i", "-d" , "user_v"+strconv.Itoa(i), "iperf", "-u", "-t", strconv.Itoa(duration), "-c", "victim")
+    }
+}
+
 func main(){
 	// Args 
     benign_hosts :=     flag.Int("b", 10, "Number of benign hosts under each network domain. (Victim/Attacker)")
@@ -85,7 +99,8 @@ func main(){
     round :=            flag.Int("round", 10, "How many iperf tests will be executed." )
     duration :=         flag.Int("dur", 20, "How long will iperf be executed.")
     delay :=            flag.Int("del", 20, "Delay (seconds) between virtual network creation and running attack.")
-    udp :=              flag.Bool("u", false, "Using UDP mixed with TCP as iperf (benign) traffic.")
+    udp :=              flag.Bool("u", false, "Using UDP as iperf (benign) traffic.")
+    mixed :=            flag.Bool("m", false, "Using UDP+TCP as iperf (benign) traffic.")
     clean :=            flag.Bool("c", false, "Clean all container.")
 
     flag.Parse()
@@ -118,12 +133,14 @@ func main(){
         // run service on those virtual devices
         // running iperf server on victim (FIXME: need to change ?)
         go exec_command("docker", "exec", "-i", "-d", "victim", "iperf", "-s")          // TCP
-        if *udp {
+        if *udp || *mixed {
             go exec_command("docker", "exec", "-i", "-d", "victim", "iperf", "-s", "-u")    // UDP
         }
         // recording 
         if *udp {
             // go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-G", strconv.Itoa((*duration)*(*round+1)), "-w", "/home/ddos-with-iperf-mixed-udp-tcp.pcap")
+            go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-W", strconv.Itoa(1), "-w", "/home/ddos-with-iperf-udp.pcap")
+        } else if *mixed {
             go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-W", strconv.Itoa(1), "-w", "/home/ddos-with-iperf-mixed-udp-tcp.pcap")
         } else {
             // go exec_command("docker", "exec", "-i", "-d", "victim", "tcpdump", "-i", "eth0", "-G", strconv.Itoa((*duration)*(*round+1)), "-w", "/home/ddos-with-iperf-tcp.pcap")
@@ -141,6 +158,8 @@ func main(){
             // running benign host (iperf -t duration -c victim )
             if *udp {
                 go run_benign_host_udp(*benign_hosts, *duration)
+            } else if *mixed {
+                go run_benign_host_mixed(*benign_hosts, *duration)
             } else {
                 go run_benign_host(*benign_hosts, *duration)
             }
