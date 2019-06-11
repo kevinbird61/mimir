@@ -40,8 +40,8 @@ using namespace std;
 
  value of bitmap represent the number of modules
 */
-#define FLOWLET_TIMEOUT 0.1
 
+double seperated_timeout = 0.1;
 int table_size = 128;
 int long_term_timeout = 50;
 /*
@@ -96,10 +96,13 @@ int main(int argc, char **argv){
     t_start = chrono::system_clock::now();
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "dl:t:f:1:2:3:4:5:")) != -1)
+    while((ch=getopt(argc, argv, "ds:l:t:f:1:2:3:4:5:")) != -1)
     {
         switch(ch)
         {
+            case 's':
+                // seperated timeout 
+                break;
             case '1':
                 threshold_1=atoi(optarg);
                 break;
@@ -187,7 +190,6 @@ int main(int argc, char **argv){
               << "Elapsed time: " << elapsed_seconds.count() << " (sec)\n";
     cout << "=====================================================" << endl;
 
-
     cout << "Threshold: " << endl;
     cout << "Module 1: " << threshold_1 << endl;
     cout << "Module 2: " << threshold_2 << endl;
@@ -198,6 +200,7 @@ int main(int argc, char **argv){
 
     cout << "Table size: " << table_size << endl;
     cout << "Collision rate: " << collision/(float)total << endl;
+    cout << "Seperated timeout (sec): " << seperated_timeout << endl;
     cout << "Long-term timeout (sec): " << long_term_timeout << endl;
     cout << "=====================================================" << endl;
 
@@ -309,7 +312,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             mod5[flowIndex]=0;
         }
         
-        if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
+        if(interval > seperated_timeout && (lastseen_ts!=0)){
             // compare to threshold (configurable)
             if(mod1[flowIndex]>threshold_1){
                 // high frequency 
