@@ -102,6 +102,7 @@ int main(int argc, char **argv){
         {
             case 's':
                 // seperated timeout 
+                seperated_timeout=atof(optarg);
                 break;
             case '1':
                 threshold_1=atoi(optarg);

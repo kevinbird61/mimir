@@ -57,7 +57,7 @@ map<string, map<string, mod4_t>> mod4;             // module 4 - flowlevel uniqu
 map<int, int> port_dist;
 
 int upperbound=1000, lowerbound=0;
-int use_long_term=1;
+int use_long_term=1, cdf=0;
 double long_term_timeout=50; // default to 50 sec
 
 // packet process function
@@ -66,10 +66,14 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "ndf:u:l:t:")) != -1)
+    while((ch=getopt(argc, argv, "cndf:u:l:t:")) != -1)
     {
         switch(ch)
         {
+            case 'c':
+                // enable cdf output
+                cdf=1;
+                break;
             case 'n':
                 // no long-term
                 use_long_term=0;
@@ -130,11 +134,25 @@ int main(int argc, char **argv){
         }
     }
 
+    double cdf_val=0, total=0;
     // Print format:
     // <Number of Unique dst ports> <Counter>
-    for(map<int, int>::iterator p=port_dist.begin(); p!=port_dist.end(); p++)
-    {
-        cout << p->first << " " << p->second << endl;
+    if(cdf){
+        for(map<int, int>::iterator p=port_dist.begin(); p!=port_dist.end(); p++)
+        {
+            total+=logf(p->second);
+            // cout << p->first << " " << cdf_val << endl;
+        }
+        for(map<int, int>::iterator p=port_dist.begin(); p!=port_dist.end(); p++)
+        {
+            cdf_val+=logf(p->second);
+            cout << p->first << " " << (cdf_val/total) << endl;
+        }
+    } else {
+        for(map<int, int>::iterator p=port_dist.begin(); p!=port_dist.end(); p++)
+        {
+            cout << p->first << " " << logf(p->second) << endl;
+        }
     }
 
     cout << "# UNIQUE Number's upperbound: " << upperbound << ", lowerbound: " << lowerbound << endl;

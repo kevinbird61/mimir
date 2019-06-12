@@ -41,6 +41,7 @@ map<double, int> interval_dist;
 
 double interval_timeout = 0.1;
 int upperbound=100;
+int cdf=0;
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -48,10 +49,14 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:t:u:")) != -1)
+    while((ch=getopt(argc, argv, "cdf:t:u:")) != -1)
     {
         switch(ch)
         {
+            case 'c':
+                // enable cdf output
+                cdf=1;
+                break;
             case 't':
                 interval_timeout=atof(optarg);
                 break;
@@ -95,9 +100,23 @@ int main(int argc, char **argv){
         pcap_close(handle);
     }
 
-    for(map<double, int>::iterator i=interval_dist.begin(); i!=interval_dist.end(); i++)
-    {
-        cout << i->first << " " << i->second << endl;
+    double cdf_val=0, total=0;
+    if(cdf){
+        for(map<double, int>::iterator i=interval_dist.begin(); i!=interval_dist.end(); i++)
+        {
+            total+=i->second;
+            // cout << i->first << " " << cdf_val << endl;
+        }
+        for(map<double, int>::iterator i=interval_dist.begin(); i!=interval_dist.end(); i++)
+        {
+            cdf_val+=i->second;
+            cout << i->first << " " << (cdf_val/total) << endl;
+        }
+    } else {
+        for(map<double, int>::iterator i=interval_dist.begin(); i!=interval_dist.end(); i++)
+        {
+            cout << i->first << " " << i->second << endl;
+        }
     }
 
     return 0;

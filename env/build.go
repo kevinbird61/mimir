@@ -90,6 +90,18 @@ func run_benign_host_udp(num int, duration int) {
     }
 }
 
+func multi_attacker(num int, duration int) {
+    // turn half of external/interal
+    // atk
+    for i:=0; i< num/2; i++ {
+        go exec_command("docker", "exec", "-i", "-d", "user_a"+strconv.Itoa(i), "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(num+1), "-d="+strconv.Itoa(duration)+"s")
+    }
+    // vic
+    for i:=0; i< num/2; i++ {
+        go exec_command("docker", "exec", "-i", "-d", "user_v"+strconv.Itoa(i), "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(num+1), "-d="+strconv.Itoa(duration)+"s")
+    }
+}
+
 func main(){
 	// Args 
     benign_hosts :=     flag.Int("b", 10, "Number of benign hosts under each network domain. (Victim/Attacker)")
@@ -102,6 +114,7 @@ func main(){
     udp :=              flag.Bool("u", false, "Using UDP as iperf (benign) traffic.")
     mixed :=            flag.Bool("m", false, "Using UDP+TCP as iperf (benign) traffic.")
     clean :=            flag.Bool("c", false, "Clean all container.")
+    ddos :=             flag.Bool("ddos", false, "Transform multiple benign hosts into attacker, let DoS become DDoS.")
 
     flag.Parse()
 
@@ -163,10 +176,16 @@ func main(){
             } else {
                 go run_benign_host(*benign_hosts, *duration)
             }
+
+            if *ddos {
+                // turn half host into attacker
+                go multi_attacker(*benign_hosts, *duration)
+            } 
             // running attacker (from external)
             go exec_command("docker", "exec", "-i", "-d", "attacker", "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(*benign_hosts+1), "-d="+strconv.Itoa(*delay)+"s")
             // running attacker (from internal)
             go exec_command("docker", "exec", "-i", "-d", "user_v0", "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(*benign_hosts+1), "-d="+strconv.Itoa(*delay)+"s")
+            
         }
         fmt.Println("=====================================================")
     }
