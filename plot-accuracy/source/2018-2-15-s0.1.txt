@@ -1,0 +1,8 @@
+# set seperated timeout to 0.1 sec
+# Type Tablesize(128).tp Tablesize(128).fp Tablesize(128).reportcnt Tablesize(128).total  Tablesize(1024).tp Tablesize(1024).fp Tablesize(1024).reportcnt
+# A: 50, 10000, 50
+# B: 38, 7500, 38
+# C: 10, 7500, 38
+A   100 2.3 5 212 100 0.4 1 211
+B   100 1.7 5 294 100 0 0 294
+C   100 1.2 5 388 100 0.7 3 388
