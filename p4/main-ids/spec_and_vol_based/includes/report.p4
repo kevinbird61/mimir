@@ -26,10 +26,10 @@ control report(
         report_bitmap.read(prev_report_val, metadata.flow_id);
         // only need to report when report_bitmap > 1
         if(metadata.report_bitmap>1){
-            if(prev_report_val==metadata.report_bitmap){
+            //if(prev_report_val==metadata.report_bitmap){
                 // do nothing (don't report)
                 // same situation to previous state
-            }else{
+            //}else{
                 // report/drop/rate limit
 
                 // solution#1 - report (using digest method)
@@ -46,7 +46,7 @@ control report(
 
                 // write back into report_bitmap
                 report_bitmap.write(metadata.flow_id, metadata.report_bitmap);
-            }
+            //}
         }
     }
 }

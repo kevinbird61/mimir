@@ -10,7 +10,7 @@
 #define CPU_PORT 255
 
 // IDS
-#define TABLE_SLOT 128     // K-V table size
+#define TABLE_SLOT 1024     // K-V table size
 
 // packet in 
 @controller_header("packet_in")

@@ -6,7 +6,7 @@
 #include "../headers.p4"
 
 // FIXME: use register to make this timeout configurable
-#define DPORT_THRESHOLD 1000
+#define DPORT_THRESHOLD 200
 
 control unique_dport(
     in bit<2>                   ctrl,

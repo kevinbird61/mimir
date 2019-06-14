@@ -1,0 +1,10 @@
+# Set "seperate timeout" to 0.1 sec, and "LTT" to 50 sec.
+# table size | collision rate
+32 11.1
+64 6.6
+128 4.4
+256 4.3
+512 4.7
+1024 4.9
+2048 4.4
+4096 3.6

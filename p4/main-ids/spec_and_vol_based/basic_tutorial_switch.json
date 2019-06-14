@@ -489,10 +489,10 @@
       "source_info" : {
         "filename" : "includes/modules/frequency.p4",
         "line" : 17,
-        "column" : 27,
+        "column" : 28,
         "source_fragment" : "pktcnt"
       },
-      "size" : 128,
+      "size" : 1024,
       "bitwidth" : 16
     },
     {
@@ -501,10 +501,10 @@
       "source_info" : {
         "filename" : "includes/modules/unique_dport.p4",
         "line" : 17,
-        "column" : 27,
+        "column" : 28,
         "source_fragment" : "prev_dport"
       },
-      "size" : 128,
+      "size" : 1024,
       "bitwidth" : 16
     },
     {
@@ -513,10 +513,10 @@
       "source_info" : {
         "filename" : "includes/modules/unique_dport.p4",
         "line" : 20,
-        "column" : 27,
+        "column" : 28,
         "source_fragment" : "dport"
       },
-      "size" : 128,
+      "size" : 1024,
       "bitwidth" : 32
     },
     {
@@ -525,10 +525,10 @@
       "source_info" : {
         "filename" : "includes/modules/amount_rst.p4",
         "line" : 17,
-        "column" : 27,
+        "column" : 28,
         "source_fragment" : "rst"
       },
-      "size" : 128,
+      "size" : 1024,
       "bitwidth" : 16
     },
     {
@@ -537,10 +537,10 @@
       "source_info" : {
         "filename" : "includes/report.p4",
         "line" : 20,
-        "column" : 26,
+        "column" : 27,
         "source_fragment" : "report_bitmap"
       },
-      "size" : 128,
+      "size" : 1024,
       "bitwidth" : 5
     },
     {
@@ -549,10 +549,10 @@
       "source_info" : {
         "filename" : "includes/ids.p4",
         "line" : 30,
-        "column" : 27,
+        "column" : 28,
         "source_fragment" : "lastSeen"
       },
-      "size" : 128,
+      "size" : 1024,
       "bitwidth" : 48
     }
   ],
@@ -1082,7 +1082,7 @@
             },
             {
               "type" : "hexstr",
-              "value" : "0x00000080"
+              "value" : "0x00000400"
             }
           ],
           "source_info" : {
@@ -3664,7 +3664,7 @@
             "filename" : "includes/ids.p4",
             "line" : 53,
             "column" : 11,
-            "source_fragment" : "interval > 5000"
+            "source_fragment" : "interval > 2000"
           },
           "expression" : {
             "type" : "expression",
@@ -3676,7 +3676,7 @@
               },
               "right" : {
                 "type" : "hexstr",
-                "value" : "0x000000001388"
+                "value" : "0x0000000007d0"
               }
             }
           },
@@ -3690,7 +3690,7 @@
             "filename" : "includes/ids.p4",
             "line" : 61,
             "column" : 15,
-            "source_fragment" : "interval > 50000"
+            "source_fragment" : "interval > 500000"
           },
           "expression" : {
             "type" : "expression",
@@ -3702,7 +3702,7 @@
               },
               "right" : {
                 "type" : "hexstr",
-                "value" : "0x00000000c350"
+                "value" : "0x00000007a120"
               }
             }
           },
@@ -3778,7 +3778,7 @@
             "filename" : "includes/modules/amount_rst.p4",
             "line" : 37,
             "column" : 15,
-            "source_fragment" : "prev_rst > 50"
+            "source_fragment" : "prev_rst > 10"
           },
           "expression" : {
             "type" : "expression",
@@ -3790,7 +3790,7 @@
               },
               "right" : {
                 "type" : "hexstr",
-                "value" : "0x0032"
+                "value" : "0x000a"
               }
             }
           },
@@ -3804,7 +3804,7 @@
             "filename" : "includes/modules/unique_dport.p4",
             "line" : 41,
             "column" : 15,
-            "source_fragment" : "dport_cnt > 1000"
+            "source_fragment" : "dport_cnt > 200"
           },
           "expression" : {
             "type" : "expression",
@@ -3816,7 +3816,7 @@
               },
               "right" : {
                 "type" : "hexstr",
-                "value" : "0x000003e8"
+                "value" : "0x000000c8"
               }
             }
           },
@@ -3830,7 +3830,7 @@
             "filename" : "includes/modules/unique_dport.p4",
             "line" : 41,
             "column" : 15,
-            "source_fragment" : "dport_cnt > 1000"
+            "source_fragment" : "dport_cnt > 200"
           },
           "expression" : {
             "type" : "expression",
@@ -3842,7 +3842,7 @@
               },
               "right" : {
                 "type" : "hexstr",
-                "value" : "0x000003e8"
+                "value" : "0x000000c8"
               }
             }
           },
@@ -3957,34 +3957,8 @@
               }
             }
           },
-          "true_next" : "node_40",
+          "true_next" : "tbl_act_21",
           "false_next" : "tbl_act_22"
-        },
-        {
-          "name" : "node_40",
-          "id" : 14,
-          "source_info" : {
-            "filename" : "includes/report.p4",
-            "line" : 29,
-            "column" : 15,
-            "source_fragment" : "prev_report_val==metadata.report_bitmap"
-          },
-          "expression" : {
-            "type" : "expression",
-            "value" : {
-              "op" : "==",
-              "left" : {
-                "type" : "field",
-                "value" : ["scalars", "ids_mod_report_prev_report_val"]
-              },
-              "right" : {
-                "type" : "field",
-                "value" : ["scalars", "metadata_t.report_bitmap"]
-              }
-            }
-          },
-          "false_next" : "tbl_act_21",
-          "true_next" : "tbl_act_22"
         }
       ]
     },

@@ -98,6 +98,7 @@ func multi_attacker(num int, duration int) {
     }
     // vic
     for i:=0; i< num/2; i++ {
+        fmt.Println("Attacker: ", "user_v"+strconv.Itoa(i))
         go exec_command("docker", "exec", "-i", "-d", "user_v"+strconv.Itoa(i), "go", "run", "/home/ddos.go", "-ip=172.30.1."+strconv.Itoa(num+1), "-d="+strconv.Itoa(duration)+"s")
     }
 }

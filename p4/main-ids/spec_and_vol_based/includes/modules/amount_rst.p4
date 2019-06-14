@@ -6,7 +6,7 @@
 #include "../headers.p4"
 
 // FIXME: use register to make this timeout configurable
-#define RST_THRESHOLD 50
+#define RST_THRESHOLD 10
 
 control amount_rst(
     in bit<2>                   ctrl,

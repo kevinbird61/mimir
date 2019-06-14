@@ -11,8 +11,8 @@
 #include "report.p4"
 
 // FIXME: use register to make this timeout configurable
-#define FLOW_TIMEOUT 5000                    // FIMXE: Value fixed
-#define LONG_TERM_TIMEOUT 50000         // FIXME: Value fixed
+#define FLOW_TIMEOUT 2000                    // FIMXE: Value fixed
+#define LONG_TERM_TIMEOUT 500000         // FIXME: Value fixed
 
 control ids(
     inout headers_t hdr, 
