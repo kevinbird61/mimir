@@ -24,4 +24,3 @@ set rmargin 5
 
 plot ARG1 using 2:xticlabels(1) title "Real" with linespoint lw 3 lc rgb "#FF0000", \
      ''   using 3:xticlabels(1) title "E[W]" with linespoint lw 3 lc rgb "#FF00FF", \
-     ''   using 3:xticlabels(1) title "E[W]" with linespoint lw 3 lc rgb "#FF00FF", \
