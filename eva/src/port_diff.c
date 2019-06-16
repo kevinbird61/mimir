@@ -6,9 +6,9 @@
 #include <pcap/pcap.h>
 #include <math.h>
 
-#include "lib/packet_def.h"
-#include "lib/hash.h"
-#include "lib/hamming.h"
+#include "../lib/packet_def.h"
+#include "../lib/hash.h"
+#include "../lib/hamming.h"
 
 #include "hash/xxhash.h"
 #include "cmap/map.h"

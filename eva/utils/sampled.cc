@@ -16,7 +16,7 @@ extern "C"
 #include <arpa/inet.h>
 #include <pcap/pcap.h>
 #include "packet_def.h"
-#include "lib/hash.h"
+#include "../lib/hash.h"
 #include "hash/xxhash.h" 
 }
 
@@ -40,17 +40,23 @@ using namespace std;
 */
 #define FLOWLET_TIMEOUT 0.1
 
+double separated_timeout=0.1;
+double start_of_pcap=10000000000, end_of_pcap=-10000000;
+
 map<string, map<string, int>> repo_bitmap;      // report bitmap
-map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
-map<string, map<string, int>> mod1;
-map<string, map<string, int>> pktlen;           // pktlen
-map<string, map<string, int>> report;   
+map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp) 
+vector<double> interval_q;
+vector<double> sampled_interval_q;              //
+int sampled_pkt=0;
+vector<double> sampled_pkt_duration_q;
+vector<double> avg_sampled_pkt_q;
+vector<double> avg_sampled_pkt_duration_q;
+vector<double> detect_interval_q;               //
 
-vector<int> amount_count;
 // threshold 
-int cusum_threshold=2500;
+int pktcnt_threshold=50;
 
-int all,sampled;
+int all=0,sampled=0,detect=0;
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -58,12 +64,15 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:p:")) != -1)
+    while((ch=getopt(argc, argv, "df:p:t:")) != -1)
     {
         switch(ch)
         {
+            case 't':
+                separated_timeout=atof(optarg);
+                break;
             case 'p':
-                cusum_threshold=atoi(optarg);
+                pktcnt_threshold=atoi(optarg);
                 break;
             case 'd':
                 debug=1;
@@ -102,25 +111,42 @@ int main(int argc, char **argv){
         pcap_close(handle);
     }
 
-    for(map<string, map<string,int>>::iterator i=report.begin(); i!=report.end(); i++){
-        for(map<string, int>::iterator j=i->second.begin(); j!=i->second.end(); j++){
-            // if(j->second > 1000)
-                cout << i->first << "->" << j->first << ": " << j->second << endl;
-        }
-    }
-
+    cout << "Separated timeout(sec): " << separated_timeout << endl;
     cout << "Sampled rate: " << sampled/(float)all << endl;
+    cout << "Detection rate: " << detect/(float)all << endl;
+    cout << "Total pcap duration: " << end_of_pcap-start_of_pcap << endl;
 
-    cout << "Total flowlet ("<< FLOWLET_TIMEOUT <<" sec) report: " << amount_count.size() << endl;
-    double total_amount_avg=0.0, total_amount_std=0.0, max=0;
-    for(int i=0;i<amount_count.size();i++){
-        total_amount_avg+=amount_count.at(i);
-        total_amount_std+=pow(amount_count.at(i),2);
-        if(amount_count.at(i)>max) max=amount_count.at(i);
+    double avg_interval=0;
+    for(auto i=0;i<interval_q.size();i++){
+        avg_interval+=interval_q.at(i);
     }
-    cout << "Avg. amount per flowlet: " << total_amount_avg/amount_count.size() << endl;
-    cout << "Std. amount per flowlet: " << sqrt(total_amount_std/amount_count.size() - pow(total_amount_avg/amount_count.size(), 2)) << endl;
-    cout << "Max. per flowlet: " << max << endl;
+    cout << "Avg. inter-arrival time: " << avg_interval/interval_q.size() << endl;
+    avg_interval=0;
+    for(auto i=0;i<sampled_interval_q.size();i++){
+        avg_interval+=sampled_interval_q.at(i);
+    }
+    cout << "Avg. sampled inter-arrival time: " << avg_interval/sampled_interval_q.size() << endl;
+    avg_interval=0;
+    for(auto i=0;i<detect_interval_q.size();i++){
+        avg_interval+=detect_interval_q.at(i);
+    }
+    cout << "Avg. detection inter-arrival time: " << avg_interval/detect_interval_q.size() << endl;
+    for(auto i=0;i<avg_sampled_pkt_duration_q.size();i++){
+        avg_interval+=avg_sampled_pkt_duration_q.at(i);
+    }
+    cout << "Avg. duration of each S (holding time): " << avg_interval/avg_sampled_pkt_duration_q.size() << endl;
+    double avg_pkt=0, first_10percent_reward=0, cnt=0;
+    for(auto i=0;i<avg_sampled_pkt_q.size();i++){
+        if(i==0)
+            cout << "Pkt count in S1 (holding time): " << avg_sampled_pkt_q.at(i) << endl;
+        if(cnt<(0.1)*avg_sampled_pkt_q.size())
+            first_10percent_reward+=avg_sampled_pkt_q.at(i);
+        cnt++;
+        avg_pkt+=avg_sampled_pkt_q.at(i);
+    }
+    cout << "Avg. pkt count in first 10% S (holding time): " << first_10percent_reward/(avg_sampled_pkt_q.size()/10) << endl;
+    cout << "Avg. pkt count in each S (holding time): " << avg_pkt/avg_sampled_pkt_q.size() << endl;
+
     return 0;
 }
 
@@ -131,6 +157,9 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
     /* ============================================= */
     ethernet = (struct sniff_ethernet*)(packet);
     size_existed += SIZE_ETHER;
+
+    if( start_of_pcap > (header->ts.tv_sec + header->ts.tv_usec/1000.0)){ start_of_pcap=header->ts.tv_sec + header->ts.tv_usec/1000.0; }
+    if( end_of_pcap < (header->ts.tv_sec + header->ts.tv_usec/1000.0)){ end_of_pcap=header->ts.tv_sec + header->ts.tv_usec/1000.0; }
 
     // Parse IPv4
     if(ethernet->etherType == (u_short)8){
@@ -155,52 +184,32 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         // interval
         interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
 
-        if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
-            // time interval > TIMEOUT
-            // check report_bitmap value
-            /*if(mod1[srcIP][dstIP] > 100){
-                // high frequency
-                if(pktlen[srcIP][dstIP] >= mod1[srcIP][dstIP]){
-                    // report
-                    report[srcIP][dstIP]++;
-                }
-                // reset all 
-                mod1[srcIP][dstIP]=0;
-                pktlen[srcIP][dstIP]=0;
-            } else {
-                // low frequency
-                // do nothing, just waiting
-            }*/
-            
-            // mod1[srcIP][dstIP]++;
+        if(lastseen_ts!=0)
+            interval_q.push_back(interval);
 
-            // report
-            if((pktlen[srcIP][dstIP]*pktlen[srcIP][dstIP])/(mod1[srcIP][dstIP]+1) >= cusum_threshold ){
-                report[srcIP][dstIP]++;
+        if(interval > separated_timeout && (lastseen_ts!=0)){
+            detect++;
+            detect_interval_q.push_back(interval);
+            //if(sampled_pkt_duration_q.size()!=0)
+                avg_sampled_pkt_q.push_back(sampled_pkt_duration_q.size());
+            double duration=0;
+            for(auto i=0;i<sampled_pkt_duration_q.size();i++){
+                duration+=sampled_pkt_duration_q.at(i);
             }
-
-            // pktlen[srcIP][dstIP]=0;
-            // mod1[srcIP][dstIP]=0;
-
+            avg_sampled_pkt_duration_q.push_back(duration);
+            sampled_pkt_duration_q.clear();
         } else {
-            // do increase
-            if(header->len > 1500){
-                // pktlen[srcIP][dstIP]--;
-            } else if(header->len < 100){
-                pktlen[srcIP][dstIP]++;
-            }
-            // increase mod1 
-            mod1[srcIP][dstIP]++;
-
             sampled++;
+            if(lastseen_ts!=0 && interval > 0) {// skip the negative ones
+                sampled_interval_q.push_back(interval);
+                sampled_pkt_duration_q.push_back(interval);
+            }
         }
 
         all++;
         /* ============================================= */
         /* Others (L3)  */
         /* ============================================= */
-
-        
 
         // update lastseen (Need to wait until all module has been finished)
         lastSeen[srcIP][dstIP]=(header->ts.tv_sec + header->ts.tv_usec/1000.0);

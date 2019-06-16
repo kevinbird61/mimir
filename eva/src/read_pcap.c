@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <pcap/pcap.h>
 
-#include "lib/packet_def.h"
-#include "lib/packet_stat.h"
+#include "../lib/packet_def.h"
+#include "../lib/packet_stat.h"
 
 // ethernet 
 #define SIZE_ETHER 14

@@ -8,9 +8,9 @@
 #include <math.h>
 
 #include "hash/xxhash.h"
-#include "lib/packet_def.h"
-#include "lib/packet_stat.h"
-#include "lib/hash.h"
+#include "../lib/packet_def.h"
+#include "../lib/packet_stat.h"
+#include "../lib/hash.h"
 
 #define MIN(A,B) ((A>B)?B:A)
 

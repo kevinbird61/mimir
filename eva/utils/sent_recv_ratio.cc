@@ -15,7 +15,7 @@
 
 extern "C"
 {
-#include "lib/hash.h"
+#include "../lib/hash.h"
 #include "hash/xxhash.h" 
 }
 

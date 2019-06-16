@@ -16,7 +16,7 @@ extern "C"
 #include <arpa/inet.h>
 #include <pcap/pcap.h>
 #include "packet_def.h"
-#include "lib/hash.h"
+#include "../lib/hash.h"
 #include "hash/xxhash.h" 
 }
 
@@ -43,12 +43,12 @@ using namespace std;
 map<string, map<string, int>> exec_bitmap;      // execute bitmap 
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
-map<string, map<string, int>> flow_mod5;             // module 5 - Amount of (SYN-ACK)
-map<string, int> mod5; // store information indexed by IP
+map<string, map<string, double>> mod7;             // module 7 - "half-open" duration
 
 vector<int> amount_count;
 // threshold 
-int diff_threshold=20;
+int diff_threshold=100; // sec
+int mode=0; // 0: half_open > threshold, 1: half_open < threshold
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -56,12 +56,15 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:p:")) != -1)
+    while((ch=getopt(argc, argv, "df:p:m:")) != -1)
     {
         switch(ch)
         {
             case 'p':
                 diff_threshold=atoi(optarg);
+                break;
+            case 'm':
+                mode=atoi(optarg);
                 break;
             case 'd':
                 debug=1;
@@ -152,6 +155,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // Step3: execute each module defined by bitmap - get lastSeen 
         double lastseen_ts, interval=0;
+        double half_open=0.0;
         if(lastSeen[srcIP].find(dstIP)==lastSeen[srcIP].end()){
             //lastSeen[srcIP][dstIP]=0;
             lastseen_ts = 0;
@@ -177,33 +181,52 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // SYN+ACK
                 } else if(tcp->flags&TH_SYN && ((tcp->flags&TH_ACK)!=TH_ACK) ){
                     // SYN
-
+                    // src (sent SYN) -> dst (recv SYN)
+                    if(mod7[srcIP][dstIP] > 0.0){
+                        // skip
+                    } else {
+                        // set timestamp
+                        mod7[srcIP][dstIP]=(header->ts.tv_sec + header->ts.tv_usec/1000.0);
+                    }
                 } else if(tcp->flags&TH_ACK && ((tcp->flags&TH_SYN)!=TH_SYN) ){
                     // ACK
-
+                    // src (sent ACK) -> dst (recv ACK)
+                    if(mod7[srcIP][dstIP] > 0.0){
+                        // calculate the duration
+                        half_open=(header->ts.tv_sec + header->ts.tv_usec/1000.0)-mod7[srcIP][dstIP];
+                    } else {
+                        // skip
+                    }
                 } else if(tcp->flags&TH_FIN){
                     // FIN 
 
                 } else if(tcp->flags&TH_RST){
                     // RST
-                    flow_mod5[srcIP][dstIP]++;
-                    flow_mod5[dstIP][srcIP]++;
                 }
 
                 // Mod5 - calculate the number of SYN and ACK
                 if((exec_bitmap_val&1)){
                     if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
-                        // if( mod5[srcIP] > diff_threshold || mod5[dstIP] > diff_threshold ){
-                        if( flow_mod5[srcIP][dstIP] >= diff_threshold || flow_mod5[dstIP][srcIP] >= diff_threshold ){
-                            // report
-                            repo_bitmap_val |= 1;
-                            // update exec_bitmap value
-                            exec_bitmap[srcIP][dstIP] |= 2;
-                            flow_mod5[srcIP][dstIP] = (flow_mod5[srcIP][dstIP] >= diff_threshold) ? flow_mod5[srcIP][dstIP]/2 : flow_mod5[srcIP][dstIP];
-                            flow_mod5[dstIP][srcIP] = (flow_mod5[dstIP][srcIP] >= diff_threshold) ? flow_mod5[dstIP][srcIP]/2 : flow_mod5[dstIP][srcIP];
-                        } 
-                        // reset  
-                        // FIXME: (only trigger reset when exceed threshold => consider about long time scale ?)
+                        if(mode==0){
+                            if( half_open >= diff_threshold ){
+                                // report
+                                repo_bitmap_val |= 1;
+                                // update exec_bitmap value
+                                exec_bitmap[srcIP][dstIP] |= 2;
+                                // reset
+                                mod7[srcIP][dstIP] = 0.0;
+                            } 
+                        } else if(mode==1){
+                            if( half_open < diff_threshold && (half_open > 0) ){
+                                // report
+                                repo_bitmap_val |= 1;
+                                // update exec_bitmap value
+                                exec_bitmap[srcIP][dstIP] |= 2;
+                                // reset
+                                mod7[srcIP][dstIP] = 0.0;
+                            } 
+                        }
+                        
                     }
                 }
             } else if(ipv4->protocol == (u_char)17){
@@ -234,7 +257,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 // no need to report 
             } else {
                 // report, and record 
-                cout << srcIP << "->" << dstIP << ", Val(srcIP,dstIP): " << flow_mod5[srcIP][dstIP] << ", Val(srcIP, dstIP): " << flow_mod5[dstIP][srcIP] << endl;
+                cout << srcIP << "->" << dstIP << ", Durration(srcIP,dstIP): " << half_open << endl;
                 repo_bitmap[srcIP][dstIP]=repo_bitmap_val;
             }
         } else {

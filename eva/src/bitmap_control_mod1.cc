@@ -16,7 +16,7 @@ extern "C"
 #include <arpa/inet.h>
 #include <pcap/pcap.h>
 #include "packet_def.h"
-#include "lib/hash.h"
+#include "../lib/hash.h"
 #include "hash/xxhash.h" 
 }
 
@@ -40,20 +40,14 @@ using namespace std;
 */
 #define FLOWLET_TIMEOUT 0.1
 
-typedef struct _ip_stats{
-    int sent;
-    int recv;
-} ip_stat_t;
-
 map<string, map<string, int>> exec_bitmap;      // execute bitmap 
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
-map<string, ip_stat_t> mod2;                    // module 2 - sent/recv ratio
+map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
 
 vector<int> amount_count;
-// threshold
-int pktcnt_threshold=100;
-double sr_ratio=4.5;
+// threshold 
+int pktcnt_threshold=50;
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -61,16 +55,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:p:r:")) != -1)
+    while((ch=getopt(argc, argv, "df:p:")) != -1)
     {
         switch(ch)
         {
             case 'p':
-                // pktcnt threshold
                 pktcnt_threshold=atoi(optarg);
-                break;
-            case 'r':
-                sr_ratio=atof(optarg);
                 break;
             case 'd':
                 debug=1;
@@ -170,39 +160,50 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         // interval
         interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
 
-
-        // Mod2: get sent/recv ratio of flow
-        // FIXME: if use several module, exec_bitmap value need to change
+        // Mod1: get amount/frequency of packets
         if((exec_bitmap_val&1)){
             // if interval > 100ms (flowlet), detect
-            if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0) && mod2[srcIP].sent>=pktcnt_threshold){
-                // read from srcIP
-                int src_sent=mod2[srcIP].sent;
-                int src_recv=mod2[srcIP].recv;
-                int dst_sent=mod2[dstIP].sent;
-                int dst_recv=mod2[dstIP].recv;
-
-                // check dst (receiver) is victim or not
-                if( (src_sent/(float)src_recv > sr_ratio) && (src_sent!=0) && (src_recv!=0) ){
-                    // attacker comfirm 
-                    repo_bitmap_val=2;
+            if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
+                // read from mod1
+                int pktcnt=mod1[srcIP][dstIP]+1;
+                int rev_pktcnt=mod1[dstIP][srcIP]+1;
+                // compare to threshold (configurable)
+                if(pktcnt>pktcnt_threshold){
+                    // debug: print out the src,dst IP pair
+                    //cout << "Amount and Frequency surpass!" << endl;
+                    //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl;
+                    
+                    // report to repo_bitmap
+                    // repo_bitmap[srcIP][dstIP]|=1;
+                    repo_bitmap_val|=1;
+                    // FIXME: decide to update exec_bitmap or not (adaptive/optional)
+                    exec_bitmap[srcIP][dstIP]|=2;
+                } else if(rev_pktcnt>pktcnt_threshold){
+                    // repo_bitmap[dstIP][srcIP]|=1;
+                    repo_bitmap_val|=1;
+                    exec_bitmap[dstIP][srcIP]|=2;
                 }
-                // check src (sender) is attacker or not
-                if( (dst_sent/(float)dst_recv < (1.0/sr_ratio)) && (dst_recv!=0) ){
-                    // victim comfirm
-                    repo_bitmap_val=2;
-                }
-
-                // reset 
-                mod2[srcIP].sent=0;
-                mod2[srcIP].recv=0;
-                mod2[dstIP].sent=0;
-                mod2[dstIP].recv=0;
+                amount_count.push_back(pktcnt);
+                
+                // reset the state 
+                mod1[srcIP][dstIP]=0;
+                mod1[dstIP][srcIP]=0;
             } else {
-                // update mod2 
-                mod2[srcIP].sent++;
-                mod2[dstIP].recv++;
+                // update mod1
+                if(mod1[srcIP].find(dstIP)==mod1[srcIP].end()){
+                    mod1[srcIP][dstIP]=1;
+                } else {
+                    mod1[srcIP][dstIP]++;
+                }
+
+                // update rev 
+                if(mod1[dstIP].find(srcIP)==mod1[dstIP].end()){
+                    mod1[dstIP][srcIP]=1;
+                } else {
+                    mod1[dstIP][srcIP]++;
+                }
             }
+
         }
 
         if(size_ip < 20){
@@ -240,15 +241,10 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // check report_bitmap value
         if(repo_bitmap_val>=1){
-            if(repo_bitmap_val==repo_bitmap[srcIP][dstIP]){
+            if(repo_bitmap_val==repo_bitmap[srcIP][dstIP] || repo_bitmap_val<=repo_bitmap[srcIP][dstIP]){
                 // no need to report 
             } else {
                 // report, and record 
-                /*if(repo_bitmap_val==1){
-                    cout << "Attacker!" << endl;
-                } else {
-                    cout << "Victim!" << endl;
-                }*/
                 cout << srcIP << "->" << dstIP << endl;
                 repo_bitmap[srcIP][dstIP]=repo_bitmap_val;
             }

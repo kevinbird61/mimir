@@ -5,8 +5,8 @@
 #include <pcap/pcap.h>
 
 #include "hash/xxhash.h"
-#include "lib/packet_def.h"
-#include "lib/hash.h"
+#include "../lib/packet_def.h"
+#include "../lib/hash.h"
 
 // hash table size 
 #define TABLE_SLOT 512

@@ -24,7 +24,7 @@
 
 extern "C"
 {
-#include "lib/hash.h"
+#include "../lib/hash.h"
 #include "hash/xxhash.h" 
 }
 
@@ -48,13 +48,13 @@ using namespace std;
 */
 #define FLOWLET_TIMEOUT 0.1
 
-map<string, map<string, int>> exec_bitmap;      // execute bitmap 
-map<string, map<string, int>> repo_bitmap;      // report bitmap
-map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
-map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
-map<string, map<string, int>> mod2;             // module 2 - sent/recv ratio
-map<string, map<string, int>> mod3;             // module 3 - TCP control flags (SYN vs ACK)
-map<string, map<string, int>> mod4;             // module 4 - ICMP error control 
+map<unsigned int, int> exec_bitmap;  // execute bitmap
+map<unsigned int, int> repo_bitmap;  // report bitmap
+map<unsigned int, double> lastSeen;  // last seen of flow (timestamp)
+map<unsigned int, int> mod1;      // module 1 - frequency and amount of packets
+map<unsigned int, int> mod2;      // module 2 - sent/recv ratio
+map<unsigned int, int> mod3;      // module 3 - TCP control flags (SYN vs ACK)
+map<unsigned int, int> mod4;      // module 4 - ICMP error control 
 
 vector<int> amount_count;
 
@@ -84,8 +84,7 @@ int main(int argc, char **argv){
     char errbuf[PCAP_ERRBUF_SIZE];
 
     // Define variables used in each iteration
-    // bi-direction
-    int exec_bitmap_val=0, rev_exec_bitmap_val=0;
+    int exec_bitmap_val=0x0;
 
     for(int i=0;i<inputfile.size();i++){
         cout << "Input file: " << inputfile.at(i) << endl;
@@ -112,8 +111,6 @@ int main(int argc, char **argv){
                 size_existed += size_ip;
 
                 // Step1: Get flow id
-                string srcIP = string(inet_ntoa(ipv4->srcAddr));
-                string dstIP = string(inet_ntoa(ipv4->dstAddr));
                 string flowID;
                 flowID = string(inet_ntoa(ipv4->srcAddr)) + string(inet_ntoa(ipv4->dstAddr));
                 unsigned int flowIndex = crc32((unsigned char *)flowID.c_str());
@@ -123,33 +120,26 @@ int main(int argc, char **argv){
                 unsigned int rev_flowIndex = crc32((unsigned char *)rev_flowID.c_str());
 
                 // Step2: Get the execute bitmap for this entry
-                // exec_bitmap_val=(exec_bitmap.find(srcIP).find(dstIP)==exec_bitmap.find(srcIP).end()? 1 : exec_bitmap[srcIP][dstIP]);
-                if(exec_bitmap[srcIP].find(dstIP)==exec_bitmap[srcIP].end()){
-                    // exec_bitmap[srcIP][dstIP]=1;
-                    exec_bitmap_val=1;
+                if(exec_bitmap.find(flowIndex)==exec_bitmap.end()){
+                    // not found
+                    exec_bitmap_val = 0x1;
                 } else {
-                    exec_bitmap_val=exec_bitmap[srcIP][dstIP];
+                    exec_bitmap_val = exec_bitmap[flowIndex];
                 }
-                // rev_exec_bitmap_val=(exec_bitmap.find(rev_flowIndex)==exec_bitmap.end()? 1 : exec_bitmap[rev_flowIndex]);
 
                 /* ============================================= */
                 /* IPv4             */
                 /* ============================================= */
 
-                // Step3: execute each module defined by bitmap - get lastSeen 
-                double lastseen_ts, interval=0, rev_lastseen_ts, rev_interval=0;
-                // ts
-                // lastseen_ts=(lastSeen.find(srcIP).find(dstIP)==lastSeen.find(srcIP).end()? 0 : lastSeen[srcIP][dstIP]);
-                if(lastSeen[srcIP].find(dstIP)==lastSeen[srcIP].end()){
-                    //lastSeen[srcIP][dstIP]=0;
+                // Step3: execute each module defined by bitmap
+                // get lastSeen 
+                double lastseen_ts, interval=0;
+                if(lastSeen.find(flowIndex)==lastSeen.end()){
                     lastseen_ts = 0;
                 } else {
-                    lastseen_ts=lastSeen[srcIP][dstIP];
+                    lastseen_ts = lastSeen[flowIndex];
                 }
-                // rev_lastseen_ts=(lastSeen.find(rev_flowIndex)==lastSeen.end()? 0 : lastSeen[rev_flowIndex]);
-                // interval
                 interval = (header.ts.tv_sec + header.ts.tv_usec/1000.0) - lastseen_ts;
-                // rev_interval = (header.ts.tv_sec + header.ts.tv_usec/1000.0) - rev_lastseen_ts;
                 
                 // if lastseen_ts==0, then no need to do the detection, just update the module
 
@@ -158,8 +148,8 @@ int main(int argc, char **argv){
                     // if interval > 100ms (flowlet), detect
                     if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
                         // read from mod1
-                        int pktcnt=mod1[srcIP][dstIP]+1;
-                        int rev_pktcnt=mod1[dstIP][srcIP]+1;
+                        int pktcnt=mod1[flowIndex]+1;
+                        int rev_pktcnt=mod1[rev_flowIndex]+1;
                         // compare to threshold (configurable)
                         if(pktcnt>100){
                             // debug: print out the src,dst IP pair
@@ -167,39 +157,26 @@ int main(int argc, char **argv){
                             //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl;
                             
                             // report to repo_bitmap
-                            /*if(repo_bitmap.find(srcIP)==repo_bitmap.end()){
-                                repo_bitmap[flowIndex]=0x1;
+                            if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[flowIndex]=1;
                             } else {
-                                repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 0x1);
-                            }*/
-                            repo_bitmap[srcIP][dstIP]|=1;
+                                repo_bitmap[flowIndex]=(repo_bitmap[flowIndex]|1);
+                            }
+                            
                             // FIXME: decide to update exec_bitmap or not (adaptive/optional)
-                            exec_bitmap[srcIP][dstIP]|=2;
-                        } else if(rev_pktcnt>100){
-                            repo_bitmap[dstIP][srcIP]|=1;
-                            exec_bitmap[dstIP][srcIP]|=2;
+                            exec_bitmap[flowIndex]|=2;
                         }
                         amount_count.push_back(pktcnt);
-                        
                         // reset the state 
-                        mod1[srcIP][dstIP]=0;
-                        mod1[dstIP][srcIP]=0;
+                        mod1[flowIndex]=0;
                     } else {
                         // update mod1
-                        if(mod1[srcIP].find(dstIP)==mod1[srcIP].end()){
-                            mod1[srcIP][dstIP]=1;
+                        if(mod1.find(flowIndex)==mod1.end()){
+                            mod1[flowIndex]=1;
                         } else {
-                            mod1[srcIP][dstIP]++;
-                        }
-
-                        // update rev 
-                        if(mod1[dstIP].find(srcIP)==mod1[dstIP].end()){
-                            mod1[dstIP][srcIP]=1;
-                        } else {
-                            mod1[dstIP][srcIP]++;
+                            mod1[flowIndex]++;
                         }
                     }
-
                 }
 
                 // Mod2: unbalanced sent/recv packets
@@ -207,8 +184,8 @@ int main(int argc, char **argv){
                     // if interval > 100ms, detect
                     if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
                         // get the sent and recv pkt ratio
-                        int sent=mod2[srcIP][dstIP];
-                        int recv=mod2[dstIP][srcIP];
+                        int sent=mod2[flowIndex]+1;
+                        int recv=mod2[rev_flowIndex]+1;
                         // calculate sent/recv ratio
                         if((sent/(float)recv) < (2/9.0)){
                             // victim 
@@ -216,20 +193,20 @@ int main(int argc, char **argv){
                             //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
                             // report to repo_bitmap
                             // direct
-                            if(repo_bitmap[srcIP].find(dstIP)==repo_bitmap[srcIP].end()){
-                                repo_bitmap[srcIP][dstIP]=2;
+                            if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[flowIndex]=2;
                             } else {
-                                repo_bitmap[srcIP][dstIP]|=2;
+                                repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 2);
                             }
                             // reverse
-                            if(repo_bitmap[dstIP].find(srcIP)==repo_bitmap[dstIP].end()){
-                                repo_bitmap[dstIP][srcIP]=2;
+                            if(repo_bitmap.find(rev_flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[rev_flowIndex]=2;
                             } else {
-                                repo_bitmap[dstIP][srcIP]|=2;
+                                repo_bitmap[rev_flowIndex]=(repo_bitmap[rev_flowIndex] | 2);
                             }
 
                             // update execute bitmap (if victim, then go to 0x4)
-                            exec_bitmap[srcIP][dstIP]|=4;
+                            exec_bitmap[flowIndex]|=4;
                         } 
                         if((sent/(float)recv) > (9.0/2.0)){
                             // attacker 
@@ -238,31 +215,31 @@ int main(int argc, char **argv){
                             // report to repo_bitmap 
                             // FIXME: need different bit to represent "victim" or "attacker"?
                             // direct 
-                            if(repo_bitmap[srcIP].find(dstIP)==repo_bitmap[srcIP].end()){
-                                repo_bitmap[srcIP][dstIP]=2;
+                            if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[flowIndex]=2;
                             } else {
-                                repo_bitmap[srcIP][dstIP]|=2;
+                                repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 2);
                             } 
                             // reverse
-                            if(repo_bitmap[dstIP].find(srcIP)==repo_bitmap[dstIP].end()){
-                                repo_bitmap[dstIP][srcIP]=2;
+                            if(repo_bitmap.find(rev_flowIndex)==repo_bitmap.end()){
+                                repo_bitmap[rev_flowIndex]=2;
                             } else {
-                                repo_bitmap[dstIP][srcIP]|=2;
+                                repo_bitmap[rev_flowIndex]=(repo_bitmap[rev_flowIndex] | 2);
                             }
 
                             // update execute bitmap (if attacker, then go to 0x8)
-                            exec_bitmap[srcIP][dstIP]|=8;
+                            exec_bitmap[flowIndex]|=8;
                         }
 
                         // reset the state
-                        //mod2[srcIP][dstIP]=0;
-                        //mod2[dstIP][srcIP]=0;
+                        //mod2[flowIndex]=0;
+                        //mod2[rev_flowIndex]=0;
                     } else {
                         // update mod2 (only need to update one direction - sent)
-                        if(mod2[srcIP].find(dstIP)==mod2[srcIP].end()){
-                            mod2[srcIP][dstIP]=1;
+                        if(mod2.find(flowIndex)==mod2.end()){
+                            mod2[flowIndex]=1;
                         } else {
-                            mod2[srcIP][dstIP]++;
+                            mod2[flowIndex]++;
                         }
                     }
                 }
@@ -282,7 +259,7 @@ int main(int argc, char **argv){
                         // Mod3: TCP stats, SYN > ACK 
                         // Mechanism: SYN++, ACK--
                         // debug=> ||1 => must enter this 
-                        /*if((exec_bitmap_val&0x4)||1){
+                        if((exec_bitmap_val&4)){
                             // if interval > 100ms, detect
                             if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
                                 int flowval=0;
@@ -297,9 +274,9 @@ int main(int argc, char **argv){
                                     // SYN > 100 (Lots of SYN)
                                     // represent (Attacker to Victim)
                                     if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
-                                        repo_bitmap[flowIndex]=0x4;
+                                        repo_bitmap[flowIndex]=4;
                                     } else {
-                                        repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 0x4);
+                                        repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 4);
                                     }
                                 } 
 
@@ -322,7 +299,7 @@ int main(int argc, char **argv){
                                     }
                                 }
                             }
-                        }*/
+                        }
 
                     } else if(ipv4->protocol == (u_char)17){
                         udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
@@ -346,7 +323,7 @@ int main(int argc, char **argv){
                         // which has code represent "Unreachable".
 
                         // debug (execute directly)
-                        /*if((exec_bitmap_val&0x8)||1){
+                        if((exec_bitmap_val&8)){
                             // if interval > 100ms , detect
                             if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
                                 int flowval=0;
@@ -365,9 +342,9 @@ int main(int argc, char **argv){
 
                                     // report
                                     if(repo_bitmap.find(flowIndex)==repo_bitmap.end()){
-                                        repo_bitmap[flowIndex]=0x8;
+                                        repo_bitmap[flowIndex]=8;
                                     } else {
-                                        repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 0x8);
+                                        repo_bitmap[flowIndex]=(repo_bitmap[flowIndex] | 8);
                                     }
                                 }
 
@@ -390,7 +367,7 @@ int main(int argc, char **argv){
                                     }
                                 }
                             }
-                        }*/
+                        }
                     }
                 }
 
@@ -399,28 +376,19 @@ int main(int argc, char **argv){
                 /* ============================================= */
 
                 // check report_bitmap value
-                if(repo_bitmap[srcIP][dstIP]>=1){
-                    if(repo_bitmap[srcIP][dstIP]&4){
+                if(repo_bitmap[flowIndex]>=1){
+                    if(repo_bitmap[flowIndex]&4){
                         cout << "TCP: SYN > ACK!" << endl;
-                    } else if(repo_bitmap[srcIP][dstIP]&8){
+                    } else if(repo_bitmap[flowIndex]&8){
                         cout << "ICMP target Unreachable!" << endl;
                     }
-                    cout << srcIP << "-> " << dstIP << endl; 
+                    cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl; 
                     // reset 
-                    repo_bitmap[srcIP][dstIP]=0;
-                    // reset 
-                    exec_bitmap[srcIP][dstIP]=1;
-                } else if(repo_bitmap[dstIP][srcIP]>=1){
-                    // reverse
-                    cout << dstIP << "<-" << srcIP << endl;
-                    // reset 
-                    repo_bitmap[dstIP][srcIP]=0;
-                    // reset 
-                    exec_bitmap[dstIP][srcIP]=1;
+                    repo_bitmap[flowIndex]=0;
                 }
 
                 // update lastseen (Need to wait until all module has been finished)
-                lastSeen[srcIP][dstIP]=(header.ts.tv_sec + header.ts.tv_usec/1000.0);
+                lastSeen[flowIndex]=(header.ts.tv_sec + header.ts.tv_usec/1000.0);
             }
             /* ============================================= */
             /* Others (L2)  */

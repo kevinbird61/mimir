@@ -16,7 +16,8 @@ extern "C"
 #include <arpa/inet.h>
 #include <pcap/pcap.h>
 #include "packet_def.h"
-#include "lib/hash.h"
+#include "../lib/hash.h"
+#include "../lib/hamming.h"
 #include "hash/xxhash.h" 
 }
 
@@ -43,11 +44,23 @@ using namespace std;
 map<string, map<string, int>> exec_bitmap;      // execute bitmap 
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
-map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
+
+typedef struct _mod4_t {
+    int prev_sport;
+    int prev_dport;
+    int cnt;
+    int src_aoc_port; // amount of change
+    int dst_aoc_port; 
+    map<u_short, int> src_uniq;
+    map<u_short, int> dst_uniq;
+} mod4_t;
+
+map<string, map<string, mod4_t>> mod4;             // module 4 - flowlevel unique port (by calculating hamming distance/ or directly take the difference between sequential packets)
 
 vector<int> amount_count;
 // threshold 
-int pktcnt_threshold=50;
+int mode = 0; // 0: directly take the difference, 1: take the hamming distance
+int diff_threshold=5;
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -55,12 +68,16 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:p:")) != -1)
+    while((ch=getopt(argc, argv, "df:p:m:")) != -1)
     {
         switch(ch)
         {
+            case 'm':
+                // mode 
+                mode=atoi(optarg);
+                break;
             case 'p':
-                pktcnt_threshold=atoi(optarg);
+                diff_threshold=atoi(optarg);
                 break;
             case 'd':
                 debug=1;
@@ -160,51 +177,9 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         // interval
         interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
 
-        // Mod1: get amount/frequency of packets
-        if((exec_bitmap_val&1)){
-            // if interval > 100ms (flowlet), detect
-            if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
-                // read from mod1
-                int pktcnt=mod1[srcIP][dstIP]+1;
-                int rev_pktcnt=mod1[dstIP][srcIP]+1;
-                // compare to threshold (configurable)
-                if(pktcnt>pktcnt_threshold){
-                    // debug: print out the src,dst IP pair
-                    //cout << "Amount and Frequency surpass!" << endl;
-                    //cout << string(inet_ntoa(ipv4->srcAddr)) << "-> " << string(inet_ntoa(ipv4->dstAddr)) << endl;
-                    
-                    // report to repo_bitmap
-                    // repo_bitmap[srcIP][dstIP]|=1;
-                    repo_bitmap_val|=1;
-                    // FIXME: decide to update exec_bitmap or not (adaptive/optional)
-                    exec_bitmap[srcIP][dstIP]|=2;
-                } else if(rev_pktcnt>pktcnt_threshold){
-                    // repo_bitmap[dstIP][srcIP]|=1;
-                    repo_bitmap_val|=1;
-                    exec_bitmap[dstIP][srcIP]|=2;
-                }
-                amount_count.push_back(pktcnt);
-                
-                // reset the state 
-                mod1[srcIP][dstIP]=0;
-                mod1[dstIP][srcIP]=0;
-            } else {
-                // update mod1
-                if(mod1[srcIP].find(dstIP)==mod1[srcIP].end()){
-                    mod1[srcIP][dstIP]=1;
-                } else {
-                    mod1[srcIP][dstIP]++;
-                }
-
-                // update rev 
-                if(mod1[dstIP].find(srcIP)==mod1[dstIP].end()){
-                    mod1[dstIP][srcIP]=1;
-                } else {
-                    mod1[dstIP][srcIP]++;
-                }
-            }
-
-        }
+        // port 
+        u_short srcPort=0, dstPort=0;
+        int src_diff,dst_diff;
 
         if(size_ip < 20){
             printf("Invalid IPv4 header length: %u bytes\n", size_ip);
@@ -217,6 +192,10 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 /* ============================================= */
                 /* TCP              */
                 /* ============================================= */
+                srcPort=tcp->sport;
+                dstPort=tcp->dport;
+                // mod4[srcIP][dstIP].cnt++;
+                
             } else if(ipv4->protocol == (u_char)17){
                 udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
                 u_int size_udp = 8; // 8 bytes
@@ -225,6 +204,10 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 /* ============================================= */
                 /* UDP              */
                 /* ============================================= */
+                srcPort=udp->sport;
+                dstPort=udp->dport;
+                // mod4[srcIP][dstIP].cnt++;
+                
             } else if(ipv4->protocol == (u_char)1){
                 /* ============================================= */
                 /* ICMP              */
@@ -233,6 +216,53 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 u_int size_icmp = 4; // 4 bytes
                 size_existed += size_icmp;
             }
+
+            // Mod4 - calculate the number of unique port
+            if((exec_bitmap_val&1)){
+                mod4[srcIP][dstIP].src_uniq[srcPort]++;
+                mod4[srcIP][dstIP].dst_uniq[dstPort]++;
+                /*int src_diff=mod4[srcIP][dstIP].src_aoc_port;
+                int dst_diff=mod4[srcIP][dstIP].dst_aoc_port;
+                int prev_sport = mod4[srcIP][dstIP].prev_sport;
+                int prev_dport = mod4[srcIP][dstIP].prev_dport;*/
+                // calculate hamming 
+                /*if(mode!=0){
+                    // take hamming 
+                    src_diff += popcount32_better(srcPort ^ prev_sport);
+                    dst_diff += popcount32_better(dstPort ^ prev_dport);
+                } else {
+                    // directly take diff
+                    src_diff += abs(srcPort - prev_sport);
+                    dst_diff += abs(dstPort - prev_dport);
+                }*/
+
+                if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
+                    // both cnt and ratio
+                    // if( ( abs(src_diff - dst_diff) >= diff_threshold ) && mod4[srcIP][dstIP].cnt >= 50){
+                    int diff = std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
+                    if( diff >= diff_threshold){
+                        // report
+                        repo_bitmap_val |= 1;
+                        // update exec_bitmap value
+                        exec_bitmap[srcIP][dstIP] |= 2;
+                        // reset aoc
+                        mod4[srcIP][dstIP].src_uniq.clear();
+                        mod4[srcIP][dstIP].dst_uniq.clear();
+                    }
+                    // reset
+                    
+                    // mod4[srcIP][dstIP].src_aoc_port=0;
+                    // mod4[srcIP][dstIP].dst_aoc_port=0;
+                    // mod4[srcIP][dstIP].cnt=0;
+                } else {
+                    // update mod4 
+                    // mod4[srcIP][dstIP].src_aoc_port=src_diff;
+                    // mod4[srcIP][dstIP].dst_aoc_port=dst_diff;
+                    // mod4[srcIP][dstIP].prev_sport=srcPort;
+                    // mod4[srcIP][dstIP].prev_dport=dstPort;
+                }
+            }
+
         }
 
         /* ============================================= */
@@ -245,6 +275,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 // no need to report 
             } else {
                 // report, and record 
+                // cout << srcIP << "->" << dstIP << ", src_uniq: " << mod4[srcIP][dstIP].src_uniq.size() << ", dst_uniq: " << mod4[srcIP][dstIP].dst_uniq.size() << ", abs: " << std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() ) << endl;
                 cout << srcIP << "->" << dstIP << endl;
                 repo_bitmap[srcIP][dstIP]=repo_bitmap_val;
             }

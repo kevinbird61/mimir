@@ -14,11 +14,10 @@
 extern "C"
 {
 #include <unistd.h>
-#include <string.h>
 #include <arpa/inet.h>
 #include <pcap/pcap.h>
 #include "packet_def.h"
-#include "lib/hash.h"
+#include "../lib/hash.h"
 #include "hash/xxhash.h" 
 }
 
@@ -40,11 +39,9 @@ using namespace std;
 
  value of bitmap represent the number of modules
 */
+#define FLOWLET_TIMEOUT 0.1
 
-double seperated_timeout = 0.1;
-int table_size = 128;
-int long_term_timeout = 50;
-/*
+vector<int> amount_count;
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
 map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
@@ -62,22 +59,7 @@ typedef struct _mod4_t {
     map<u_short, int> dst_uniq;
 } mod4_t;
 map<string, map<string, mod4_t>> mod4;          // module 4 - flowlevel unique port (by calculating hamming distance/ or directly take the difference between sequential packets)
-map<string, map<string, u_short>> prev_dport;
-map<string, map<string, int>> mod4_diffcnt;
 map<string, map<string, int>> flow_mod5;        // module 5 - Amount of (SYN-ACK)
-*/
-
-// using flowID with limited table size
-int         *repo_bitmap;
-double      *lastSeen;
-int         *mod1;
-u_short     *prev_dport;
-int         *mod4_diffcnt;
-int         *mod5;
-// collision checker
-string      *c_srcIP;
-string      *c_dstIP;
-int         total=0, collision=0;
 
 chrono::time_point<std::chrono::system_clock> t_start, t_end;
 
@@ -96,14 +78,10 @@ int main(int argc, char **argv){
     t_start = chrono::system_clock::now();
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "ds:l:t:f:1:2:3:4:5:")) != -1)
+    while((ch=getopt(argc, argv, "df:1:2:3:4:5:")) != -1)
     {
         switch(ch)
         {
-            case 's':
-                // seperated timeout 
-                seperated_timeout=atof(optarg);
-                break;
             case '1':
                 threshold_1=atoi(optarg);
                 break;
@@ -119,12 +97,6 @@ int main(int argc, char **argv){
             case '5':
                 threshold_5=atoi(optarg);
                 break;
-            case 't':
-                table_size=atoi(optarg);
-                break;
-            case 'l':
-                long_term_timeout=atoi(optarg);
-                break;
             case 'd':
                 debug=1;
                 break;
@@ -138,26 +110,6 @@ int main(int argc, char **argv){
         }
     }
 
-    // allocate memory for each array 
-    repo_bitmap = (int *)malloc(table_size*sizeof(int));
-    lastSeen = (double *)malloc(table_size*sizeof(double));
-    mod1 = (int *)malloc(table_size*sizeof(int));
-    prev_dport = (u_short *)malloc(table_size*sizeof(u_short));
-    mod4_diffcnt = (int *)malloc(table_size*sizeof(int));
-    mod5 = (int *)malloc(table_size*sizeof(int));
-    memset(repo_bitmap,0,sizeof(repo_bitmap));
-    memset(lastSeen,0,sizeof(lastSeen));
-    memset(mod1,0,sizeof(mod1));
-    memset(prev_dport,0,sizeof(prev_dport));
-    memset(mod4_diffcnt,0,sizeof(mod4_diffcnt));
-    memset(mod5,0,sizeof(mod5));
-    c_srcIP = (string *)malloc(table_size*sizeof(string));
-    c_dstIP = (string *)malloc(table_size*sizeof(string));
-    for(int i=0;i<table_size;i++){
-        c_srcIP[i]="null";
-        c_dstIP[i]="null";
-    }
-
     struct pcap_pkthdr header; 
     const u_char *packet;
     pcap_t *handle; 
@@ -165,7 +117,7 @@ int main(int argc, char **argv){
 
     // Define variables used in each iteration
     // bi-direction
-    int exec_bitmap_val=0;
+    int exec_bitmap_val=0, rev_exec_bitmap_val=0;
 
     for(int i=0;i<inputfile.size();i++){
         cout << "Input file: " << inputfile.at(i) << endl;
@@ -191,21 +143,15 @@ int main(int argc, char **argv){
               << "Elapsed time: " << elapsed_seconds.count() << " (sec)\n";
     cout << "=====================================================" << endl;
 
+
     cout << "Threshold: " << endl;
     cout << "Module 1: " << threshold_1 << endl;
     cout << "Module 2: " << threshold_2 << endl;
     cout << "Module 3: " << threshold_3 << endl;
     cout << "Module 4: " << threshold_4 << endl;
     cout << "Module 5: " << threshold_5 << endl;
-    cout << "=====================================================" << endl;
 
-    cout << "Table size: " << table_size << endl;
-    cout << "Collision rate: " << collision/(float)total << endl;
-    cout << "Seperated timeout (sec): " << seperated_timeout << endl;
-    cout << "Long-term timeout (sec): " << long_term_timeout << endl;
-    cout << "=====================================================" << endl;
-
-    /*cout << "Total flowlet ("<< FLOWLET_TIMEOUT <<" sec) report: " << amount_count.size() << endl;
+    cout << "Total flowlet ("<< FLOWLET_TIMEOUT <<" sec) report: " << amount_count.size() << endl;
     double total_amount_avg=0.0, total_amount_std=0.0, max=0;
     for(int i=0;i<amount_count.size();i++){
         total_amount_avg+=amount_count.at(i);
@@ -215,7 +161,6 @@ int main(int argc, char **argv){
     cout << "Avg. amount per flowlet: " << total_amount_avg/amount_count.size() << endl;
     cout << "Std. amount per flowlet: " << sqrt(total_amount_std/amount_count.size() - pow(total_amount_avg/amount_count.size(), 2)) << endl;
     cout << "Max. per flowlet: " << max << endl;
-    */
     return 0;
 }
 
@@ -236,20 +181,13 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         // Step1: Get flow id
         string srcIP = string(inet_ntoa(ipv4->srcAddr));
         string dstIP = string(inet_ntoa(ipv4->dstAddr));
-        string flowID;
-        flowID = string(inet_ntoa(ipv4->srcAddr)) + string(inet_ntoa(ipv4->dstAddr));
-        unsigned int flowIndex = (crc32((unsigned char *)flowID.c_str()))%table_size;
-        // collision checker
-        if(c_srcIP[flowIndex]=="null"|| c_dstIP[flowIndex]=="null"){
-            // do nothing, initialize state
-        }
-        else if(c_srcIP[flowIndex]!=srcIP || c_dstIP[flowIndex]!=dstIP){
-            collision++;
-        } 
-        total++;
-        // update
-        c_srcIP[flowIndex]=srcIP;
-        c_dstIP[flowIndex]=dstIP;
+        // string flowID;
+        // flowID = string(inet_ntoa(ipv4->srcAddr)) + string(inet_ntoa(ipv4->dstAddr));
+        // unsigned int flowIndex = crc32((unsigned char *)flowID.c_str());
+        // get the reverse flow id
+        // string rev_flowID; 
+        // rev_flowID = string(inet_ntoa(ipv4->dstAddr)) + string(inet_ntoa(ipv4->srcAddr));
+        // unsigned int rev_flowIndex = crc32((unsigned char *)rev_flowID.c_str());
         // Define variables used in each iteration
         int repo_bitmap_val=0;
         // port 
@@ -257,10 +195,11 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // Step3: execute each module defined by bitmap - get lastSeen 
         double lastseen_ts, interval=0;
-        if(lastSeen[flowIndex]==0){
+        if(lastSeen[srcIP].find(dstIP)==lastSeen[srcIP].end()){
+            //lastSeen[srcIP][dstIP]=0;
             lastseen_ts = 0;
         } else {
-            lastseen_ts=lastSeen[flowIndex];
+            lastseen_ts=lastSeen[srcIP][dstIP];
         }
         // interval
         interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
@@ -305,72 +244,134 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         /* ============================================= */
 
         // if interval > 100ms (flowlet), detect
-
-        if(interval > long_term_timeout ) {
-            // > 10 sec, reset 
-            mod1[flowIndex]=0;
-            mod4_diffcnt[flowIndex]=0;
-            mod5[flowIndex]=0;
-        }
         
-        if(interval > seperated_timeout && (lastseen_ts!=0)){
+        if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
             // compare to threshold (configurable)
-            if(mod1[flowIndex]>threshold_1){
+            if(mod1[srcIP][dstIP]>threshold_1){
                 // high frequency 
                 repo_bitmap_val|=1;
                 // goto mod5
-                if( mod5[flowIndex] >= threshold_5 ){
+                if( flow_mod5[srcIP][dstIP] >= threshold_5 || flow_mod5[dstIP][srcIP] >= threshold_5 ){
                     // report
                     repo_bitmap_val |= 16;
-                    mod5[flowIndex]=0;
+                    // decrease
+                    //flow_mod5[srcIP][dstIP] = 0;//flow_mod5[srcIP][dstIP]/2;
+                    //flow_mod5[dstIP][srcIP] = 0;//flow_mod5[dstIP][srcIP]/2;
                 }
 
+                // goto mod2
+                /*int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
+                if(sr_diff > threshold_2){
+                    repo_bitmap_val |= 2;
+                    //mod2[srcIP][dstIP]=0;
+                    //mod2[dstIP][srcIP]=0;
+                }*/
+
                 // goto mod4
-                if(mod4_diffcnt[flowIndex] >= threshold_4){
+                int diff =  std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
+                if(diff >= threshold_4){
                     // report
                     repo_bitmap_val |= 8;
-                    mod4_diffcnt[flowIndex]=0;
+                    // reset aoc
+                    //mod4[srcIP][dstIP].src_uniq.clear();
+                    // mod4[srcIP][dstIP].dst_uniq.clear();
                 }
 
             } else {
                 // low frequency
+                // goto mod3
+                /*if(mod3[srcIP][dstIP] > threshold_3){
+                    // set report_bitmap
+                    repo_bitmap_val|=4;
+                    // reset
+                    // mod3[srcIP][dstIP]=0;
+                }*/
+
+                // goto mod2
+                /*int sr_diff = std::abs(mod2[srcIP][dstIP] - mod2[dstIP][srcIP]);
+                if(sr_diff > threshold_2){
+                    repo_bitmap_val |= 2;
+
+                    mod2[srcIP][dstIP]=0;
+                    mod2[dstIP][srcIP]=0;
+                }*/
+
+                /*float sr_ratio=0.0;
+                if(mod2[srcIP][dstIP] > mod2[dstIP][srcIP]){
+                    sr_ratio=mod2[dstIP][srcIP]/(float)mod2[srcIP][dstIP];
+                } else if(mod2[srcIP][dstIP] < mod2[dstIP][srcIP]){
+                    sr_ratio=mod2[srcIP][dstIP]/(float)mod2[dstIP][srcIP];
+                }
+                if(sr_ratio > threshold_2){
+                    repo_bitmap_val |= 2;
+                    // reset
+                    mod2[srcIP][dstIP]=0;
+                    mod2[dstIP][srcIP]=0;
+                }*/
+
                 // goto mod4
-                if(mod4_diffcnt[flowIndex] >= threshold_4){
+                int diff =  std::abs( (int)mod4[srcIP][dstIP].src_uniq.size() - (int)mod4[srcIP][dstIP].dst_uniq.size() );
+                if(diff >= threshold_4){
                     // report
                     repo_bitmap_val |= 8;
-                    mod4_diffcnt[flowIndex]=0;
+                    // reset aoc
+                    // mod4[srcIP][dstIP].src_uniq.clear();
+                    // mod4[srcIP][dstIP].dst_uniq.clear();
                 }
             }
 
+            // pktlen 
+            /*if((nopayload[srcIP][dstIP]*nopayload[srcIP][dstIP])/(request[srcIP][dstIP]+1) >= 2500 ){
+                repo_bitmap_val |= 4;
+            }*/
+
+            amount_count.push_back(mod1[srcIP][dstIP]);
             // reset the state 
-            mod1[flowIndex]=1;
+            mod1[srcIP][dstIP]=1;
         } else {
             // update mod1
-            mod1[flowIndex]++;
-            // update mod4
-            if(prev_dport[flowIndex] != dstPort){
-                mod4_diffcnt[flowIndex]++;
+            mod1[srcIP][dstIP]++;
+            // update mod2
+            // mod2[srcIP][dstIP]++;
+            // update mod3
+            /*if(icmp!=NULL){
+                if(icmp->type == (u_char)3 || icmp->type == (u_char)11 || icmp->type == (u_char)12){
+                    mod3[srcIP][dstIP]++;
+                }
+            }*/
+            if(header->len > 1500){
+                // pktlen[srcIP][dstIP]--;
+            } else if(header->len < 100){
+                nopayload[srcIP][dstIP]++;
             }
-            prev_dport[flowIndex]=dstPort;
-
+            // increase mod1 
+            request[srcIP][dstIP]++;
+            // update mod4
+            // mod4[srcIP][dstIP].src_uniq[srcPort]++;
+            mod4[srcIP][dstIP].dst_uniq[dstPort]++;
             // update mod5
             if(tcp!=NULL){
                 if(tcp->flags&TH_RST){
                     // RST
-                    mod5[flowIndex]++;
+                    flow_mod5[srcIP][dstIP]++;
+                    flow_mod5[dstIP][srcIP]++;
                 }
             }
         }
 
         // check report_bitmap value
         if(repo_bitmap_val>1){
-            // report, and record 
-            cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << ". Value: " << mod1[flowIndex] << ", " << mod4_diffcnt[flowIndex] << ", " << mod5[flowIndex] << endl;
-            repo_bitmap[flowIndex]|=repo_bitmap_val;
+            if((repo_bitmap_val|repo_bitmap[srcIP][dstIP])==repo_bitmap[srcIP][dstIP]){
+                // no need to report 
+            } else {
+                // report, and record 
+                cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << endl;
+                repo_bitmap[srcIP][dstIP]|=repo_bitmap_val;
+            }
         }
 
         // update lastseen (Need to wait until all module has been finished)
-        lastSeen[flowIndex]=(header->ts.tv_sec + header->ts.tv_usec/1000.0);
+        lastSeen[srcIP][dstIP]=(header->ts.tv_sec + header->ts.tv_usec/1000.0);
     }
     /* ============================================= */
     /* Others (L2)  */

@@ -16,7 +16,7 @@ extern "C"
 #include <arpa/inet.h>
 #include <pcap/pcap.h>
 #include "packet_def.h"
-#include "lib/hash.h"
+#include "../lib/hash.h"
 #include "hash/xxhash.h" 
 }
 
@@ -43,12 +43,11 @@ using namespace std;
 map<string, map<string, int>> exec_bitmap;      // execute bitmap 
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
-map<string, map<string, double>> mod7;             // module 7 - "half-open" duration
+map<string, map<string, int>> mod3;             // module 3 - counter of ICMP type 3 (for UDP flood)
 
 vector<int> amount_count;
 // threshold 
-int diff_threshold=100; // sec
-int mode=0; // 0: half_open > threshold, 1: half_open < threshold
+int cnt_threshold=10;
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -56,15 +55,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 int main(int argc, char **argv){
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "df:p:m:")) != -1)
+    while((ch=getopt(argc, argv, "df:p:")) != -1)
     {
         switch(ch)
         {
             case 'p':
-                diff_threshold=atoi(optarg);
-                break;
-            case 'm':
-                mode=atoi(optarg);
+                cnt_threshold=atoi(optarg);
                 break;
             case 'd':
                 debug=1;
@@ -155,7 +151,6 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // Step3: execute each module defined by bitmap - get lastSeen 
         double lastseen_ts, interval=0;
-        double half_open=0.0;
         if(lastSeen[srcIP].find(dstIP)==lastSeen[srcIP].end()){
             //lastSeen[srcIP][dstIP]=0;
             lastseen_ts = 0;
@@ -176,59 +171,6 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 /* ============================================= */
                 /* TCP              */
                 /* ============================================= */
-
-                if(tcp->flags&TH_SYN && tcp->flags&TH_ACK){
-                    // SYN+ACK
-                } else if(tcp->flags&TH_SYN && ((tcp->flags&TH_ACK)!=TH_ACK) ){
-                    // SYN
-                    // src (sent SYN) -> dst (recv SYN)
-                    if(mod7[srcIP][dstIP] > 0.0){
-                        // skip
-                    } else {
-                        // set timestamp
-                        mod7[srcIP][dstIP]=(header->ts.tv_sec + header->ts.tv_usec/1000.0);
-                    }
-                } else if(tcp->flags&TH_ACK && ((tcp->flags&TH_SYN)!=TH_SYN) ){
-                    // ACK
-                    // src (sent ACK) -> dst (recv ACK)
-                    if(mod7[srcIP][dstIP] > 0.0){
-                        // calculate the duration
-                        half_open=(header->ts.tv_sec + header->ts.tv_usec/1000.0)-mod7[srcIP][dstIP];
-                    } else {
-                        // skip
-                    }
-                } else if(tcp->flags&TH_FIN){
-                    // FIN 
-
-                } else if(tcp->flags&TH_RST){
-                    // RST
-                }
-
-                // Mod5 - calculate the number of SYN and ACK
-                if((exec_bitmap_val&1)){
-                    if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
-                        if(mode==0){
-                            if( half_open >= diff_threshold ){
-                                // report
-                                repo_bitmap_val |= 1;
-                                // update exec_bitmap value
-                                exec_bitmap[srcIP][dstIP] |= 2;
-                                // reset
-                                mod7[srcIP][dstIP] = 0.0;
-                            } 
-                        } else if(mode==1){
-                            if( half_open < diff_threshold && (half_open > 0) ){
-                                // report
-                                repo_bitmap_val |= 1;
-                                // update exec_bitmap value
-                                exec_bitmap[srcIP][dstIP] |= 2;
-                                // reset
-                                mod7[srcIP][dstIP] = 0.0;
-                            } 
-                        }
-                        
-                    }
-                }
             } else if(ipv4->protocol == (u_char)17){
                 udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
                 u_int size_udp = 8; // 8 bytes
@@ -244,6 +186,35 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 icmp = (struct sniff_icmp*)(packet + SIZE_ETHER + size_ip);
                 u_int size_icmp = 4; // 4 bytes
                 size_existed += size_icmp;
+
+                if(exec_bitmap_val&1){
+                    if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
+                        // read from mod3
+                        int icmp_unreachable=mod3[srcIP][dstIP];
+
+                        if(icmp_unreachable > cnt_threshold){
+                            // set report_bitmap
+                            repo_bitmap_val|=1;
+                            // update exec_bitmap
+                            exec_bitmap[srcIP][dstIP]|=2;
+
+                            // reset
+                            mod3[srcIP][dstIP]=0;
+                        } 
+
+                        // FIXME: need to reset? or just maintain
+                    } else {
+                        // update 
+                        if(icmp->type == (u_char)3 || icmp->type == (u_char)11 || icmp->type == (u_char)12){
+                            if(mod3[srcIP].find(dstIP)==mod3[srcIP].end()){
+                                mod3[srcIP][dstIP]=1;
+                            } else {
+                                mod3[srcIP][dstIP]++;
+                            }
+                        }
+                    }
+                }
+
             }
         }
 
@@ -257,7 +228,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                 // no need to report 
             } else {
                 // report, and record 
-                cout << srcIP << "->" << dstIP << ", Durration(srcIP,dstIP): " << half_open << endl;
+                cout << srcIP << "->" << dstIP << endl;
                 repo_bitmap[srcIP][dstIP]=repo_bitmap_val;
             }
         } else {

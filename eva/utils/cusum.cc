@@ -16,7 +16,7 @@ extern "C"
 #include <arpa/inet.h>
 #include <pcap/pcap.h>
 #include "packet_def.h"
-#include "lib/hash.h"
+#include "../lib/hash.h"
 #include "hash/xxhash.h" 
 }
 
@@ -40,14 +40,18 @@ using namespace std;
 */
 #define FLOWLET_TIMEOUT 0.1
 
-map<string, map<string, int>> exec_bitmap;      // execute bitmap 
 map<string, map<string, int>> repo_bitmap;      // report bitmap
 map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
-map<string, map<string, int>> mod3;             // module 3 - counter of ICMP type 3 (for UDP flood)
+map<string, map<string, double>> period;      // monitor period
+map<string, map<string, int>> mod1;
+map<string, map<string, int>> pktlen;           // pktlen
+map<string, map<string, int>> report;   
 
 vector<int> amount_count;
 // threshold 
-int cnt_threshold=10;
+int cusum_threshold=2500;
+
+int all,sampled;
 
 // packet process function
 void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
@@ -60,7 +64,7 @@ int main(int argc, char **argv){
         switch(ch)
         {
             case 'p':
-                cnt_threshold=atoi(optarg);
+                cusum_threshold=atoi(optarg);
                 break;
             case 'd':
                 debug=1;
@@ -99,7 +103,12 @@ int main(int argc, char **argv){
         pcap_close(handle);
     }
 
-
+    for(map<string, map<string,int>>::iterator i=report.begin(); i!=report.end(); i++){
+        for(map<string, int>::iterator j=i->second.begin(); j!=i->second.end(); j++){
+            // if(j->second > 1000)
+                cout << i->first << "->" << j->first << ": " << j->second << endl;
+        }
+    }
     cout << "Total flowlet ("<< FLOWLET_TIMEOUT <<" sec) report: " << amount_count.size() << endl;
     double total_amount_avg=0.0, total_amount_std=0.0, max=0;
     for(int i=0;i<amount_count.size();i++){
@@ -130,131 +139,46 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         // Step1: Get flow id
         string srcIP = string(inet_ntoa(ipv4->srcAddr));
         string dstIP = string(inet_ntoa(ipv4->dstAddr));
-        string flowID;
-        flowID = string(inet_ntoa(ipv4->srcAddr)) + string(inet_ntoa(ipv4->dstAddr));
-        unsigned int flowIndex = crc32((unsigned char *)flowID.c_str());
-        // get the reverse flow id
-        string rev_flowID; 
-        rev_flowID = string(inet_ntoa(ipv4->dstAddr)) + string(inet_ntoa(ipv4->srcAddr));
-        unsigned int rev_flowIndex = crc32((unsigned char *)rev_flowID.c_str());
+
         // Define variables used in each iteration
-        int exec_bitmap_val=0, rev_exec_bitmap_val=0;
         int repo_bitmap_val=0;
-
-        // Step2: Get the execute bitmap for this entry
-        if(exec_bitmap[srcIP].find(dstIP)==exec_bitmap[srcIP].end()){
-            // exec_bitmap[srcIP][dstIP]=1;
-            exec_bitmap_val=1;
-        } else {
-            exec_bitmap_val=exec_bitmap[srcIP][dstIP];
-        }
-
         // Step3: execute each module defined by bitmap - get lastSeen 
         double lastseen_ts, interval=0;
         if(lastSeen[srcIP].find(dstIP)==lastSeen[srcIP].end()){
             //lastSeen[srcIP][dstIP]=0;
             lastseen_ts = 0;
+            interval=0;
         } else {
             lastseen_ts=lastSeen[srcIP][dstIP];
+            // interval
+            interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
         }
-        // interval
-        interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
+        
+        period[srcIP][dstIP]+=interval;
 
-        if(size_ip < 20){
-            printf("Invalid IPv4 header length: %u bytes\n", size_ip);
-        } else {
-            // Parse TCP 
-            if(ipv4->protocol == (u_char)6){
-                tcp = (struct sniff_tcp*)(packet + SIZE_ETHER + size_ip);
-                u_int size_tcp = TH_OFF(tcp)*4;
-                size_existed += size_tcp;
-                /* ============================================= */
-                /* TCP              */
-                /* ============================================= */
-            } else if(ipv4->protocol == (u_char)17){
-                udp = (struct sniff_udp*)(packet + SIZE_ETHER + size_ip);
-                u_int size_udp = 8; // 8 bytes
-                size_existed += size_udp;
-
-                /* ============================================= */
-                /* UDP              */
-                /* ============================================= */
-            } else if(ipv4->protocol == (u_char)1){
-                /* ============================================= */
-                /* ICMP              */
-                /* ============================================= */
-                icmp = (struct sniff_icmp*)(packet + SIZE_ETHER + size_ip);
-                u_int size_icmp = 4; // 4 bytes
-                size_existed += size_icmp;
-
-                if(exec_bitmap_val&1){
-                    if(interval > FLOWLET_TIMEOUT && (lastseen_ts!=0)){
-                        // read from mod3
-                        int icmp_unreachable=mod3[srcIP][dstIP];
-
-                        if(icmp_unreachable > cnt_threshold){
-                            // set report_bitmap
-                            repo_bitmap_val|=1;
-                            // update exec_bitmap
-                            exec_bitmap[srcIP][dstIP]|=2;
-
-                            // reset
-                            mod3[srcIP][dstIP]=0;
-                        } 
-
-                        // FIXME: need to reset? or just maintain
-                    } else {
-                        // update 
-                        if(icmp->type == (u_char)3 || icmp->type == (u_char)11 || icmp->type == (u_char)12){
-                            if(mod3[srcIP].find(dstIP)==mod3[srcIP].end()){
-                                mod3[srcIP][dstIP]=1;
-                            } else {
-                                mod3[srcIP][dstIP]++;
-                            }
-                        }
-                    }
-                }
-
+        // set 10 sec do one detection
+        if(period[srcIP][dstIP] > 30.0){
+            if((pktlen[srcIP][dstIP]*pktlen[srcIP][dstIP])/(mod1[srcIP][dstIP]+1) >= cusum_threshold ){
+                report[srcIP][dstIP]++;
             }
+            //pktlen[srcIP][dstIP]=0;
+            //mod1[srcIP][dstIP]=0;
+            period[srcIP][dstIP]=0;
         }
 
+        // do increase
+        if(header->len > 1500){
+            // pktlen[srcIP][dstIP]--;
+        } else if(header->len < 100){
+            pktlen[srcIP][dstIP]++;
+        }
+        // increase mod1 
+        mod1[srcIP][dstIP]++;
         /* ============================================= */
         /* Others (L3)  */
         /* ============================================= */
 
-        // check report_bitmap value
-        if(repo_bitmap_val>=1){
-            if(repo_bitmap_val==repo_bitmap[srcIP][dstIP] || repo_bitmap_val<=repo_bitmap[srcIP][dstIP]){
-                // no need to report 
-            } else {
-                // report, and record 
-                cout << srcIP << "->" << dstIP << endl;
-                repo_bitmap[srcIP][dstIP]=repo_bitmap_val;
-            }
-        } else {
-            // repo_bitmap_val < 1
-            repo_bitmap[srcIP][dstIP]=0;
-        }
-
-        /*if(repo_bitmap[srcIP][dstIP]>=1){
-            if(repo_bitmap[srcIP][dstIP]&4){
-                cout << "TCP: SYN > ACK!" << endl;
-            } else if(repo_bitmap[srcIP][dstIP]&8){
-                cout << "ICMP target Unreachable!" << endl;
-            }
-            cout << srcIP << "-> " << dstIP << endl; 
-            // reset 
-            repo_bitmap[srcIP][dstIP]=0;
-            // reset 
-            exec_bitmap[srcIP][dstIP]=1;
-        } else if(repo_bitmap[dstIP][srcIP]>=1){
-            // reverse
-            cout << dstIP << "<-" << srcIP << endl;
-            // reset 
-            repo_bitmap[dstIP][srcIP]=0;
-            // reset 
-            exec_bitmap[dstIP][srcIP]=1;
-        }*/
+        
 
         // update lastseen (Need to wait until all module has been finished)
         lastSeen[srcIP][dstIP]=(header->ts.tv_sec + header->ts.tv_usec/1000.0);
