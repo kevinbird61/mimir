@@ -65,6 +65,8 @@ control ids(
                 mod1.apply(2, hdr, metadata, standard_metadata);
                 mod4.apply(2, hdr, metadata, standard_metadata);
                 mod5.apply(2, hdr, metadata, standard_metadata);
+
+                mod_report.apply(2, hdr, metadata, standard_metadata);
             } else {
                 // goto frequency module  
                 mod1.apply(1, hdr, metadata, standard_metadata);
@@ -98,7 +100,7 @@ control ids(
         }
 
         // report (base on report_bitmap)
-        mod_report.apply(hdr, metadata, standard_metadata);
+        mod_report.apply(0, hdr, metadata, standard_metadata);
         
         // update lastseen
         lastSeen.write(metadata.flow_id, standard_metadata.ingress_global_timestamp);

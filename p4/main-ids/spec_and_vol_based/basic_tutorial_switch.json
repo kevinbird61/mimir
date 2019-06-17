@@ -55,8 +55,27 @@
       ]
     },
     {
-      "name" : "standard_metadata",
+      "name" : "ipv4_t",
       "id" : 3,
+      "fields" : [
+        ["version", 4, false],
+        ["ihl", 4, false],
+        ["dscp", 6, false],
+        ["ecn", 2, false],
+        ["totalLen", 16, false],
+        ["identification", 16, false],
+        ["flags", 3, false],
+        ["fragOffset", 13, false],
+        ["ttl", 8, false],
+        ["protocol", 8, false],
+        ["hdrChecksum", 16, false],
+        ["srcAddr", 32, false],
+        ["dstAddr", 32, false]
+      ]
+    },
+    {
+      "name" : "standard_metadata",
+      "id" : 4,
       "fields" : [
         ["ingress_port", 9, false],
         ["egress_spec", 9, false],
@@ -85,7 +104,7 @@
     },
     {
       "name" : "packet_out_header_t",
-      "id" : 4,
+      "id" : 5,
       "fields" : [
         ["egress_port", 16, false],
         ["mcast_grp", 16, false]
@@ -93,37 +112,18 @@
     },
     {
       "name" : "packet_in_header_t",
-      "id" : 5,
+      "id" : 6,
       "fields" : [
         ["ingress_port", 16, false]
       ]
     },
     {
       "name" : "ethernet_t",
-      "id" : 6,
+      "id" : 7,
       "fields" : [
         ["dstAddr", 48, false],
         ["srcAddr", 48, false],
         ["etherType", 16, false]
-      ]
-    },
-    {
-      "name" : "ipv4_t",
-      "id" : 7,
-      "fields" : [
-        ["version", 4, false],
-        ["ihl", 4, false],
-        ["dscp", 6, false],
-        ["ecn", 2, false],
-        ["totalLen", 16, false],
-        ["identification", 16, false],
-        ["flags", 3, false],
-        ["fragOffset", 13, false],
-        ["ttl", 8, false],
-        ["protocol", 8, false],
-        ["hdrChecksum", 16, false],
-        ["srcAddr", 32, false],
-        ["dstAddr", 32, false]
       ]
     },
     {
@@ -167,57 +167,64 @@
       "pi_omit" : true
     },
     {
-      "name" : "scalars",
+      "name" : "ids_hdr_2_ipv4",
       "id" : 4,
+      "header_type" : "ipv4_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "scalars",
+      "id" : 5,
       "header_type" : "scalars_0",
       "metadata" : true,
       "pi_omit" : true
     },
     {
       "name" : "standard_metadata",
-      "id" : 5,
+      "id" : 6,
       "header_type" : "standard_metadata",
       "metadata" : true,
       "pi_omit" : true
     },
     {
       "name" : "packet_out",
-      "id" : 6,
+      "id" : 7,
       "header_type" : "packet_out_header_t",
       "metadata" : false,
       "pi_omit" : true
     },
     {
       "name" : "packet_in",
-      "id" : 7,
+      "id" : 8,
       "header_type" : "packet_in_header_t",
       "metadata" : false,
       "pi_omit" : true
     },
     {
       "name" : "ethernet",
-      "id" : 8,
+      "id" : 9,
       "header_type" : "ethernet_t",
       "metadata" : false,
       "pi_omit" : true
     },
     {
       "name" : "ipv4",
-      "id" : 9,
+      "id" : 10,
       "header_type" : "ipv4_t",
       "metadata" : false,
       "pi_omit" : true
     },
     {
       "name" : "tcp",
-      "id" : 10,
+      "id" : 11,
       "header_type" : "tcp_t",
       "metadata" : false,
       "pi_omit" : true
     },
     {
       "name" : "udp",
-      "id" : 11,
+      "id" : 12,
       "header_type" : "udp_t",
       "metadata" : false,
       "pi_omit" : true
@@ -536,7 +543,7 @@
       "id" : 4,
       "source_info" : {
         "filename" : "includes/report.p4",
-        "line" : 20,
+        "line" : 21,
         "column" : 27,
         "source_fragment" : "report_bitmap"
       },
@@ -640,8 +647,8 @@
       "name" : "report_digest_t",
       "source_info" : {
         "filename" : "includes/report.p4",
-        "line" : 38,
-        "column" : 20,
+        "line" : 43,
+        "column" : 24,
         "source_fragment" : "{ ..."
       },
       "elements" : [
@@ -1407,6 +1414,91 @@
             "line" : 42,
             "column" : 12,
             "source_fragment" : "rst.write(metadata.flow_id, 0)"
+          }
+        },
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "tcp"
+            },
+            {
+              "type" : "header",
+              "value" : "ids_hdr_1_tcp"
+            }
+          ]
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.report_bitmap"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ids_metadata_1", "report_bitmap"]
+            }
+          ]
+        },
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "ids_hdr_2_ipv4"
+            },
+            {
+              "type" : "header",
+              "value" : "ipv4"
+            }
+          ]
+        },
+        {
+          "op" : "register_read",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["scalars", "ids_mod_report_prev_report_val"]
+            },
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod_report.report_bitmap"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 28,
+            "column" : 8,
+            "source_fragment" : "report_bitmap.read(prev_report_val, metadata.flow_id)"
+          }
+        },
+        {
+          "op" : "register_write",
+          "parameters" : [
+            {
+              "type" : "register_array",
+              "value" : "basic_tutorial_ingress.ids.mod_report.report_bitmap"
+            },
+            {
+              "type" : "field",
+              "value" : ["scalars", "metadata_t.flow_id"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00"
+            }
+          ],
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 58,
+            "column" : 12,
+            "source_fragment" : "report_bitmap.write(metadata.flow_id, 0)"
           }
         },
         {
@@ -2649,13 +2741,13 @@
             },
             {
               "type" : "field",
-              "value" : ["ipv4", "srcAddr"]
+              "value" : ["ids_hdr_2_ipv4", "srcAddr"]
             }
           ],
           "source_info" : {
             "filename" : "includes/report.p4",
-            "line" : 39,
-            "column" : 24,
+            "line" : 44,
+            "column" : 28,
             "source_fragment" : "hdr.ipv4.srcAddr"
           }
         },
@@ -2668,13 +2760,13 @@
             },
             {
               "type" : "field",
-              "value" : ["ipv4", "dstAddr"]
+              "value" : ["ids_hdr_2_ipv4", "dstAddr"]
             }
           ],
           "source_info" : {
             "filename" : "includes/report.p4",
-            "line" : 40,
-            "column" : 24,
+            "line" : 45,
+            "column" : 28,
             "source_fragment" : "hdr.ipv4.dstAddr"
           }
         },
@@ -2691,10 +2783,10 @@
             }
           ],
           "source_info" : {
-            "filename" : "includes/report.p4",
-            "line" : 41,
-            "column" : 24,
-            "source_fragment" : "metadata.report_bitmap"
+            "filename" : "basic_tutorial_switch.p4",
+            "line" : 34,
+            "column" : 23,
+            "source_fragment" : "metadata"
           }
         },
         {
@@ -2711,8 +2803,8 @@
           ],
           "source_info" : {
             "filename" : "includes/report.p4",
-            "line" : 36,
-            "column" : 16,
+            "line" : 41,
+            "column" : 20,
             "source_fragment" : "digest<report_digest_t>( ..."
           }
         },
@@ -2734,9 +2826,9 @@
           ],
           "source_info" : {
             "filename" : "includes/report.p4",
-            "line" : 48,
-            "column" : 16,
-            "source_fragment" : "report_bitmap.write(metadata.flow_id, metadata.report_bitmap)"
+            "line" : 53,
+            "column" : 20,
+            "source_fragment" : "report_bitmap.write(metadata.flow_id, (metadata.report_bitmap))"
           }
         }
       ]
@@ -2746,6 +2838,19 @@
       "id" : 27,
       "runtime_data" : [],
       "primitives" : [
+        {
+          "op" : "assign_header",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "ids_hdr_2_ipv4"
+            },
+            {
+              "type" : "header",
+              "value" : "ipv4"
+            }
+          ]
+        },
         {
           "op" : "register_read",
           "parameters" : [
@@ -2764,7 +2869,7 @@
           ],
           "source_info" : {
             "filename" : "includes/report.p4",
-            "line" : 26,
+            "line" : 28,
             "column" : 8,
             "source_fragment" : "report_bitmap.read(prev_report_val, metadata.flow_id)"
           }
@@ -2794,7 +2899,7 @@
           ],
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 104,
+            "line" : 106,
             "column" : 8,
             "source_fragment" : "lastSeen.write(metadata.flow_id, standard_metadata.ingress_global_timestamp)"
           }
@@ -3497,7 +3602,7 @@
           "id" : 23,
           "source_info" : {
             "filename" : "includes/report.p4",
-            "line" : 26,
+            "line" : 28,
             "column" : 8,
             "source_fragment" : "report_bitmap.read(prev_report_val, metadata.flow_id)"
           },
@@ -3526,8 +3631,8 @@
           "id" : 24,
           "source_info" : {
             "filename" : "includes/report.p4",
-            "line" : 36,
-            "column" : 16,
+            "line" : 41,
+            "column" : 20,
             "source_fragment" : "digest<report_digest_t>( ..."
           },
           "key" : [],
@@ -3555,7 +3660,7 @@
           "id" : 25,
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 104,
+            "line" : 106,
             "column" : 8,
             "source_fragment" : "lastSeen.write(metadata.flow_id, standard_metadata.ingress_global_timestamp)"
           },
@@ -3740,7 +3845,7 @@
           "id" : 6,
           "source_info" : {
             "filename" : "includes/ids.p4",
-            "line" : 72,
+            "line" : 74,
             "column" : 19,
             "source_fragment" : "(metadata.report_bitmap | 1)==1"
           },
@@ -3939,8 +4044,8 @@
           "id" : 13,
           "source_info" : {
             "filename" : "includes/report.p4",
-            "line" : 28,
-            "column" : 11,
+            "line" : 33,
+            "column" : 15,
             "source_fragment" : "metadata.report_bitmap>1"
           },
           "expression" : {
@@ -3957,8 +4062,44 @@
               }
             }
           },
-          "true_next" : "tbl_act_21",
+          "true_next" : "node_40",
           "false_next" : "tbl_act_22"
+        },
+        {
+          "name" : "node_40",
+          "id" : 14,
+          "source_info" : {
+            "filename" : "includes/report.p4",
+            "line" : 34,
+            "column" : 19,
+            "source_fragment" : "(metadata.report_bitmap | prev_report_val)==prev_report_val"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "==",
+              "left" : {
+                "type" : "expression",
+                "value" : {
+                  "op" : "|",
+                  "left" : {
+                    "type" : "field",
+                    "value" : ["scalars", "metadata_t.report_bitmap"]
+                  },
+                  "right" : {
+                    "type" : "field",
+                    "value" : ["scalars", "ids_mod_report_prev_report_val"]
+                  }
+                }
+              },
+              "right" : {
+                "type" : "field",
+                "value" : ["scalars", "ids_mod_report_prev_report_val"]
+              }
+            }
+          },
+          "false_next" : "tbl_act_21",
+          "true_next" : "tbl_act_22"
         }
       ]
     },
