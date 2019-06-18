@@ -311,6 +311,7 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             mod1[flowIndex]=0;
             mod4_diffcnt[flowIndex]=0;
             mod5[flowIndex]=0;
+            repo_bitmap[flowIndex]=0;
         }
         
         if(interval > seperated_timeout && (lastseen_ts!=0)){
@@ -364,8 +365,10 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // check report_bitmap value
         if(repo_bitmap_val>1){
-            // report, and record 
-            cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << ". Value: " << mod1[flowIndex] << ", " << mod4_diffcnt[flowIndex] << ", " << mod5[flowIndex] << endl;
+            if((repo_bitmap_val|repo_bitmap[flowIndex])!=repo_bitmap[flowIndex]){
+                // report, and record 
+                cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << ". Value: " << mod1[flowIndex] << ", " << mod4_diffcnt[flowIndex] << ", " << mod5[flowIndex] << endl;
+            }
             repo_bitmap[flowIndex]|=repo_bitmap_val;
         }
 
