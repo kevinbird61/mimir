@@ -77,7 +77,7 @@ int         *mod5;
 // collision checker
 string      *c_srcIP;
 string      *c_dstIP;
-int         total=0, collision=0;
+int         total=0, collision=0, report_cnt=0, report_with_mitigation_cnt=0;
 
 chrono::time_point<std::chrono::system_clock> t_start, t_end;
 
@@ -203,6 +203,7 @@ int main(int argc, char **argv){
     cout << "Collision rate: " << collision/(float)total << endl;
     cout << "Seperated timeout (sec): " << seperated_timeout << endl;
     cout << "Long-term timeout (sec): " << long_term_timeout << endl;
+    cout << "Report Message (without/with mitigation): " << report_cnt << "/" << report_with_mitigation_cnt << ". Reduced " << (report_cnt-report_with_mitigation_cnt)*100/report_cnt << "% of total messages." << endl; 
     cout << "=====================================================" << endl;
 
     /*cout << "Total flowlet ("<< FLOWLET_TIMEOUT <<" sec) report: " << amount_count.size() << endl;
@@ -365,9 +366,11 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
 
         // check report_bitmap value
         if(repo_bitmap_val>1){
+            report_cnt++;
             if((repo_bitmap_val|repo_bitmap[flowIndex])!=repo_bitmap[flowIndex]){
                 // report, and record 
                 cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << ". Value: " << mod1[flowIndex] << ", " << mod4_diffcnt[flowIndex] << ", " << mod5[flowIndex] << endl;
+                report_with_mitigation_cnt++;
             }
             repo_bitmap[flowIndex]|=repo_bitmap_val;
         }
