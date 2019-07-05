@@ -1,5 +1,5 @@
 EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out srr.out 
-UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out sampled.out cusum.out interval.out uniq_dport.out uniq_dport_growing.out num_rst.out num_icmp.out collision_rate.out interval_rst.out packets_within_holding_time.out
+UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out sampled.out cusum.out interval.out uniq_dport.out uniq_dport_growing.out num_rst.out num_icmp.out collision_rate.out interval_rst.out packets_within_holding_time.out rst_dist.out active_flow.out
 TESTS:=test_hash.out
 BITMAP:=bitmap_control.out bcm1.out bcm2.out bcm3.out bcm4.out bcm4_nomap.out bcm5.out bcm7.out bcmpktlen.out bcm_all_without_eb.out bcm_only_update_first.out bcm_without_eb_mod4_diffcnt.out bcm_limited_tablesize.out
 CXXFLAGS:= -std=c++11
@@ -50,11 +50,15 @@ heavy_hitter.out: cmap.o hash.o xxhash.o pktstat.o $(BCM_PATH)heavy_hitter.c
 	gcc $^ -o $@ -lm -lpcap -Ithird_party
 
 # utils
+active_flow.out: utils/active_flow.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 packets_within_holding_time.out: utils/packets_within_holding_time.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 num_icmp.out: utils/num_icmp.cc
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 interval_rst.out: utils/interval_rst.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+rst_dist.out: utils/rst_dist.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 num_rst.out: utils/num_rst.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
