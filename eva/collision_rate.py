@@ -40,16 +40,16 @@ def process_pcap(args):
         # read from raw IP 
         # using try/catch block to avoid error corruption
         if raw is True:
-            # ethernet mode
-            eth = dpkt.ethernet.Ethernet(buf)
-            ip = eth.data
-        else: 
             # raw ip mode
             try:
                 ip = dpkt.ip.IP(buf)
             except:
                 #print ("# NonIP packet.")
                 continue
+        else: 
+            # ethernet mode
+            eth = dpkt.ethernet.Ethernet(buf)
+            ip = eth.data
         
         # get flowid 
         flowid_str = IPv4_prettify(ip.src)+"|"+IPv4_prettify(ip.dst)
