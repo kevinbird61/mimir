@@ -152,6 +152,7 @@ int main(int argc, char **argv){
         for(map<int, int>::iterator p=port_dist.begin(); p!=port_dist.end(); p++)
         {
             cout << p->first << " " << logf(p->second) << endl;
+            //cout << p->first << " " << (p->second) << endl;
         }
     }
 

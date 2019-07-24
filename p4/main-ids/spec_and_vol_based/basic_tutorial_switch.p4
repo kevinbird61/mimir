@@ -28,7 +28,7 @@ control basic_tutorial_ingress(
         // forwarding
         ipv4_forwarding.apply(hdr, metadata, standard_metadata);
         // arp 
-        arp.apply(hdr, metadata, standard_metadata);
+        // arp.apply(hdr, metadata, standard_metadata);
 
         // ids
         ids.apply(hdr, metadata, standard_metadata);

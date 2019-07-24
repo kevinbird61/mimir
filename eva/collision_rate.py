@@ -49,7 +49,12 @@ def process_pcap(args):
         else: 
             # ethernet mode
             eth = dpkt.ethernet.Ethernet(buf)
+            # check if IP existed in eth.data
+            if not isinstance(eth.data, dpkt.ip.IP):
+                # print 'Non IP Packet type not supported %s\n' % eth.data.__class__.__name__
+                continue
             ip = eth.data
+            
         
         # get flowid 
         flowid_str = IPv4_prettify(ip.src)+"|"+IPv4_prettify(ip.dst)
@@ -98,7 +103,7 @@ if __name__ == '__main__':
     # arguments
     parser.add_argument('--file', help="pcap filename", type=str, action="store", required=True)
     parser.add_argument('--size', help="table size", type=int, action="store", required=False, default=1024)
-    parser.add_argument('--ltt', help="long-term timeout (sec)", type=int, action="store", required=False, default=50)
+    parser.add_argument('--ltt', help="long-term timeout (sec)", type=float, action="store", required=False, default=50)
     parser.add_argument('--raw', help="raw IP pcap mode", action="store_true")
 
     args=parser.parse_args()

@@ -21,35 +21,6 @@ tables {
   }
   size: 1024
 }
-tables {
-  preamble {
-    id: 33610799
-    name: "basic_tutorial_ingress.arp.arp_exact"
-    alias: "arp_exact"
-  }
-  match_fields {
-    id: 1
-    name: "standard_metadata.ingress_port"
-    bitwidth: 9
-    match_type: EXACT
-  }
-  match_fields {
-    id: 2
-    name: "hdr.ethernet.dstAddr"
-    bitwidth: 48
-    match_type: EXACT
-  }
-  action_refs {
-    id: 16827413
-  }
-  action_refs {
-    id: 16787949
-  }
-  action_refs {
-    id: 16820321
-  }
-  size: 1024
-}
 actions {
   preamble {
     id: 16800567
@@ -70,32 +41,6 @@ actions {
   }
   params {
     id: 2
-    name: "port"
-    bitwidth: 9
-  }
-}
-actions {
-  preamble {
-    id: 16827413
-    name: "basic_tutorial_ingress.arp.send_to_cpu"
-    alias: "send_to_cpu"
-  }
-}
-actions {
-  preamble {
-    id: 16787949
-    name: "basic_tutorial_ingress.arp.flooding"
-    alias: "flooding"
-  }
-}
-actions {
-  preamble {
-    id: 16820321
-    name: "basic_tutorial_ingress.arp.arp_reply"
-    alias: "arp_reply"
-  }
-  params {
-    id: 1
     name: "port"
     bitwidth: 9
   }

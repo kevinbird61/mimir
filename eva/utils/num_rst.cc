@@ -142,6 +142,7 @@ int main(int argc, char **argv){
         for(map<int, int>::iterator p=rst_dist.begin(); p!=rst_dist.end(); p++)
         {
             cout << p->first << " " << logf(p->second) << endl;
+            // cout << p->first << " " << (p->second) << endl;
         }
     }
 

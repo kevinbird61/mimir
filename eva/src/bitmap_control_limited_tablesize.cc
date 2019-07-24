@@ -9,7 +9,11 @@
 #include <chrono>
 #include <ctime>  
 #include <vector>
+#include <algorithm>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 extern "C"
 {
@@ -43,29 +47,7 @@ using namespace std;
 
 double seperated_timeout = 0.1;
 int table_size = 128;
-int long_term_timeout = 50;
-/*
-map<string, map<string, int>> repo_bitmap;      // report bitmap
-map<string, map<string, double>> lastSeen;      // last seen of flow (timestamp)
-map<string, map<string, int>> mod1;             // module 1 - frequency and amount of packets
-map<string, map<string, int>> mod2;             // module 2 - sent/recv ratio
-map<string, map<string, int>> mod3;             // module 3 - counter of ICMP type 3 (for UDP flood)
-map<string, map<string, int>> nopayload;        // number of packet without payload
-map<string, map<string, int>> request;          // number of requests
-typedef struct _mod4_t {
-    int prev_sport;
-    int prev_dport;
-    int cnt;
-    int src_aoc_port; // amount of change
-    int dst_aoc_port; 
-    map<u_short, int> src_uniq;
-    map<u_short, int> dst_uniq;
-} mod4_t;
-map<string, map<string, mod4_t>> mod4;          // module 4 - flowlevel unique port (by calculating hamming distance/ or directly take the difference between sequential packets)
-map<string, map<string, u_short>> prev_dport;
-map<string, map<string, int>> mod4_diffcnt;
-map<string, map<string, int>> flow_mod5;        // module 5 - Amount of (SYN-ACK)
-*/
+double long_term_timeout = 50;
 
 // using flowID with limited table size
 int         *repo_bitmap;
@@ -77,7 +59,26 @@ int         *mod5;
 // collision checker
 string      *c_srcIP;
 string      *c_dstIP;
-int         total=0, collision=0, report_cnt=0, report_with_mitigation_cnt=0;
+
+typedef struct _report_pairs_t {
+    string srcIP;
+    string dstIP;
+    int type;
+} report_pairs_t;
+
+vector<report_pairs_t> report_pairs;
+vector<string> anomaly_IP_list;
+map<string, int> unique_IP;
+map<string, map<string, int>> unique_flows;
+map<string, map<string, int>> sampled_unique_flows;
+
+int         total=0, collision=0, report_cnt=0, report_with_mitigation_cnt=0,
+    sampled_pkt=0, total_pkt=0, sampled_anomaly_pkt=0, anomaly_pkt=0;
+
+map<int,int> anomaly_burst_len_mod1;
+vector<int> anomaly_burst_len_seq, benign_burst_len_seq;
+map<int,int> benign_burst_len_mod1;
+map<int,int> anomaly_burst_len_when_trigger_detect;
 
 chrono::time_point<std::chrono::system_clock> t_start, t_end;
 
@@ -96,10 +97,17 @@ int main(int argc, char **argv){
     t_start = chrono::system_clock::now();
     int ch,input_type=0,extract=0,debug=0;
     vector<string> inputfile;
-    while((ch=getopt(argc, argv, "ds:l:t:f:1:2:3:4:5:")) != -1)
+    string anomaly_list_file;
+    vector<string> found_anomaly_list;
+
+    while((ch=getopt(argc, argv, "ds:l:t:f:1:2:3:4:5:a")) != -1)
     {
         switch(ch)
         {
+            case 'a':
+                // anomaly IP list, use to calculate DR/NFA
+                anomaly_list_file=argv[optind];
+                break;
             case 's':
                 // seperated timeout 
                 seperated_timeout=atof(optarg);
@@ -123,7 +131,7 @@ int main(int argc, char **argv){
                 table_size=atoi(optarg);
                 break;
             case 'l':
-                long_term_timeout=atoi(optarg);
+                long_term_timeout=atof(optarg);
                 break;
             case 'd':
                 debug=1;
@@ -163,6 +171,15 @@ int main(int argc, char **argv){
     pcap_t *handle; 
     char errbuf[PCAP_ERRBUF_SIZE];
 
+    // readin anomaly list
+    string line;
+    ifstream infile(anomaly_list_file);
+    while (infile >> line)
+    {
+        // store anomaly ip list
+        anomaly_IP_list.push_back(line);
+    }
+
     // Define variables used in each iteration
     // bi-direction
     int exec_bitmap_val=0;
@@ -191,6 +208,125 @@ int main(int argc, char **argv){
               << "Elapsed time: " << elapsed_seconds.count() << " (sec)\n";
     cout << "=====================================================" << endl;
 
+    // analyze report pairs 
+    int tp=0,fp=0;
+    map<int, int> report_type_cnt;
+    map<int, int> fp_report_type_cnt;
+    for(int i=0;i<report_pairs.size();i++){
+        //cout << report_pairs.at(i).srcIP << "->" << report_pairs.at(i).dstIP << endl;
+        if( (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), report_pairs.at(i).srcIP) != anomaly_IP_list.end()) &&
+            (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), report_pairs.at(i).dstIP) != anomaly_IP_list.end())
+            ) {
+            /* contains  */
+            tp++;
+            report_type_cnt[report_pairs.at(i).type]++;
+            if( (find(found_anomaly_list.begin(), found_anomaly_list.end(), report_pairs.at(i).srcIP) == found_anomaly_list.end()) 
+                ) {
+                    // not existed
+                    found_anomaly_list.push_back(report_pairs.at(i).srcIP);
+                }
+            if( (find(found_anomaly_list.begin(), found_anomaly_list.end(), report_pairs.at(i).dstIP) == found_anomaly_list.end()) 
+                ) {
+                    // not existed
+                    found_anomaly_list.push_back(report_pairs.at(i).dstIP);
+                }
+        } else {
+            /* does not contain x */
+            fp++;
+            fp_report_type_cnt[report_pairs.at(i).type]++;
+            // cout << report_pairs.at(i).srcIP << "<->" << report_pairs.at(i).dstIP << endl;
+        }
+    }
+    cout << "=====================================================" << endl;
+    cout << "Number of report: " << report_pairs.size() << endl;
+    cout << "Number of true positive: " << tp << endl;
+    cout << "Detection rate (DR): " << found_anomaly_list.size()/(float)anomaly_IP_list.size() << endl;
+    cout << "Number of false alarm (NFA): " << fp << endl;
+    cout << "=====================================================" << endl;
+    cout << "FP Report type summary: " << endl;
+    for(map<int,int>::iterator i=fp_report_type_cnt.begin(); i!=fp_report_type_cnt.end(); i++){
+        cout << i->first << ": " << i->second << endl;
+    }
+    cout << "-----------------------------------------------------" << endl;
+    cout << "TP Report type summary: " << endl;
+    for(map<int,int>::iterator i=report_type_cnt.begin(); i!=report_type_cnt.end(); i++){
+        cout << i->first << ": " << i->second << endl;
+    }
+
+    // write file (anomaly/benign burst len)
+    ofstream anomaly_burst_len, benign_burst_len, report_anomaly_burst_len, anomaly_burst_len_seq_f, benign_burst_len_seq_f;
+    anomaly_burst_len.open("anomaly_burst_len.txt");
+    anomaly_burst_len_seq_f.open("anomaly_burst_len_seq.txt");
+    benign_burst_len.open("benign_burst_len.txt");
+    benign_burst_len_seq_f.open("benign_burst_len_seq.txt");
+    report_anomaly_burst_len.open("report_anomaly_burst_len.txt");
+
+    double total_burst_cnt=0, interest=0;
+    for(map<int,int>::iterator i=anomaly_burst_len_mod1.begin();i!=anomaly_burst_len_mod1.end();i++){
+        anomaly_burst_len<<i->first<< " " << i->second << "\n";
+        total_burst_cnt+=i->second;
+        if(i->first>10){
+            interest+=i->second;
+        }
+    }
+    anomaly_burst_len << "#Bound: " << 10 << "\n";
+    anomaly_burst_len << "# " << interest/total_burst_cnt << "\n";
+    anomaly_burst_len.close();
+    // reset
+    total_burst_cnt=0;
+    interest=0;
+    for(map<int,int>::iterator i=anomaly_burst_len_when_trigger_detect.begin();i!=anomaly_burst_len_when_trigger_detect.end();i++){
+        report_anomaly_burst_len<<i->first<< " " << i->second << "\n";
+        total_burst_cnt+=i->second;
+        if(i->first>10){
+            interest+=i->second;
+        }
+    }
+    report_anomaly_burst_len << "#Bound: " << 10 << "\n";
+    report_anomaly_burst_len << "# " << interest/total_burst_cnt << "\n";
+    report_anomaly_burst_len.close();
+    // reset
+    total_burst_cnt=0;
+    interest=0;
+    for(map<int,int>::iterator i=benign_burst_len_mod1.begin();i!=benign_burst_len_mod1.end();i++){
+        benign_burst_len<<i->first<< " " << i->second << "\n";
+        total_burst_cnt+=i->second;
+        if(i->first>10){
+            interest+=i->second;
+        }
+    }
+    benign_burst_len << "# " << interest/total_burst_cnt << "\n";
+    benign_burst_len.close();
+    for(auto i=0;i<anomaly_burst_len_seq.size();i++){
+        anomaly_burst_len_seq_f << i << " " << anomaly_burst_len_seq.at(i) << "\n";
+    }
+    anomaly_burst_len_seq_f.close();
+    for(auto i=0;i<benign_burst_len_seq.size();i++){
+        benign_burst_len_seq_f << i << " " << benign_burst_len_seq.at(i) << "\n";
+    }
+    benign_burst_len_seq_f.close();
+
+    // unique flows size (sample, without sample)
+    double total_unique_flow_size=0, sampled_unique_flow_size=0, total_unique_ip=0;
+    for(map<string, map<string, int>>::iterator i=unique_flows.begin(); i!=unique_flows.end(); i++)
+    {
+        total_unique_flow_size+=i->second.size();
+    }
+    for(map<string, map<string, int>>::iterator i=sampled_unique_flows.begin(); i!=sampled_unique_flows.end(); i++)
+    {
+        sampled_unique_flow_size+=i->second.size();
+    }
+    for(map<string, int>::iterator i=unique_IP.begin(); i!=unique_IP.end(); i++)
+    {
+        total_unique_ip++;
+    }
+    cout << "=====================================================" << endl;
+    cout << "Total unique IP: " << total_unique_ip << endl;
+    cout << "Total unique flow size: " << total_unique_flow_size << endl;
+    cout << "Sampled unique flow size: " << sampled_unique_flow_size << endl;
+    cout << "Sampled unique flow size: " << sampled_unique_flow_size/(float)total_unique_flow_size << endl;
+
+    cout << "=====================================================" << endl;
     cout << "Threshold: " << endl;
     cout << "Module 1: " << threshold_1 << endl;
     cout << "Module 2: " << threshold_2 << endl;
@@ -200,23 +336,17 @@ int main(int argc, char **argv){
     cout << "=====================================================" << endl;
 
     cout << "Table size: " << table_size << endl;
-    cout << "Collision rate: " << collision/(float)total << endl;
+    cout << "Collision rate: " << collision/(float)total_pkt << endl;       // using total_pkt instead of total, calculate entire collision rate
+    cout << "Sampled ratio: " << sampled_pkt/(float)total_pkt << endl;
+    cout << "Sampled anomaly ratio (sampled_anomaly/total): " << sampled_anomaly_pkt/(float)total_pkt << endl;
+    cout << "Sampled anomaly ratio (sampled_anomaly/total_anomaly): " << sampled_anomaly_pkt/(float)anomaly_pkt << endl;
+    cout << "Anomaly ratio: " << anomaly_pkt/(float)total_pkt << endl;
+    cout << "Sampled anomaly ratio (total): " << sampled_anomaly_pkt/(float)total_pkt << endl;
     cout << "Seperated timeout (sec): " << seperated_timeout << endl;
     cout << "Long-term timeout (sec): " << long_term_timeout << endl;
-    cout << "Report Message (without/with mitigation): " << report_cnt << "/" << report_with_mitigation_cnt << ". Reduced " << (report_cnt-report_with_mitigation_cnt)*100/report_cnt << "% of total messages." << endl; 
+    cout << "Report Message (without/with mitigation): " << report_cnt << "/" << report_with_mitigation_cnt << ". Reduced " << (report_cnt-report_with_mitigation_cnt)*100/(float)report_cnt << "% of total messages." << endl; 
     cout << "=====================================================" << endl;
 
-    /*cout << "Total flowlet ("<< FLOWLET_TIMEOUT <<" sec) report: " << amount_count.size() << endl;
-    double total_amount_avg=0.0, total_amount_std=0.0, max=0;
-    for(int i=0;i<amount_count.size();i++){
-        total_amount_avg+=amount_count.at(i);
-        total_amount_std+=pow(amount_count.at(i),2);
-        if(amount_count.at(i)>max) max=amount_count.at(i);
-    }
-    cout << "Avg. amount per flowlet: " << total_amount_avg/amount_count.size() << endl;
-    cout << "Std. amount per flowlet: " << sqrt(total_amount_std/amount_count.size() - pow(total_amount_avg/amount_count.size(), 2)) << endl;
-    cout << "Max. per flowlet: " << max << endl;
-    */
     return 0;
 }
 
@@ -228,6 +358,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
     ethernet = (struct sniff_ethernet*)(packet);
     size_existed += SIZE_ETHER;
 
+    total_pkt++;
+
     // Parse IPv4
     if(ethernet->etherType == (u_short)8){
         ipv4 = (struct sniff_ipv4*)(packet + SIZE_ETHER);
@@ -237,20 +369,17 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         // Step1: Get flow id
         string srcIP = string(inet_ntoa(ipv4->srcAddr));
         string dstIP = string(inet_ntoa(ipv4->dstAddr));
+
+        // store unique flows
+        unique_flows[srcIP][dstIP]=1;
+        // store unique IP
+        unique_IP[srcIP]=1;
+        unique_IP[dstIP]=1;
+
         string flowID;
         flowID = string(inet_ntoa(ipv4->srcAddr)) + string(inet_ntoa(ipv4->dstAddr));
         unsigned int flowIndex = (crc32((unsigned char *)flowID.c_str()))%table_size;
-        // collision checker
-        if(c_srcIP[flowIndex]=="null"|| c_dstIP[flowIndex]=="null"){
-            // do nothing, initialize state
-        }
-        else if(c_srcIP[flowIndex]!=srcIP || c_dstIP[flowIndex]!=dstIP){
-            collision++;
-        } 
-        total++;
-        // update
-        c_srcIP[flowIndex]=srcIP;
-        c_dstIP[flowIndex]=dstIP;
+        
         // Define variables used in each iteration
         int repo_bitmap_val=0;
         // port 
@@ -304,6 +433,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         /* ============================================= */
         /* Others (L3)  */
         /* ============================================= */
+        
+        if( (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), srcIP) != anomaly_IP_list.end()) &&
+            (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), dstIP) != anomaly_IP_list.end())
+            ) {
+                anomaly_pkt++;
+            }
 
         // if interval > 100ms (flowlet), detect
 
@@ -313,18 +448,40 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             mod4_diffcnt[flowIndex]=0;
             mod5[flowIndex]=0;
             repo_bitmap[flowIndex]=0;
+
+            c_srcIP[flowIndex]=string("null");
+            c_dstIP[flowIndex]=string("null");
         }
         
         if(interval > seperated_timeout && (lastseen_ts!=0)){
+            
+            if( (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), srcIP) == anomaly_IP_list.end()) &&
+                (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), dstIP) == anomaly_IP_list.end())
+                ) {
+                    benign_burst_len_mod1[mod1[flowIndex]]++;
+                    benign_burst_len_seq.push_back(mod1[flowIndex]);
+                }
+            // record
+            if( (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), srcIP) != anomaly_IP_list.end()) &&
+                (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), dstIP) != anomaly_IP_list.end())
+                ) {
+                    anomaly_burst_len_mod1[mod1[flowIndex]]++;
+                    anomaly_burst_len_seq.push_back(mod1[flowIndex]);
+                }
+            // sampled_unique_flows[srcIP][dstIP]=1;
             // compare to threshold (configurable)
             if(mod1[flowIndex]>threshold_1){
                 // high frequency 
                 repo_bitmap_val|=1;
+
+
                 // goto mod5
                 if( mod5[flowIndex] >= threshold_5 ){
                     // report
                     repo_bitmap_val |= 16;
                     mod5[flowIndex]=0;
+                    
+                    anomaly_burst_len_when_trigger_detect[mod1[flowIndex]]++;
                 }
 
                 // goto mod4
@@ -332,6 +489,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // report
                     repo_bitmap_val |= 8;
                     mod4_diffcnt[flowIndex]=0;
+
+                    anomaly_burst_len_when_trigger_detect[mod1[flowIndex]]++;
                 }
 
             } else {
@@ -341,12 +500,42 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     // report
                     repo_bitmap_val |= 8;
                     mod4_diffcnt[flowIndex]=0;
+
+                    anomaly_burst_len_when_trigger_detect[mod1[flowIndex]]++;
                 }
             }
 
             // reset the state 
             mod1[flowIndex]=1;
+
+            // collision checker
+            /*if(c_srcIP[flowIndex]=="null"|| c_dstIP[flowIndex]=="null"){
+                // do nothing, initialize state
+            }
+            else if(c_srcIP[flowIndex]!=srcIP || c_dstIP[flowIndex]!=dstIP){
+                collision++;
+            } 
+            total++;
+            // update
+            c_srcIP[flowIndex]=srcIP;
+            c_dstIP[flowIndex]=dstIP;*/
         } else {
+            sampled_pkt++;
+            
+            sampled_unique_flows[srcIP][dstIP]=1;
+
+            // collision checker
+            if(c_srcIP[flowIndex]==string("null")|| c_dstIP[flowIndex]==string("null")){
+                // do nothing, initialize state
+            }
+            else if(c_srcIP[flowIndex]!=srcIP || c_dstIP[flowIndex]!=dstIP){
+                collision++;
+            } 
+            total++;
+            // update
+            c_srcIP[flowIndex]=srcIP;
+            c_dstIP[flowIndex]=dstIP;
+
             // update mod1
             mod1[flowIndex]++;
             // update mod4
@@ -362,6 +551,12 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
                     mod5[flowIndex]++;
                 }
             }
+
+            if( (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), srcIP) != anomaly_IP_list.end()) &&
+                (find(anomaly_IP_list.begin(), anomaly_IP_list.end(), dstIP) != anomaly_IP_list.end())
+                ) {
+                    sampled_anomaly_pkt++;
+                }
         }
 
         // check report_bitmap value
@@ -369,7 +564,15 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             report_cnt++;
             if((repo_bitmap_val|repo_bitmap[flowIndex])!=repo_bitmap[flowIndex]){
                 // report, and record 
-                cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << ". Value: " << mod1[flowIndex] << ", " << mod4_diffcnt[flowIndex] << ", " << mod5[flowIndex] << endl;
+                // cout << srcIP << "->" << dstIP << ". Report_bitmap: " << repo_bitmap_val << ". Value: " << mod1[flowIndex] << ", " << mod4_diffcnt[flowIndex] << ", " << mod5[flowIndex] << endl;
+
+                report_pairs_t report;
+                report.srcIP=srcIP;
+                report.dstIP=dstIP;
+                report.type=repo_bitmap_val;
+                report_pairs.push_back(report);
+
+                // inc
                 report_with_mitigation_cnt++;
             }
             repo_bitmap[flowIndex]|=repo_bitmap_val;

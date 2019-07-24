@@ -1,0 +1,7 @@
+# addition cost: 30Read + 30Write
+# % of traffic size | latency (ms)
+0 5.77
+25 9.52
+50 13.55
+75 17.63
+100 19.26

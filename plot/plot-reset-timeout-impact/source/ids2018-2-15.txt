@@ -1,0 +1,8 @@
+# table=128, detection timeout=0.1
+# reset timeout | collision rate | DR | NFAs
+0.05 3.5 0 0 
+0.5 3.9 100 1
+5 6.1 100 1
+50 17.1 100 1
+500 30.1 100 3
+5000 30.4 66.6 255

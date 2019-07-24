@@ -13,17 +13,19 @@ set ytics
 #set y2range
 set y2tics 
 
-set title "Sampled percentage with seperated timeout"
-set xlabel "seperated timeout"
-set ylabel "Sampled percentage"
-set y2label "Error percentage"
+set title "Sampled ratio with detection timeout"
+set xlabel "Detection timeout (sec.)"
+set ylabel "Sampled ratio (%)"
+set y2label "Error (%)"
 
 set xtics rotate by 45 right
 set key right 
 # set rmargin 5
 
 plot ARG1 using 2:xticlabels(1) title "Real" with linespoint lw 3 lc rgb "#FF0000", \
-     ''   using 3:xticlabels(1) title "E[W]" with linespoint lw 3 lc rgb "#FF00FF", \
+     ''   using 3:xticlabels(1) title "E[W]" with linespoint lw 3 lc rgb "#00FFFF", \
      ''   using 4:xticlabels(1) title "Error by E[W]" with linespoint lw 3 lc rgb "#0000FF" axes x1y2, \
-     ''   using 5:xticlabels(1) title "10% E[W]" with linespoint lw 3 lc rgb "#00FFFF", \
-     ''   using 6:xticlabels(1) title "Error by 10% E[W]" with linespoint lw 3 lc rgb "#000000" axes x1y2, \
+     
+
+#''   using 5:xticlabels(1) title "E[W]" with linespoint lw 3 lc rgb "#00FFFF", \
+#''   using 6:xticlabels(1) title "Error by E[W]" with linespoint lw 3 lc rgb "#000000" axes x1y2, \

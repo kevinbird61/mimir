@@ -1,8 +1,7 @@
 # Mini version:         timeout | real sampled | sampled by E[W] | 
 # Complete version:     timeout | real sampled | sampled by E[W] | Error (by E[W])  | sampled by 10% E[W] | Error (by 10% E[W]) |
 # Mini can be plotted by plot.gp, and Complete need to be plotted by plot-all.gp
-0.001 23.7 10.7 13 15.9 7.8
-0.005 29.7 18.0 11.7 25.3 4.4
+#0.005 29.7 18.0 11.7 25.3 4.4
 0.01 30.4 18.6 11.8 26.4 4.0
 0.05 42.9 33.3 9.6 46.5 3.6
 0.1 46.3 37.5 8.8 50.7 4.4

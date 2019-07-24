@@ -68,7 +68,7 @@ int main(int argc, char **argv){
                 use_long_term=0;
                 break;
             case 't':
-                // long-term timeout
+                // separated_timeout
                 separated_timeout=atof(optarg);
                 break;
             case 'u':
