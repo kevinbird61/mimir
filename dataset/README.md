@@ -68,8 +68,10 @@
 | 測資名稱 | Packet 數量 | Unique Hosts | 備註 | 載點 | 
 | :--- | :--- | :--- | :--- | :--- |
 | LBNL-FTP-PKT (all.tcpdump) | 3264050 | 6152 | 為 benign traffic (FTP server) | [LBNL-FTP-PKT](https://ee.lbl.gov/anonymized-traces.html) | 
-| CTU-13-dataset | 多個 pcap 檔案 | x | 多個 botnet traffic 流量提供，作為 anomaly traffic | [📁 google](https://drive.google.com/file/d/1nWr_Fs_n7gQ0nGx-iMyC0joZC3DqvXFp/view?usp=sharing) |
-
+| CTU-13-dataset (anomaly) | 多個 pcap 檔案 | x | 多個 botnet traffic 流量提供，作為 anomaly traffic | [📁 google](https://drive.google.com/file/d/1nWr_Fs_n7gQ0nGx-iMyC0joZC3DqvXFp/view?usp=sharing) |
+| UNB 2016 (DoS) | | | | [DoS Dataset](https://www.unb.ca/cic/datasets/dos-dataset.html) |
+| UNB 2018 (多種不同種類的攻擊) | | | | [CSE-CIC-IDS2018 on AWS](https://www.unb.ca/cic/datasets/ids-2018.html) |
+| CAIDA 2016 | | | 骨幹網路的流量 (benign)，需要額外提交申請程序 | [CAIDA - passive 2016 dataset](http://www.caida.org/data/passive/passive_2016_dataset.xml) |
 
 * IP, TCP, UDP 分析
 

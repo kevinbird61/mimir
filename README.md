@@ -31,7 +31,8 @@ Planning of our project layout of MIMIR.
 │   ├── main-ids                    # Mímir's main program goes here
 │   ├── other                       
 │   └── utils
-├── algorithm                       # Some discussions/Pseudo code of our algorithms' candidates.
+├── plot                            # Plot the evaluation result
+├── env                             # Building the virtual network environment with docker container by golang & shell scripts.
 ├── resource                        # Gliffy, image sources used in this repository
 ├── dataset                         # Description of the traffic data (e.g. How to record the traffic? ... etc) used in Mímir
 ├── malware                         # Implementation/Discussion of Malware or Attacking pattern packet generator.
@@ -42,11 +43,10 @@ Planning of our project layout of MIMIR.
 
 | Folder Path/Name | Purpose | Note | Maintainer | Progress |
 | --- | --- | --- | --- | --- |
-| `eva` | Evaluation of our scenario/pcap files. Aim to make the ground truth of our experiments. | x | kevinbird61 | 10% |
-| `of` | Scenarios of OpenFlow version. | x | | |
-| `p4` | Scenarios of P4 version. | x | kevinbird61 | |
-| `algorithm` | Pseudo code / Implementation of detection algorithm. | x | kevinbird61 | |
+| `eva` | Evaluation of our scenario/pcap files. Aim to make the ground truth of our experiments. | x | kevinbird61 | |
+| `of` | Scenario of OpenFlow version. | x | | |
+| `p4` | Scenario of P4 version. | x | kevinbird61 | |
 | `resource` | Images, flowchart, explanation of program, useful documents, tutorials will place in here. | x | | |
-| `dataset` | Download links of our source pcap files, and the evaluation of each pcap file (e.g. represent as its **ground truth**). Also these pcap files represent as benign traffic in our experiments. | Using *tcpdump/cisco flow recorder* to record the real traffic from real world. | kevinbird61 | 5% |
+| `dataset` | Download links of our source pcap files, and the evaluation of each pcap file (e.g. represent as its **ground truth**). Also these pcap files represent as benign traffic in our experiments. | Using *tcpdump/cisco flow recorder* to record the real traffic from real world. | kevinbird61 | |
 | `malware` | Attack pattern generator. | x | kevinbird61 | | 
 | `paper` | Paper work of MIMIR. Using LaTeX as our tool to write the paper. |  x | kevinbird61 | |

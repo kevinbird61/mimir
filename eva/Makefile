@@ -1,38 +1,21 @@
-EXECS:=read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out srr.out 
-UTILS:=sort.out entro.out sdiff.out pktlen.out birth.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out sampled.out cusum.out interval.out uniq_dport.out uniq_dport_growing.out num_rst.out num_icmp.out collision_rate.out interval_rst.out packets_within_holding_time.out rst_dist.out active_flow.out dns.out
-TESTS:=test_hash.out
-BITMAP:=bitmap_control.out bcm1.out bcm2.out bcm3.out bcm4.out bcm4_nomap.out bcm5.out bcm7.out bcmpktlen.out bcm_all_without_eb.out bcm_only_update_first.out bcm_without_eb_mod4_diffcnt.out bcm_limited_tablesize.out
-CXXFLAGS:= -std=c++11
+EXECS:=bcm_limited_tablesize.out
+UTILS_0:= birth.out sampled.out interval.out collision_rate.out dns.out
+UTILS_1:= uniq_dport.out uniq_dport_growing.out num_rst.out num_icmp.out interval_rst.out packets_within_holding_time.out rst_dist.out active_flow.out
+UTILS_2:= 
+OLD:=sort.out read_pcap.out hash_pcap.out port_diff.out heavy_hitter.out srr.out entro.out sdiff.out pktlen.out tcp_flags.out ewma_pktlen.out flowlet.out port_dist.out cusum.out 
 
+UTILS:= $(UTILS_0) $(UTILS_1) $(UTILS_2)
+
+# unnecessary
+TESTS:=test_hash.out
+DEPRECATE:==bitmap_control.out bcm1.out bcm2.out bcm3.out bcm4.out bcm4_nomap.out bcm5.out bcm7.out bcmpktlen.out bcm_all_without_eb.out bcm_only_update_first.out bcm_without_eb_mod4_diffcnt.out
+
+CXXFLAGS:=-std=c++11
 BCM_PATH:=src/
 
-all: $(EXECS) $(UTILS) $(TESTS) $(BITMAP)
+all: $(EXECS) $(UTILS) $(TESTS)
 
 # bitmap control
-bitmap_control.out: hash.o xxhash.o $(BCM_PATH)bitmap_control.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm1.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod1.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm2.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod2.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm3.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod3.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm4.out: hamm.o hash.o xxhash.o $(BCM_PATH)bitmap_control_mod4.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm4_nomap.out: hamm.o hash.o xxhash.o $(BCM_PATH)bitmap_control_mod4_nonmap.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm5.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod5.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm7.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod7.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcmpktlen.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_pktlen.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm_all_without_eb.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_without_e_bitmap.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm_only_update_first.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_only_firstpkt_flowlet.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
-bcm_without_eb_mod4_diffcnt.out:  hash.o xxhash.o $(BCM_PATH)bitmap_control_without_eb_mod4_diffcnt.cc 
-	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 bcm_limited_tablesize.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_limited_tablesize.cc 
 	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 
@@ -103,12 +86,31 @@ test: utils/mini_pcap.cc
 test_hash.out: utils/test_hash.cc xxhash.o hash.o
 	g++ $^ -o $@ -Ithird_party -Ilib $(CXXFLAGS)
 
-# plot 
-plot_read_pcap:
-	gnuplot scripts/ip_proto_stat.gp 
-	gnuplot scripts/tcp_stat.gp 
-	gnuplot scripts/udp_stat.gp 
-	gnuplot scripts/ipv4_stat.gp
+# deprecate 
+bitmap_control.out: hash.o xxhash.o $(BCM_PATH)bitmap_control.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm1.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod1.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm2.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod2.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm3.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod3.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm4.out: hamm.o hash.o xxhash.o $(BCM_PATH)bitmap_control_mod4.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm4_nomap.out: hamm.o hash.o xxhash.o $(BCM_PATH)bitmap_control_mod4_nonmap.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm5.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod5.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm7.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_mod7.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcmpktlen.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_pktlen.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm_all_without_eb.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_without_e_bitmap.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm_only_update_first.out: hash.o xxhash.o $(BCM_PATH)bitmap_control_only_firstpkt_flowlet.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
+bcm_without_eb_mod4_diffcnt.out:  hash.o xxhash.o $(BCM_PATH)bitmap_control_without_eb_mod4_diffcnt.cc 
+	g++ $^ -o $@ -lm -lpcap -Ilib -Ithird_party $(CXXFLAGS)
 
 # Object files
 pktstat.o: lib/packet_stat.c 

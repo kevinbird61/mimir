@@ -161,7 +161,7 @@ make
    ```
 
 其他輔助程式：
-* [aggregate.py](aggregate.py)
+* [aggregate.py](utils/aggregate.py)
   * 參考來源：https://adamkuj.net/blog/2014/04/08/a-utility-to-perform-ipv4-ipv6-prefix-aggregation/ 
   * 使用這支腳本程式，來對 read_pcap.out 輸出的 `ip_without_counter.txt` 做分析。執行： `./aggregate.py -c -f output/ip_without_counter.txt > output/aggregate.txt`
   * 主要功能為 ip prefix aggregation，察看該來源 pcap 的分散程度。（直接比較輸入與輸出的 entries 數量）
