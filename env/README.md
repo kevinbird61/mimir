@@ -2,7 +2,7 @@
 
 > Building our testing virtual network.
 
-![](https://i.imgur.com/6ufrnFS.png)
+![](https://i.imgur.com/m0LjNmf.png)
 
 ## Login directly
 
