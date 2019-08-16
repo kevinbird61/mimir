@@ -154,9 +154,11 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
         interval = (header->ts.tv_sec + header->ts.tv_usec/1000.0) - lastseen_ts;
 
         if(interval>=0){
-            if(interval>upperbound){
+            /*if(interval>upperbound){
                 // upperbound
-                interval_dist[upperbound]++;
+                // interval_dist[upperbound]++;
+                // record directly
+                interval_dist[(int)interval]++;
             } else if(interval<1){
                 if(interval>=0 && interval<0.1){
                     interval_dist[0]++;
@@ -182,6 +184,8 @@ void pkt_process(u_char *args, const struct pcap_pkthdr *header, const u_char *p
             } else {
                 interval_dist[(int)interval]++;
             }
+            */
+           interval_dist[(int)interval]++;
         }
         /* ============================================= */
         /* Others (L3)  */
